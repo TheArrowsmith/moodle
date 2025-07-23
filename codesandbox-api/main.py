@@ -11,7 +11,7 @@ import tempfile
 import os
 import asyncio
 import logging
-from typing import Optional
+from typing import Optional, List
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -52,7 +52,7 @@ class GradeResponse(BaseModel):
     score: float
     total_tests: int
     passed_tests: int
-    results: list[TestResult]
+    results: List[TestResult]
 
 # Initialize Docker client
 try:
