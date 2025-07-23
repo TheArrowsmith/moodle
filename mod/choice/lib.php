@@ -1445,7 +1445,7 @@ function mod_choice_get_completion_active_rule_descriptions($cm) {
         switch ($key) {
             case 'completionsubmit':
                 if (empty($val)) {
-                    continue;
+                    continue 2;
                 }
                 $descriptions[] = get_string('completionsubmit', 'choice');
                 break;

@@ -4329,7 +4329,7 @@ function mod_glossary_get_completion_active_rule_descriptions($cm) {
         switch ($key) {
             case 'completionentries':
                 if (empty($val)) {
-                    continue;
+                    continue 2;
                 }
                 $descriptions[] = get_string('completionentriesdesc', 'glossary', $val);
                 break;

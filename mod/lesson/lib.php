@@ -1753,13 +1753,13 @@ function mod_lesson_get_completion_active_rule_descriptions($cm) {
         switch ($key) {
             case 'completionendreached':
                 if (empty($val)) {
-                    continue;
+                    continue 2;
                 }
                 $descriptions[] = get_string('completionendreached_desc', 'lesson', $val);
                 break;
             case 'completiontimespent':
                 if (empty($val)) {
-                    continue;
+                    continue 2;
                 }
                 $descriptions[] = get_string('completiontimespentdesc', 'lesson', format_time($val));
                 break;

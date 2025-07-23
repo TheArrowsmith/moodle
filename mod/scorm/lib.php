@@ -1792,7 +1792,7 @@ function mod_scorm_get_completion_active_rule_descriptions($cm) {
         switch ($key) {
             case 'completionstatusrequired':
                 if (is_null($val)) {
-                    continue;
+                    continue 2;
                 }
                 // Determine the selected statuses using a bitwise operation.
                 $cvalues = array();
@@ -1806,13 +1806,13 @@ function mod_scorm_get_completion_active_rule_descriptions($cm) {
                 break;
             case 'completionscorerequired':
                 if (is_null($val)) {
-                    continue;
+                    continue 2;
                 }
                 $descriptions[] = get_string('completionscorerequireddesc', 'scorm', $val);
                 break;
             case 'completionstatusallscos':
                 if (empty($val)) {
-                    continue;
+                    continue 2;
                 }
                 $descriptions[] = get_string('completionstatusallscos', 'scorm');
                 break;

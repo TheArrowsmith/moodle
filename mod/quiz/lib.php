@@ -2278,13 +2278,13 @@ function mod_quiz_get_completion_active_rule_descriptions($cm) {
         switch ($key) {
             case 'completionattemptsexhausted':
                 if (empty($val)) {
-                    continue;
+                    continue 2;
                 }
                 $descriptions[] = get_string('completionattemptsexhausteddesc', 'quiz');
                 break;
             case 'completionpass':
                 if (empty($val)) {
-                    continue;
+                    continue 2;
                 }
                 $descriptions[] = get_string('completionpassdesc', 'quiz', format_time($val));
                 break;
