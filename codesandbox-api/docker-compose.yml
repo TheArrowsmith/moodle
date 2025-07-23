@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  codesandbox-api:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      - DOCKER_HOST=unix:///var/run/docker.sock
+    restart: unless-stopped
+    networks:
+      - moodle-network
+
+networks:
+  moodle-network:
+    external: true
+    name: moodle-network

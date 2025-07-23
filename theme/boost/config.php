@@ -34,6 +34,11 @@ $THEME->usefallback = true;
 $THEME->scss = function($theme) {
     return theme_boost_get_main_scss_content($theme);
 };
+$THEME->prescsscallback = 'theme_boost_get_pre_scss';
+$THEME->extrascsscallback = 'theme_boost_get_extra_scss';
+$THEME->rendererfactory = 'theme_overridden_renderer_factory';
+$THEME->beforestandardhead = 'theme_boost_before_standard_html_head';
+$THEME->beforefooter = 'theme_boost_before_footer';
 
 $THEME->layouts = [
     // Most backwards compatible layout without the blocks - this is the layout used by default.

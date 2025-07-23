@@ -156,3 +156,73 @@ function theme_boost_get_pre_scss($theme) {
 
     return $scss;
 }
+
+/**
+ * Inject additional theme assets for syntax highlighting
+ *
+ * @return string HTML to be placed before standard HTML head
+ */
+function theme_boost_before_standard_html_head() {
+    global $PAGE;
+    
+    // Add Prism CSS
+    $prismcss = new moodle_url('/theme/boost/javascript/prism/prism.css');
+    $customcss = new moodle_url('/theme/boost/javascript/prism/prism-custom.css');
+    
+    $html = '';
+    
+    // Check if files exist before including
+    if (file_exists($PAGE->theme->dir . '/javascript/prism/prism.css')) {
+        $PAGE->requires->css($prismcss);
+    }
+    
+    $PAGE->requires->css($customcss);
+    
+    return $html;
+}
+
+/**
+ * Add JavaScript to footer for syntax highlighting
+ *
+ * @return string HTML to be placed before footer
+ */
+function theme_boost_before_footer() {
+    global $PAGE;
+    
+    // Add Prism JS if it exists
+    $prismjs = $PAGE->theme->dir . '/javascript/prism/prism.js';
+    if (file_exists($prismjs)) {
+        $PAGE->requires->js(new moodle_url('/theme/boost/javascript/prism/prism.js'), true);
+        
+        // Add initialization script
+        $PAGE->requires->js_init_code('
+            document.addEventListener("DOMContentLoaded", function() {
+                if (typeof Prism !== "undefined") {
+                    // Auto-highlight on page load
+                    Prism.highlightAll();
+                    
+                    // Re-highlight after AJAX content loads
+                    if (typeof M !== "undefined" && M.util && M.util.js_complete) {
+                        var originalJsComplete = M.util.js_complete;
+                        M.util.js_complete = function(id) {
+                            originalJsComplete.apply(this, arguments);
+                            // Small delay to ensure DOM is updated
+                            setTimeout(function() {
+                                Prism.highlightAll();
+                            }, 100);
+                        };
+                    }
+                    
+                    // Re-highlight when forum posts are loaded via AJAX
+                    if (typeof Y !== "undefined") {
+                        Y.on("contentchange", function() {
+                            Prism.highlightAll();
+                        }, document.body);
+                    }
+                }
+            });
+        ', true);
+    }
+    
+    return '';
+}
