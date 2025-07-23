@@ -65,15 +65,15 @@ $PAGE->requires->css('/mod/codesandbox/styles.css');
 // Get API URL from config or use default
 $apiurl = get_config('mod_codesandbox', 'apiurl');
 if (!$apiurl) {
-    $apiurl = 'http://localhost:8000';
+    $apiurl = 'http://localhost:8080';
 }
 
 // Include our JavaScript module
 $PAGE->requires->js_call_amd('mod_codesandbox/editor', 'init', array(
-    'cmid' => $cm->id,
-    'starterCode' => $codesandbox->starter_code,
-    'apiUrl' => $apiurl,
-    'isGradable' => $codesandbox->is_gradable
+    $cm->id,
+    $codesandbox->starter_code,
+    $apiurl,
+    (bool)$codesandbox->is_gradable
 ));
 
 echo $OUTPUT->header();

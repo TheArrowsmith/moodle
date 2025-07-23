@@ -167,7 +167,6 @@ function theme_boost_before_standard_html_head() {
     
     // Add Prism CSS
     $prismcss = new moodle_url('/theme/boost/javascript/prism/prism.css');
-    $customcss = new moodle_url('/theme/boost/javascript/prism/prism-custom.css');
     
     $html = '';
     
@@ -176,7 +175,11 @@ function theme_boost_before_standard_html_head() {
         $PAGE->requires->css($prismcss);
     }
     
-    $PAGE->requires->css($customcss);
+    // Only include custom CSS if it exists
+    if (file_exists($PAGE->theme->dir . '/javascript/prism/prism-custom.css')) {
+        $customcss = new moodle_url('/theme/boost/javascript/prism/prism-custom.css');
+        $PAGE->requires->css($customcss);
+    }
     
     return $html;
 }
@@ -198,6 +201,57 @@ function theme_boost_before_footer() {
         $PAGE->requires->js_init_code('
             document.addEventListener("DOMContentLoaded", function() {
                 if (typeof Prism !== "undefined") {
+                    // Function to process code blocks and add language classes
+                    function processCodeBlocks() {
+                        // Find all pre > code blocks without language class
+                        var codeBlocks = document.querySelectorAll("pre > code:not([class*=\"language-\"])");
+                        codeBlocks.forEach(function(block) {
+                            var content = block.textContent || block.innerText;
+                            var detectedLang = "";
+                            
+                            // Simple language detection based on content
+                            if (content.match(/\bdef\s+\w+\s*\(|import\s+\w+|print\s*\(/)) {
+                                detectedLang = "python";
+                            } else if (content.match(/\bfunction\s+\w+\s*\(|console\.log|var\s+\w+|let\s+\w+|const\s+\w+/)) {
+                                detectedLang = "javascript";
+                            } else if (content.match(/<\?php|\$\w+|echo\s+|class\s+\w+/)) {
+                                detectedLang = "php";
+                            } else if (content.match(/SELECT\s+|FROM\s+|WHERE\s+|INSERT\s+INTO/i)) {
+                                detectedLang = "sql";
+                            } else if (content.match(/public\s+class|private\s+\w+|System\.out\.println/)) {
+                                detectedLang = "java";
+                            } else if (content.match(/#include|int\s+main|printf\s*\(/)) {
+                                detectedLang = "c";
+                            }
+                            
+                            // Add the language class
+                            if (detectedLang) {
+                                block.className = "language-" + detectedLang;
+                            } else {
+                                block.className = "language-none";
+                            }
+                        });
+                        
+                        // Also process code blocks that might have language info in text
+                        var preBlocks = document.querySelectorAll("pre");
+                        preBlocks.forEach(function(pre) {
+                            // Check if there is a language hint before the pre block
+                            var prevText = pre.previousSibling;
+                            if (prevText && prevText.nodeType === 3) {
+                                var match = prevText.textContent.match(/```(\w+)\s*$/);
+                                if (match) {
+                                    var code = pre.querySelector("code");
+                                    if (code && !code.className) {
+                                        code.className = "language-" + match[1];
+                                    }
+                                }
+                            }
+                        });
+                    }
+                    
+                    // Process code blocks first
+                    processCodeBlocks();
+                    
                     // Auto-highlight on page load
                     Prism.highlightAll();
                     
@@ -208,6 +262,7 @@ function theme_boost_before_footer() {
                             originalJsComplete.apply(this, arguments);
                             // Small delay to ensure DOM is updated
                             setTimeout(function() {
+                                processCodeBlocks();
                                 Prism.highlightAll();
                             }, 100);
                         };
@@ -216,6 +271,7 @@ function theme_boost_before_footer() {
                     // Re-highlight when forum posts are loaded via AJAX
                     if (typeof Y !== "undefined") {
                         Y.on("contentchange", function() {
+                            processCodeBlocks();
                             Prism.highlightAll();
                         }, document.body);
                     }

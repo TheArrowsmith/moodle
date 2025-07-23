@@ -11,6 +11,8 @@ import tempfile
 import os
 import asyncio
 import logging
+import json
+import shutil
 from typing import Optional, List
 
 # Configure logging
@@ -56,11 +58,26 @@ class GradeResponse(BaseModel):
 
 # Initialize Docker client
 try:
+    # Check if DOCKER_HOST is set
+    docker_host = os.environ.get('DOCKER_HOST', 'unix:///var/run/docker.sock')
+    logger.info(f"Attempting to connect to Docker at: {docker_host}")
+    
+    # Use from_env which respects environment variables
     docker_client = docker.from_env()
-    logger.info("Docker client initialized successfully")
+    
+    # Test the connection
+    version = docker_client.version()
+    logger.info(f"Docker client initialized successfully. Docker version: {version}")
 except Exception as e:
     logger.error(f"Failed to initialize Docker client: {e}")
-    docker_client = None
+    # Try alternative connection method
+    try:
+        docker_client = docker.DockerClient(base_url='unix:///var/run/docker.sock')
+        version = docker_client.version()
+        logger.info(f"Docker client initialized with fallback method. Docker version: {version}")
+    except Exception as e2:
+        logger.error(f"Fallback connection also failed: {e2}")
+        docker_client = None
 
 @app.get("/")
 async def root():
@@ -74,22 +91,31 @@ async def execute_code(request: CodeRequest):
     if not docker_client:
         raise HTTPException(status_code=503, detail="Docker service unavailable")
     
-    # Create temporary file
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as f:
+    # Create temporary directory and file in a known location
+    import uuid
+    temp_id = str(uuid.uuid4())
+    # Use absolute path on host system
+    base_dir = os.path.abspath("/app/temp")
+    temp_dir = os.path.join(base_dir, temp_id)
+    os.makedirs(temp_dir, exist_ok=True)
+    temp_file = os.path.join(temp_dir, 'script.py')
+    with open(temp_file, 'w') as f:
         f.write(request.code)
-        temp_file = f.name
+    
+    # Map to absolute path on host
+    host_temp_dir = os.path.join("/Users/george/gauntlet/w6/moodle-3/codesandbox-api/temp", temp_id)
     
     try:
         # Prepare Docker command
         container = docker_client.containers.run(
             "python:3.8-slim",
-            f"python /code/{os.path.basename(temp_file)}",
-            volumes={os.path.dirname(temp_file): {'bind': '/code', 'mode': 'ro'}},
+            ["python", "/code/script.py"],
+            volumes={host_temp_dir: {'bind': '/code', 'mode': 'ro'}},
             working_dir="/code",
             mem_limit="128m",
             nano_cpus=1000000000,  # 1 CPU
             network_mode="none",  # No network access
-            remove=True,
+            remove=False,  # Don't auto-remove, we'll do it manually
             stdout=True,
             stderr=True,
             detach=True
@@ -113,9 +139,16 @@ async def execute_code(request: CodeRequest):
                 else:
                     stdout = output
             
+            # Clean up container
+            try:
+                container.remove()
+            except:
+                pass
+                
             return CodeResponse(stdout=stdout, stderr=stderr)
             
         except Exception as timeout_error:
+            logger.warning(f"Container timeout: {timeout_error}")
             try:
                 container.stop()
                 container.remove()
@@ -140,9 +173,9 @@ async def execute_code(request: CodeRequest):
         raise HTTPException(status_code=500, detail=str(e))
         
     finally:
-        # Clean up temp file
+        # Clean up temp directory
         try:
-            os.unlink(temp_file)
+            shutil.rmtree(temp_dir)
         except:
             pass
 
@@ -153,8 +186,14 @@ async def grade_code(request: GradeRequest):
     if not docker_client:
         raise HTTPException(status_code=503, detail="Docker service unavailable")
     
-    # Create temp directory for files
-    with tempfile.TemporaryDirectory() as temp_dir:
+    # Create temp directory for files in a known location
+    import uuid
+    temp_id = str(uuid.uuid4())
+    base_dir = os.path.abspath("/app/temp")
+    temp_dir = os.path.join(base_dir, temp_id)
+    os.makedirs(temp_dir, exist_ok=True)
+    
+    try:
         # Write student code
         student_file = os.path.join(temp_dir, "solution.py")
         with open(student_file, 'w') as f:
@@ -236,17 +275,20 @@ output = {
 print(json.dumps(output))
 ''')
         
+        # Map to absolute path on host
+        host_temp_dir = os.path.join("/Users/george/gauntlet/w6/moodle-3/codesandbox-api/temp", temp_id)
+        
         try:
             # Run test runner in container
             container = docker_client.containers.run(
                 "python:3.8-slim",
-                "python /code/runner.py",
-                volumes={temp_dir: {'bind': '/code', 'mode': 'ro'}},
+                ["python", "/code/runner.py"],
+                volumes={host_temp_dir: {'bind': '/code', 'mode': 'ro'}},
                 working_dir="/code",
                 mem_limit="256m",
                 nano_cpus=1000000000,  # 1 CPU
                 network_mode="none",
-                remove=True,
+                remove=False,  # Don't auto-remove, we'll do it manually
                 stdout=True,
                 stderr=True,
                 detach=True
@@ -273,6 +315,11 @@ print(json.dumps(output))
                         continue
                 
                 if json_output:
+                    # Clean up container
+                    try:
+                        container.remove()
+                    except:
+                        pass
                     return GradeResponse(**json_output)
                 else:
                     # Fallback if JSON parsing fails
@@ -320,6 +367,13 @@ print(json.dumps(output))
         except Exception as e:
             logger.error(f"Grading error: {e}")
             raise HTTPException(status_code=500, detail=str(e))
+            
+    finally:
+        # Clean up temp directory
+        try:
+            shutil.rmtree(temp_dir)
+        except:
+            pass
 
 if __name__ == "__main__":
     import uvicorn
