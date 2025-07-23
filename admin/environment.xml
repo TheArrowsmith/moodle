@@ -2097,7 +2097,6 @@
       <VENDOR name="oracle" version="10.2" />
     </DATABASE>
     <PHP version="7.0.0" level="required">
-      <RESTRICT function="restrict_php_version_73" message="unsupportedphpversion73" />
     </PHP>
     <PCREUNICODE level="optional">
       <FEEDBACK>
@@ -2274,7 +2273,6 @@
       <VENDOR name="oracle" version="10.2" />
     </DATABASE>
     <PHP version="7.0.0" level="required">
-      <RESTRICT function="restrict_php_version_73" message="unsupportedphpversion73" />
     </PHP>
     <PCREUNICODE level="optional">
       <FEEDBACK>
@@ -2451,7 +2449,6 @@
       <VENDOR name="oracle" version="11.2" />
     </DATABASE>
     <PHP version="7.0.0" level="required">
-      <RESTRICT function="restrict_php_version_74" message="unsupportedphpversion74" />
     </PHP>
     <PCREUNICODE level="optional">
       <FEEDBACK>
@@ -2633,7 +2630,7 @@
       <VENDOR name="oracle" version="11.2" />
     </DATABASE>
     <PHP version="7.1.0" level="required">
-      <RESTRICT function="restrict_php_version_74" message="unsupportedphpversion74" />
+      <RESTRICT function="restrict_php_version_80" message="unsupportedphpversion80" />
     </PHP>
     <PCREUNICODE level="optional">
       <FEEDBACK>
