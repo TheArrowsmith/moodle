@@ -1,0 +1,28 @@
+source 'https://rubygems.org'
+
+# Testing framework
+gem 'rspec', '~> 3.12'
+
+# HTTP client
+gem 'httparty', '~> 0.21'
+
+# JWT handling
+gem 'jwt', '~> 2.7'
+
+# Environment variable management
+gem 'dotenv', '~> 2.8'
+
+# Test data generation
+gem 'faker', '~> 3.2'
+
+# Retry flaky tests
+gem 'rspec-retry', '~> 0.6'
+
+# Better test output formatting
+gem 'rspec_junit_formatter', '~> 0.6'
+
+# Colorized output
+gem 'colorize', '~> 0.8'
+
+# JSON validation
+gem 'json-schema', '~> 4.0'
