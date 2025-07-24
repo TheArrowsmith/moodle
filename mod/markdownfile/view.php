@@ -106,7 +106,26 @@ if (!empty($content)) {
     if ($markdownfile->display == 0 || $markdownfile->display == 1) {
         // Auto or embed - display the content
         echo $OUTPUT->box_start('generalbox center clearfix');
-        echo $html;
+        
+        // Check if modern frontend is available and enabled
+        if (file_exists(__DIR__ . '/../../lib/react_helper.php')) {
+            require_once(__DIR__ . '/../../lib/react_helper.php');
+            
+            // Create unique element ID for this instance
+            $elementId = 'markdown-content-' . $markdownfile->id;
+            
+            // Render with React enhancement
+            render_react_component('MarkdownRenderer', $elementId, [
+                'htmlContent' => $html,
+                'theme' => 'github' // Could be made configurable
+            ], [
+                'class' => 'enhanced-markdown-content'
+            ]);
+        } else {
+            // Fallback to standard HTML output
+            echo $html;
+        }
+        
         echo $OUTPUT->box_end();
     } else if ($markdownfile->display == 2) {
         // Download only - provide download link

@@ -1,0 +1,67 @@
+.markdownContent {
+  /* Base styling for enhanced markdown content */
+}
+
+.codeBlockWrapper {
+  position: relative;
+  margin: 1rem 0;
+}
+
+.codeBlockWrapper pre {
+  margin: 0;
+  border-radius: 8px;
+  overflow-x: auto;
+  background: #f6f8fa;
+  border: 1px solid #e1e4e8;
+}
+
+.copyButton {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid #e1e4e8;
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 10;
+}
+
+.copyButton:hover {
+  background: white;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.codeBlockWrapper:hover .copyButton {
+  opacity: 1;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .copyButton {
+    position: static;
+    display: block;
+    margin: 8px 0;
+    width: 100%;
+  }
+  
+  .codeBlockWrapper pre {
+    border-radius: 8px 8px 0 0;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .codeBlockWrapper pre {
+    background: #0d1117;
+    border-color: #30363d;
+  }
+  
+  .copyButton {
+    background: rgba(0, 0, 0, 0.9);
+    color: white;
+    border-color: #30363d;
+  }
+}
