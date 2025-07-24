@@ -1028,8 +1028,10 @@ abstract class format_section_renderer_base extends plugin_renderer_base {
             $context->id, 'course', 'section', $section->id);
 
         $options = new stdClass();
-        $options->noclean = true;
+        // Security fix: Remove noclean option to prevent XSS attacks
+        // $options->noclean = true;  // REMOVED: This allowed script injection
         $options->overflowdiv = true;
+        $options->context = $context;
         return format_text($summarytext, $section->summaryformat, $options);
     }
 }

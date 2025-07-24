@@ -1937,7 +1937,8 @@ class core_course_renderer extends plugin_renderer_base {
         $output .= html_writer::start_tag('div', array('class' => 'content'));
         $output .= html_writer::start_tag('div', array('class' => 'summary'));
         $options = new stdClass();
-        $options->noclean = true;
+        // Security fix: Remove noclean option to prevent XSS attacks
+        // $options->noclean = true;  // REMOVED: This allowed script injection
         $options->para = false;
         $options->overflowdiv = true;
         $output .= format_text($course->summary, $course->summaryformat, $options);
