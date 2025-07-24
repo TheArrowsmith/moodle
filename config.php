@@ -31,8 +31,8 @@ $CFG->admin     = 'admin';
 $CFG->directorypermissions = 0777;
 
 // Enable debugging
-// $CFG->debug = 32767; // E_ALL
-// $CFG->debugdisplay = 1;
+$CFG->debug = 32767; // E_ALL
+$CFG->debugdisplay = 1;
 
 // Custom file types - Add support for markdown files
 $CFG->customfiletypes = array(
