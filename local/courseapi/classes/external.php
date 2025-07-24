@@ -37,6 +37,8 @@ use external_single_structure;
 use external_multiple_structure;
 use context_course;
 use context_module;
+use context_coursecat;
+use completion_info;
 use stdClass;
 use moodle_exception;
 
@@ -801,6 +803,482 @@ class external extends external_api {
             'username' => new external_value(PARAM_TEXT, 'Username'),
             'firstname' => new external_value(PARAM_TEXT, 'First name'),
             'lastname' => new external_value(PARAM_TEXT, 'Last name')
+        ]);
+    }
+    
+    /**
+     * Returns description of create_course parameters
+     *
+     * @return external_function_parameters
+     */
+    public static function create_course_parameters() {
+        return new external_function_parameters([
+            'fullname' => new external_value(PARAM_TEXT, 'Course full name'),
+            'shortname' => new external_value(PARAM_TEXT, 'Course short name (unique identifier)'),
+            'category' => new external_value(PARAM_INT, 'Category ID'),
+            'summary' => new external_value(PARAM_RAW, 'Course summary', VALUE_DEFAULT, ''),
+            'format' => new external_value(PARAM_TEXT, 'Course format', VALUE_DEFAULT, 'topics'),
+            'numsections' => new external_value(PARAM_INT, 'Number of sections', VALUE_DEFAULT, 10),
+            'startdate' => new external_value(PARAM_INT, 'Course start date', VALUE_DEFAULT, 0),
+            'enddate' => new external_value(PARAM_INT, 'Course end date', VALUE_DEFAULT, 0),
+            'visible' => new external_value(PARAM_BOOL, 'Course visibility', VALUE_DEFAULT, true),
+            'options' => new external_single_structure([
+                'showgrades' => new external_value(PARAM_BOOL, 'Show gradebook to students', VALUE_OPTIONAL),
+                'showreports' => new external_value(PARAM_BOOL, 'Show activity reports', VALUE_OPTIONAL),
+                'maxbytes' => new external_value(PARAM_INT, 'Maximum upload size in bytes', VALUE_OPTIONAL),
+                'enablecompletion' => new external_value(PARAM_BOOL, 'Enable completion tracking', VALUE_OPTIONAL),
+                'lang' => new external_value(PARAM_LANG, 'Force course language', VALUE_OPTIONAL)
+            ], 'Additional course options', VALUE_DEFAULT, [])
+        ]);
+    }
+    
+    /**
+     * Create a new course
+     *
+     * @param string $fullname Course full name
+     * @param string $shortname Course short name
+     * @param int $category Category ID
+     * @param string $summary Course summary
+     * @param string $format Course format
+     * @param int $numsections Number of sections
+     * @param int $startdate Course start date
+     * @param int $enddate Course end date
+     * @param bool $visible Course visibility
+     * @param array $options Additional options
+     * @return array
+     */
+    public static function create_course($fullname, $shortname, $category, $summary = '', $format = 'topics', 
+                                       $numsections = 10, $startdate = 0, $enddate = 0, $visible = true, $options = []) {
+        global $CFG, $DB;
+        require_once($CFG->dirroot . '/course/lib.php');
+        
+        // Parameter validation
+        $params = self::validate_parameters(self::create_course_parameters(), [
+            'fullname' => $fullname,
+            'shortname' => $shortname,
+            'category' => $category,
+            'summary' => $summary,
+            'format' => $format,
+            'numsections' => $numsections,
+            'startdate' => $startdate,
+            'enddate' => $enddate,
+            'visible' => $visible,
+            'options' => $options
+        ]);
+        
+        // Context and capability checks
+        $context = context_coursecat::instance($params['category']);
+        self::validate_context($context);
+        require_capability('moodle/course:create', $context);
+        
+        // Check if category exists
+        if (!$DB->record_exists('course_categories', ['id' => $params['category']])) {
+            throw new moodle_exception('invalidcategoryid', 'error', '', null, "Category with id {$params['category']} not found");
+        }
+        
+        // Check if shortname is unique
+        if ($DB->record_exists('course', ['shortname' => $params['shortname']])) {
+            throw new moodle_exception('shortnametaken', 'error', '', null, "A course with shortname '{$params['shortname']}' already exists");
+        }
+        
+        // Prepare course data
+        $coursedata = new stdClass();
+        $coursedata->fullname = $params['fullname'];
+        $coursedata->shortname = $params['shortname'];
+        $coursedata->category = $params['category'];
+        $coursedata->summary = $params['summary'];
+        $coursedata->summaryformat = FORMAT_HTML;
+        $coursedata->format = $params['format'];
+        $coursedata->numsections = $params['numsections'];
+        $coursedata->startdate = $params['startdate'] ?: time();
+        $coursedata->enddate = $params['enddate'];
+        $coursedata->visible = $params['visible'] ? 1 : 0;
+        
+        // Apply additional options
+        if (!empty($params['options'])) {
+            if (isset($params['options']['showgrades'])) {
+                $coursedata->showgrades = $params['options']['showgrades'] ? 1 : 0;
+            }
+            if (isset($params['options']['showreports'])) {
+                $coursedata->showreports = $params['options']['showreports'] ? 1 : 0;
+            }
+            if (isset($params['options']['maxbytes'])) {
+                $coursedata->maxbytes = $params['options']['maxbytes'];
+            }
+            if (isset($params['options']['enablecompletion'])) {
+                $coursedata->enablecompletion = $params['options']['enablecompletion'] ? 1 : 0;
+            }
+            if (isset($params['options']['lang'])) {
+                $coursedata->lang = $params['options']['lang'];
+            }
+        }
+        
+        // Create the course
+        $course = create_course($coursedata);
+        
+        // Build response
+        return [
+            'id' => (int)$course->id,
+            'shortname' => $course->shortname,
+            'fullname' => $course->fullname,
+            'displayname' => $course->fullname,
+            'category' => (int)$course->category,
+            'visible' => (bool)$course->visible,
+            'format' => $course->format,
+            'startdate' => (int)$course->startdate,
+            'enddate' => (int)$course->enddate,
+            'url' => (new \moodle_url('/course/view.php', ['id' => $course->id]))->out(false)
+        ];
+    }
+    
+    /**
+     * Returns description of create_course return value
+     *
+     * @return external_single_structure
+     */
+    public static function create_course_returns() {
+        return new external_single_structure([
+            'id' => new external_value(PARAM_INT, 'Course ID'),
+            'shortname' => new external_value(PARAM_TEXT, 'Course short name'),
+            'fullname' => new external_value(PARAM_TEXT, 'Course full name'),
+            'displayname' => new external_value(PARAM_TEXT, 'Course display name'),
+            'category' => new external_value(PARAM_INT, 'Category ID'),
+            'visible' => new external_value(PARAM_BOOL, 'Course visibility'),
+            'format' => new external_value(PARAM_TEXT, 'Course format'),
+            'startdate' => new external_value(PARAM_INT, 'Course start date'),
+            'enddate' => new external_value(PARAM_INT, 'Course end date'),
+            'url' => new external_value(PARAM_URL, 'Course URL')
+        ]);
+    }
+    
+    /**
+     * Returns description of delete_course parameters
+     *
+     * @return external_function_parameters
+     */
+    public static function delete_course_parameters() {
+        return new external_function_parameters([
+            'courseid' => new external_value(PARAM_INT, 'Course ID'),
+            'async' => new external_value(PARAM_BOOL, 'Process deletion asynchronously', VALUE_DEFAULT, false),
+            'confirm' => new external_value(PARAM_BOOL, 'Skip confirmation check', VALUE_DEFAULT, false)
+        ]);
+    }
+    
+    /**
+     * Delete a course
+     *
+     * @param int $courseid Course ID
+     * @param bool $async Process asynchronously
+     * @param bool $confirm Skip confirmation
+     * @return array
+     */
+    public static function delete_course($courseid, $async = false, $confirm = false) {
+        global $CFG, $DB;
+        require_once($CFG->dirroot . '/course/lib.php');
+        
+        // Parameter validation
+        $params = self::validate_parameters(self::delete_course_parameters(), [
+            'courseid' => $courseid,
+            'async' => $async,
+            'confirm' => $confirm
+        ]);
+        
+        // Get course
+        $course = $DB->get_record('course', ['id' => $params['courseid']], '*', MUST_EXIST);
+        
+        // Context and capability checks
+        $context = context_course::instance($course->id);
+        self::validate_context($context);
+        require_capability('moodle/course:delete', $context);
+        
+        // Prevent deletion of site course
+        if ($course->id == SITEID) {
+            throw new moodle_exception('cannotdeletesiteourse', 'error');
+        }
+        
+        // Check for active enrollments if not confirmed
+        if (!$params['confirm']) {
+            $activeusers = count_enrolled_users($context, '', 0, true);
+            if ($activeusers > 0) {
+                throw new moodle_exception('coursehasusers', 'error', '', null, 
+                    json_encode([
+                        'error' => "Course has {$activeusers} active users. Set confirm=true to force deletion",
+                        'active_users' => $activeusers,
+                        'requires_confirmation' => true
+                    ]));
+            }
+        }
+        
+        // Delete the course
+        if ($params['async']) {
+            // For async deletion, we would typically queue this
+            // For now, we'll do synchronous deletion
+            delete_course($course->id, false);
+        } else {
+            delete_course($course->id, false);
+        }
+        
+        return [];
+    }
+    
+    /**
+     * Returns description of delete_course return value
+     *
+     * @return null
+     */
+    public static function delete_course_returns() {
+        return null;
+    }
+    
+    /**
+     * Returns description of get_course_details parameters
+     *
+     * @return external_function_parameters
+     */
+    public static function get_course_details_parameters() {
+        return new external_function_parameters([
+            'courseid' => new external_value(PARAM_INT, 'Course ID'),
+            'include' => new external_multiple_structure(
+                new external_value(PARAM_ALPHA, 'Data to include'),
+                'Additional data to include', VALUE_DEFAULT, []
+            ),
+            'userinfo' => new external_value(PARAM_BOOL, 'Include user enrollment info', VALUE_DEFAULT, true)
+        ]);
+    }
+    
+    /**
+     * Get course details
+     *
+     * @param int $courseid Course ID
+     * @param array $include Additional data to include
+     * @param bool $userinfo Include user enrollment info
+     * @return array
+     */
+    public static function get_course_details($courseid, $include = [], $userinfo = true) {
+        global $CFG, $DB, $USER;
+        require_once($CFG->dirroot . '/course/lib.php');
+        require_once($CFG->dirroot . '/lib/enrollib.php');
+        require_once($CFG->dirroot . '/lib/completionlib.php');
+        
+        // Parameter validation
+        $params = self::validate_parameters(self::get_course_details_parameters(), [
+            'courseid' => $courseid,
+            'include' => $include,
+            'userinfo' => $userinfo
+        ]);
+        
+        // Get course
+        $course = $DB->get_record('course', ['id' => $params['courseid']], '*', MUST_EXIST);
+        
+        // Context checks
+        $context = context_course::instance($course->id);
+        self::validate_context($context);
+        
+        // Check if user can view this course
+        if (!can_access_course($course)) {
+            require_capability('moodle/course:view', $context);
+        }
+        
+        // Get category info
+        $category = $DB->get_record('course_categories', ['id' => $course->category], '*', MUST_EXIST);
+        
+        // Count sections and activities
+        $sections = $DB->get_records('course_sections', ['course' => $course->id]);
+        $sectioncount = count($sections);
+        
+        $modinfo = get_fast_modinfo($course);
+        $activitycount = count($modinfo->get_cms());
+        
+        // Count enrollments
+        $enrollmentcount = count_enrolled_users($context);
+        
+        // Build base response
+        $response = [
+            'id' => (int)$course->id,
+            'shortname' => $course->shortname,
+            'fullname' => $course->fullname,
+            'displayname' => $course->fullname,
+            'summary' => format_text($course->summary, $course->summaryformat, ['context' => $context]),
+            'summaryformat' => (int)$course->summaryformat,
+            'format' => $course->format,
+            'startdate' => (int)$course->startdate,
+            'enddate' => (int)$course->enddate,
+            'visible' => (bool)$course->visible,
+            'category' => [
+                'id' => (int)$category->id,
+                'name' => $category->name,
+                'path' => $category->path
+            ],
+            'timecreated' => (int)$course->timecreated,
+            'timemodified' => (int)$course->timemodified,
+            'url' => (new \moodle_url('/course/view.php', ['id' => $course->id]))->out(false),
+            'enrollmentcount' => $enrollmentcount,
+            'sectioncount' => $sectioncount,
+            'activitycount' => $activitycount,
+            'completionenabled' => (bool)$course->enablecompletion
+        ];
+        
+        // Add user enrollment info if requested
+        if ($params['userinfo'] && !isguestuser()) {
+            $enrolled = is_enrolled($context, $USER->id, '', true);
+            $response['user_enrollment'] = [
+                'enrolled' => $enrolled
+            ];
+            
+            if ($enrolled) {
+                // Get user roles
+                $roles = get_user_roles($context, $USER->id);
+                $rolenames = [];
+                foreach ($roles as $role) {
+                    $rolenames[] = $role->shortname;
+                }
+                $response['user_enrollment']['roles'] = $rolenames;
+                
+                // Get enrollment time
+                $sql = "SELECT ue.timestart
+                        FROM {user_enrolments} ue
+                        JOIN {enrol} e ON e.id = ue.enrolid
+                        WHERE e.courseid = :courseid AND ue.userid = :userid
+                        ORDER BY ue.timestart ASC";
+                $timeenrolled = $DB->get_field_sql($sql, ['courseid' => $course->id, 'userid' => $USER->id]);
+                $response['user_enrollment']['timeenrolled'] = $timeenrolled ?: 0;
+                
+                // Get last access
+                $lastaccess = $DB->get_field('user_lastaccess', 'timeaccess', 
+                    ['courseid' => $course->id, 'userid' => $USER->id]);
+                $response['user_enrollment']['lastaccess'] = $lastaccess ?: 0;
+                
+                // Get completion progress if enabled
+                if ($course->enablecompletion) {
+                    $completion = new completion_info($course);
+                    $progressdata = $completion->get_progress_all();
+                    $progress = 0;
+                    if (isset($progressdata[$USER->id])) {
+                        $userdata = $progressdata[$USER->id];
+                        $total = count($userdata);
+                        $complete = 0;
+                        foreach ($userdata as $criteria) {
+                            if ($criteria->is_complete()) {
+                                $complete++;
+                            }
+                        }
+                        if ($total > 0) {
+                            $progress = round(($complete / $total) * 100);
+                        }
+                    }
+                    $response['user_enrollment']['progress'] = $progress;
+                }
+            }
+        }
+        
+        // Add optional includes
+        if (in_array('enrollmentmethods', $params['include'])) {
+            $enrolinstances = enrol_get_instances($course->id, true);
+            $methods = [];
+            foreach ($enrolinstances as $instance) {
+                $plugin = enrol_get_plugin($instance->enrol);
+                $method = [
+                    'type' => $instance->enrol,
+                    'enabled' => (bool)$instance->status == ENROL_INSTANCE_ENABLED,
+                    'name' => $plugin->get_instance_name($instance)
+                ];
+                
+                if ($instance->enrol == 'self') {
+                    $method['password_required'] = !empty($instance->password);
+                    // Don't expose actual password
+                    $method['enrollment_key'] = '';
+                }
+                
+                $methods[] = $method;
+            }
+            $response['enrollment_methods'] = $methods;
+        }
+        
+        if (in_array('completion', $params['include']) && $course->enablecompletion) {
+            $completion = new completion_info($course);
+            $criteria = $completion->get_criteria();
+            
+            $completiondata = [
+                'enabled' => true,
+                'criteria_count' => count($criteria)
+            ];
+            
+            if (!isguestuser() && is_enrolled($context, $USER->id)) {
+                $progressdata = $completion->get_progress_all();
+                if (isset($progressdata[$USER->id])) {
+                    $userdata = $progressdata[$USER->id];
+                    $complete = 0;
+                    foreach ($userdata as $criteria) {
+                        if ($criteria->is_complete()) {
+                            $complete++;
+                        }
+                    }
+                    $completiondata['user_completed'] = $complete;
+                    $completiondata['user_completion_percentage'] = count($criteria) > 0 ? 
+                        round(($complete / count($criteria)) * 100) : 0;
+                }
+            }
+            
+            $response['completion'] = $completiondata;
+        }
+        
+        return $response;
+    }
+    
+    /**
+     * Returns description of get_course_details return value
+     *
+     * @return external_single_structure
+     */
+    public static function get_course_details_returns() {
+        return new external_single_structure([
+            'id' => new external_value(PARAM_INT, 'Course ID'),
+            'shortname' => new external_value(PARAM_TEXT, 'Course short name'),
+            'fullname' => new external_value(PARAM_TEXT, 'Course full name'),
+            'displayname' => new external_value(PARAM_TEXT, 'Course display name'),
+            'summary' => new external_value(PARAM_RAW, 'Course summary'),
+            'summaryformat' => new external_value(PARAM_INT, 'Summary format'),
+            'format' => new external_value(PARAM_TEXT, 'Course format'),
+            'startdate' => new external_value(PARAM_INT, 'Course start date'),
+            'enddate' => new external_value(PARAM_INT, 'Course end date'),
+            'visible' => new external_value(PARAM_BOOL, 'Course visibility'),
+            'category' => new external_single_structure([
+                'id' => new external_value(PARAM_INT, 'Category ID'),
+                'name' => new external_value(PARAM_TEXT, 'Category name'),
+                'path' => new external_value(PARAM_TEXT, 'Category path')
+            ]),
+            'timecreated' => new external_value(PARAM_INT, 'Time created'),
+            'timemodified' => new external_value(PARAM_INT, 'Time modified'),
+            'url' => new external_value(PARAM_URL, 'Course URL'),
+            'enrollmentcount' => new external_value(PARAM_INT, 'Number of enrolled users'),
+            'sectioncount' => new external_value(PARAM_INT, 'Number of sections'),
+            'activitycount' => new external_value(PARAM_INT, 'Number of activities'),
+            'completionenabled' => new external_value(PARAM_BOOL, 'Completion tracking enabled'),
+            'user_enrollment' => new external_single_structure([
+                'enrolled' => new external_value(PARAM_BOOL, 'User is enrolled'),
+                'roles' => new external_multiple_structure(
+                    new external_value(PARAM_TEXT, 'Role shortname'),
+                    'User roles', VALUE_OPTIONAL
+                ),
+                'timeenrolled' => new external_value(PARAM_INT, 'Enrollment timestamp', VALUE_OPTIONAL),
+                'progress' => new external_value(PARAM_INT, 'Completion percentage', VALUE_OPTIONAL),
+                'lastaccess' => new external_value(PARAM_INT, 'Last access timestamp', VALUE_OPTIONAL)
+            ], 'User enrollment info', VALUE_OPTIONAL),
+            'enrollment_methods' => new external_multiple_structure(
+                new external_single_structure([
+                    'type' => new external_value(PARAM_TEXT, 'Enrollment method type'),
+                    'enabled' => new external_value(PARAM_BOOL, 'Method is enabled'),
+                    'name' => new external_value(PARAM_TEXT, 'Method display name'),
+                    'password_required' => new external_value(PARAM_BOOL, 'Password required', VALUE_OPTIONAL),
+                    'enrollment_key' => new external_value(PARAM_TEXT, 'Enrollment key', VALUE_OPTIONAL)
+                ]), 'Available enrollment methods', VALUE_OPTIONAL
+            ),
+            'completion' => new external_single_structure([
+                'enabled' => new external_value(PARAM_BOOL, 'Completion enabled'),
+                'criteria_count' => new external_value(PARAM_INT, 'Number of completion criteria'),
+                'user_completed' => new external_value(PARAM_INT, 'Criteria completed by user', VALUE_OPTIONAL),
+                'user_completion_percentage' => new external_value(PARAM_INT, 'User completion percentage', VALUE_OPTIONAL)
+            ], 'Completion info', VALUE_OPTIONAL)
         ]);
     }
 }

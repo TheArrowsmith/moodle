@@ -148,6 +148,17 @@ try {
                 $result = external::get_user_info();
                 send_response($result);
                 
+            } else if (preg_match('/^course\/(\d+)$/', $path, $matches)) {
+                // GET /course/{id}
+                $courseid = (int)$matches[1];
+                
+                // Parse query parameters
+                $include = isset($_GET['include']) ? explode(',', $_GET['include']) : [];
+                $userinfo = isset($_GET['userinfo']) ? filter_var($_GET['userinfo'], FILTER_VALIDATE_BOOLEAN) : true;
+                
+                $result = external::get_course_details($courseid, $include, $userinfo);
+                send_response($result);
+                
             } else {
                 send_error('Endpoint not found', 404);
             }
@@ -237,6 +248,26 @@ try {
                     send_error('Invalid username or password', 401);
                 }
                 
+            } else if ($path === 'course') {
+                // POST /course
+                $fullname = $input['fullname'] ?? null;
+                $shortname = $input['shortname'] ?? null;
+                $category = $input['category'] ?? null;
+                $summary = $input['summary'] ?? '';
+                $format = $input['format'] ?? 'topics';
+                $numsections = $input['numsections'] ?? 10;
+                $startdate = $input['startdate'] ?? time();
+                $enddate = $input['enddate'] ?? 0;
+                $visible = $input['visible'] ?? true;
+                $options = $input['options'] ?? [];
+                
+                if (!$fullname || !$shortname || !$category) {
+                    send_error('Missing required field: ' . (!$fullname ? 'fullname' : (!$shortname ? 'shortname' : 'category')), 422);
+                }
+                
+                $result = external::create_course($fullname, $shortname, $category, $summary, $format, $numsections, $startdate, $enddate, $visible, $options);
+                send_response($result, 201);
+                
             } else {
                 send_error('Endpoint not found', 404);
             }
@@ -248,6 +279,17 @@ try {
                 $activityid = (int)$matches[1];
                 
                 external::delete_activity($activityid);
+                send_response(null, 204);
+                
+            } else if (preg_match('/^course\/(\d+)$/', $path, $matches)) {
+                // DELETE /course/{id}
+                $courseid = (int)$matches[1];
+                
+                // Parse query parameters
+                $async = isset($_GET['async']) ? filter_var($_GET['async'], FILTER_VALIDATE_BOOLEAN) : false;
+                $confirm = isset($_GET['confirm']) ? filter_var($_GET['confirm'], FILTER_VALIDATE_BOOLEAN) : false;
+                
+                external::delete_course($courseid, $async, $confirm);
                 send_response(null, 204);
                 
             } else {
