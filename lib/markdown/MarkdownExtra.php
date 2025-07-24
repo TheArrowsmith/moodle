@@ -559,7 +559,7 @@ class MarkdownExtra extends \Michelf\Markdown {
 			{
 				// Increase/decrease nested tag count.
 				if ($tag[1] == '/')						$depth--;
-				else if ($tag{strlen($tag)-2} != '/')	$depth++;
+				else if ($tag[strlen($tag)-2] != '/')	$depth++;
 
 				if ($depth < 0) {
 					// Going out of parent element. Clean up and break so we
@@ -678,7 +678,7 @@ class MarkdownExtra extends \Michelf\Markdown {
 				// the tag's name match base tag's.
 				if (preg_match('{^</?' . $base_tag_name_re . '\b}', $tag)) {
 					if ($tag[1] == '/')						$depth--;
-					else if ($tag{strlen($tag)-2} != '/')	$depth++;
+					else if ($tag[strlen($tag)-2] != '/')	$depth++;
 				}
 				
 				// Check for `markdown="1"` attribute and handle it.
