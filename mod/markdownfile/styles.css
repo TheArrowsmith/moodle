@@ -1,0 +1,37 @@
+/**
+ * Styles for the markdownfile module
+ */
+
+/* Prevent flash during page load */
+.path-mod-markdownfile .generalbox {
+    background-color: #fff !important;
+}
+
+/* Style for code copy buttons */
+.code-copy-button {
+    transition: opacity 0.2s ease;
+    opacity: 0.7;
+}
+
+.code-copy-button:hover {
+    opacity: 1;
+}
+
+/* Ensure code blocks have proper styling */
+.path-mod-markdownfile pre {
+    position: relative;
+    margin: 1em 0;
+}
+
+.path-mod-markdownfile pre code {
+    display: block;
+    padding: 1em;
+    overflow-x: auto;
+}
+
+/* Hide copy button on print */
+@media print {
+    .code-copy-button {
+        display: none !important;
+    }
+}

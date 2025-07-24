@@ -66,6 +66,50 @@ $PAGE->set_title(format_string($markdownfile->name));
 $PAGE->set_heading(format_string($course->fullname));
 $PAGE->set_context($context);
 
+// Add module CSS
+$PAGE->requires->css('/mod/markdownfile/styles.css');
+
+// Add highlight.js requirements before header output
+$PAGE->requires->css(new moodle_url('https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css'));
+$PAGE->requires->js(new moodle_url('https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js'), true);
+
+
+// Initialize highlight.js and add copy buttons
+$PAGE->requires->js_init_code('
+    document.addEventListener("DOMContentLoaded", function() {
+        // Apply syntax highlighting to all code blocks
+        document.querySelectorAll("pre code").forEach((block) => {
+            hljs.highlightElement(block);
+            
+            // Create wrapper div for proper positioning
+            const pre = block.parentElement;
+            const wrapper = document.createElement("div");
+            wrapper.style.position = "relative";
+            pre.parentNode.insertBefore(wrapper, pre);
+            wrapper.appendChild(pre);
+            
+            // Add copy button
+            const button = document.createElement("button");
+            button.textContent = "Copy";
+            button.className = "code-copy-button";
+            button.style.cssText = "position: absolute; top: 8px; right: 8px; padding: 4px 8px; background: rgba(255, 255, 255, 0.9); border: 1px solid #e1e4e8; border-radius: 4px; cursor: pointer; font-size: 12px; z-index: 10;";
+            
+            button.onclick = function() {
+                navigator.clipboard.writeText(block.textContent).then(() => {
+                    button.textContent = "✅ Copied!";
+                    setTimeout(() => button.textContent = "Copy", 2000);
+                }).catch(err => {
+                    console.error("Failed to copy:", err);
+                    button.textContent = "❌ Failed";
+                    setTimeout(() => button.textContent = "Copy", 2000);
+                });
+            };
+            
+            wrapper.appendChild(button);
+        });
+    });
+');
+
 // Output starts here
 echo $OUTPUT->header();
 
@@ -107,24 +151,8 @@ if (!empty($content)) {
         // Auto or embed - display the content
         echo $OUTPUT->box_start('generalbox center clearfix');
         
-        // Check if modern frontend is available and enabled
-        if (file_exists(__DIR__ . '/../../lib/react_helper.php')) {
-            require_once(__DIR__ . '/../../lib/react_helper.php');
-            
-            // Create unique element ID for this instance
-            $elementId = 'markdown-content-' . $markdownfile->id;
-            
-            // Render with React enhancement
-            render_react_component('MarkdownRenderer', $elementId, [
-                'htmlContent' => $html,
-                'theme' => 'github' // Could be made configurable
-            ], [
-                'class' => 'enhanced-markdown-content'
-            ]);
-        } else {
-            // Fallback to standard HTML output
-            echo $html;
-        }
+        // Output the HTML content
+        echo $html;
         
         echo $OUTPUT->box_end();
     } else if ($markdownfile->display == 2) {

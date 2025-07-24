@@ -1,13 +1,11 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import HelloMoodle from './HelloMoodle'
-import MarkdownRenderer from './MarkdownRenderer'
 
 // Create global MoodleReact API
 window.MoodleReact = {
   components: {
-    HelloMoodle,
-    MarkdownRenderer
+    HelloMoodle
   },
   
   /**
