@@ -165,6 +165,23 @@ echo $OUTPUT->header();
 
 echo $OUTPUT->custom_block_region('content');
 
+// React component test integration
+require_once($CFG->libdir . '/react_helper.php');
+
+// Prepare props with real Moodle data
+$props = [
+    'userName' => fullname($USER),
+    'courseName' => get_string('myhome')
+];
+
+// Render the React component
+echo '<div class="container-fluid mt-3">';
+echo '<h2>React Integration Test</h2>';
+render_react_component('HelloMoodle', 'react-hello-moodle', $props, [
+    'class' => 'react-test-component'
+]);
+echo '</div>';
+
 echo $OUTPUT->footer();
 
 // Trigger dashboard has been viewed event.

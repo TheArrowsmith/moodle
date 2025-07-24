@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Moodle React Development</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: #f5f5f5;
+    }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    
+    .demo-section {
+      margin: 40px 0;
+    }
+    
+    .demo-section h2 {
+      margin-bottom: 20px;
+      color: #333;
+    }
+    
+    .controls {
+      margin-bottom: 20px;
+      padding: 20px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .controls button {
+      margin: 5px;
+      padding: 8px 16px;
+      border: none;
+      background: #0f6fc5;
+      color: white;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    
+    .controls button:hover {
+      background: #0e5a9d;
+    }
+    
+    #react-root {
+      margin-bottom: 20px;
+    }
+    
+    #react-root-2 {
+      margin-bottom: 20px;
+    }
+    
+    .code-example {
+      background: #2c3e50;
+      color: #ecf0f1;
+      padding: 20px;
+      border-radius: 8px;
+      overflow-x: auto;
+      margin-top: 20px;
+    }
+    
+    .code-example pre {
+      margin: 0;
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Moodle React Components Development</h1>
+    <p>Test and develop React components for Moodle integration</p>
+  </div>
+
+  <div class="demo-section">
+    <h2>Demo 1: Basic HelloMoodle Component</h2>
+    <div id="react-root"></div>
+  </div>
+
+  <div class="demo-section">
+    <h2>Demo 2: Dynamic Component with Controls</h2>
+    <div class="controls">
+      <button onclick="mountComponent()">Mount Component</button>
+      <button onclick="unmountComponent()">Unmount Component</button>
+      <button onclick="changeTheme()">Toggle Theme</button>
+      <button onclick="toggleTime()">Toggle Time Display</button>
+    </div>
+    <div id="react-root-2"></div>
+  </div>
+
+  <div class="demo-section">
+    <h2>Usage Example</h2>
+    <div class="code-example">
+      <pre>// Mount a React component in Moodle
+const root = MoodleReact.mount('HelloMoodle', '#my-element', {
+  userName: 'John Doe',
+  courseName: 'Introduction to Computer Science',
+  showTime: true,
+  theme: 'light'
+});
+
+// Unmount when done
+MoodleReact.unmount(root);</pre>
+    </div>
+  </div>
+
+  <script type="module">
+    // Wait for MoodleReact to be available
+    let root2 = null;
+    let currentTheme = 'light';
+    let showTime = true;
+    
+    // Mount first demo automatically
+    setTimeout(() => {
+      if (window.MoodleReact) {
+        window.MoodleReact.mount('HelloMoodle', '#react-root', {
+          userName: 'Demo User',
+          courseName: 'React Integration Course',
+          showTime: true,
+          theme: 'light'
+        });
+      }
+    }, 100);
+    
+    // Control functions for demo 2
+    window.mountComponent = function() {
+      if (window.MoodleReact && !root2) {
+        root2 = window.MoodleReact.mount('HelloMoodle', '#react-root-2', {
+          userName: 'Interactive User',
+          courseName: 'Advanced Moodle Development',
+          showTime: showTime,
+          theme: currentTheme
+        });
+      }
+    };
+    
+    window.unmountComponent = function() {
+      if (window.MoodleReact && root2) {
+        window.MoodleReact.unmount(root2);
+        root2 = null;
+      }
+    };
+    
+    window.changeTheme = function() {
+      currentTheme = currentTheme === 'light' ? 'dark' : 'light';
+      if (root2) {
+        unmountComponent();
+        mountComponent();
+      }
+    };
+    
+    window.toggleTime = function() {
+      showTime = !showTime;
+      if (root2) {
+        unmountComponent();
+        mountComponent();
+      }
+    };
+    
+    // Listen for Moodle events (simulated)
+    document.addEventListener('DOMContentLoaded', () => {
+      console.log('React development environment ready');
+      
+      // Simulate listening for Moodle events
+      if (window.require) {
+        try {
+          window.require(['core/pubsub'], function(PubSub) {
+            PubSub.subscribe('moodle-react/hello-clicked', function(data) {
+              console.log('React component clicked:', data);
+            });
+          });
+        } catch (e) {
+          console.log('Running in standalone mode (no Moodle AMD)');
+        }
+      }
+    });
+  </script>
+  
+  <script type="module" src="/src/main.jsx"></script>
+</body>
+</html>

@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moodle React Integration Test</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <link rel="stylesheet" href="../theme/boost/amd/src/react/style.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-container {
+            margin: 20px 0;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .status.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .component-mount {
+            margin: 20px 0;
+            min-height: 200px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Moodle React Integration Test</h1>
+    
+    <div class="test-container">
+        <h2>Test 1: Basic Component Mount</h2>
+        <div id="status-1" class="status"></div>
+        <div id="react-mount-1" class="component-mount"></div>
+    </div>
+    
+    <div class="test-container">
+        <h2>Test 2: Component with Props</h2>
+        <div id="status-2" class="status"></div>
+        <div id="react-mount-2" class="component-mount"></div>
+    </div>
+    
+    <div class="test-container">
+        <h2>Test 3: Dark Theme</h2>
+        <div id="status-3" class="status"></div>
+        <div id="react-mount-3" class="component-mount"></div>
+    </div>
+    
+    <div class="test-container">
+        <h2>Test 4: Multiple Instances</h2>
+        <div id="status-4" class="status"></div>
+        <div id="react-mount-4a" class="component-mount"></div>
+        <div id="react-mount-4b" class="component-mount"></div>
+    </div>
+    
+    <script src="../theme/boost/amd/src/react/moodle-react.umd.js"></script>
+    <script>
+        // Test results
+        const results = [];
+        
+        function updateStatus(testId, success, message) {
+            const statusEl = document.getElementById(`status-${testId}`);
+            statusEl.className = `status ${success ? 'success' : 'error'}`;
+            statusEl.textContent = message;
+            results.push({ test: testId, success, message });
+        }
+        
+        // Wait for React bundles to load
+        window.addEventListener('load', function() {
+            console.log('Running Moodle React Integration Tests...');
+            
+            // Test 1: Basic mount
+            try {
+                const root1 = window.MoodleReact.mount('HelloMoodle', '#react-mount-1');
+                if (root1) {
+                    updateStatus('1', true, '✓ Component mounted successfully');
+                } else {
+                    updateStatus('1', false, '✗ Failed to mount component');
+                }
+            } catch (e) {
+                updateStatus('1', false, `✗ Error: ${e.message}`);
+            }
+            
+            // Test 2: Mount with props
+            try {
+                const root2 = window.MoodleReact.mount('HelloMoodle', '#react-mount-2', {
+                    userName: 'Test User',
+                    courseName: 'Integration Testing 101',
+                    showTime: true,
+                    theme: 'light'
+                });
+                if (root2) {
+                    updateStatus('2', true, '✓ Component mounted with custom props');
+                } else {
+                    updateStatus('2', false, '✗ Failed to mount with props');
+                }
+            } catch (e) {
+                updateStatus('2', false, `✗ Error: ${e.message}`);
+            }
+            
+            // Test 3: Dark theme
+            try {
+                const root3 = window.MoodleReact.mount('HelloMoodle', '#react-mount-3', {
+                    userName: 'Dark Mode User',
+                    courseName: 'Theme Testing',
+                    showTime: false,
+                    theme: 'dark'
+                });
+                if (root3) {
+                    updateStatus('3', true, '✓ Dark theme component mounted');
+                } else {
+                    updateStatus('3', false, '✗ Failed to mount dark theme');
+                }
+            } catch (e) {
+                updateStatus('3', false, `✗ Error: ${e.message}`);
+            }
+            
+            // Test 4: Multiple instances
+            try {
+                const root4a = window.MoodleReact.mount('HelloMoodle', '#react-mount-4a', {
+                    userName: 'Instance A',
+                    courseName: 'Multi-Instance Test',
+                    showTime: true,
+                    theme: 'light'
+                });
+                const root4b = window.MoodleReact.mount('HelloMoodle', '#react-mount-4b', {
+                    userName: 'Instance B',
+                    courseName: 'Multi-Instance Test',
+                    showTime: false,
+                    theme: 'dark'
+                });
+                if (root4a && root4b) {
+                    updateStatus('4', true, '✓ Multiple instances mounted successfully');
+                } else {
+                    updateStatus('4', false, '✗ Failed to mount multiple instances');
+                }
+            } catch (e) {
+                updateStatus('4', false, `✗ Error: ${e.message}`);
+            }
+            
+            // Log summary
+            console.log('Test Results:', results);
+            const passed = results.filter(r => r.success).length;
+            const total = results.length;
+            console.log(`Tests Passed: ${passed}/${total}`);
+        });
+    </script>
+</body>
+</html>
