@@ -37,14 +37,14 @@ function codesandbox_add_instance($codesandbox) {
     $codesandbox->timemodified = time();
     
     // Process test suite file if uploaded
-    if ($codesandbox->is_gradable && !empty($codesandbox->testsuitefiles)) {
+    if (isset($codesandbox->is_gradable) && $codesandbox->is_gradable && !empty($codesandbox->testsuitefiles)) {
         $codesandbox->test_suite_path = $codesandbox->testsuitefiles;
     }
     
     $codesandbox->id = $DB->insert_record('codesandbox', $codesandbox);
     
     // Save test suite files if any
-    if ($codesandbox->is_gradable && !empty($codesandbox->testsuitefiles)) {
+    if (isset($codesandbox->is_gradable) && $codesandbox->is_gradable && !empty($codesandbox->testsuitefiles)) {
         $context = context_module::instance($codesandbox->coursemodule);
         file_save_draft_area_files($codesandbox->testsuitefiles, $context->id, 'mod_codesandbox', 
                                   'testsuite', 0, array('subdirs' => 0, 'maxfiles' => 1));
@@ -68,7 +68,7 @@ function codesandbox_update_instance($codesandbox) {
     $codesandbox->id = $codesandbox->instance;
     
     // Process test suite file if uploaded
-    if ($codesandbox->is_gradable && !empty($codesandbox->testsuitefiles)) {
+    if (isset($codesandbox->is_gradable) && $codesandbox->is_gradable && !empty($codesandbox->testsuitefiles)) {
         $context = context_module::instance($codesandbox->coursemodule);
         file_save_draft_area_files($codesandbox->testsuitefiles, $context->id, 'mod_codesandbox', 
                                   'testsuite', 0, array('subdirs' => 0, 'maxfiles' => 1));
@@ -119,7 +119,7 @@ function codesandbox_grade_item_update($codesandbox, $grades = null) {
     
     $params = array('itemname' => $codesandbox->name);
     
-    if ($codesandbox->is_gradable) {
+    if (isset($codesandbox->is_gradable) && $codesandbox->is_gradable) {
         $params['gradetype'] = GRADE_TYPE_VALUE;
         $params['grademax']  = $codesandbox->grade_max;
         $params['grademin']  = 0;
@@ -160,7 +160,7 @@ function codesandbox_update_grades($codesandbox, $userid = 0) {
     global $CFG, $DB;
     require_once($CFG->libdir.'/gradelib.php');
     
-    if (!$codesandbox->is_gradable) {
+    if (!isset($codesandbox->is_gradable) || !$codesandbox->is_gradable) {
         return codesandbox_grade_item_update($codesandbox);
     }
     
@@ -208,7 +208,7 @@ function codesandbox_process_submission($codesandbox, $userid, $code) {
     $submission->code = $code;
     $submission->timesubmitted = time();
     
-    if ($codesandbox->is_gradable) {
+    if (isset($codesandbox->is_gradable) && $codesandbox->is_gradable) {
         // Get test suite content
         $context = context_module::instance($codesandbox->coursemodule);
         $fs = get_file_storage();
