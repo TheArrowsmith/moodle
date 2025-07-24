@@ -1,0 +1,12 @@
+RewriteEngine On
+RewriteBase /local/courseapi/api/
+
+# Handle all API requests through index.php
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php [QSA,L]
+
+# Allow CORS headers
+Header set Access-Control-Allow-Origin "*"
+Header set Access-Control-Allow-Headers "Authorization, Content-Type"
+Header set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
