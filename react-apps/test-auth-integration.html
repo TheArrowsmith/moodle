@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>React Auth Integration Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+        h1 { color: #333; }
+        .test-section {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .token-input {
+            width: 100%;
+            padding: 8px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        button {
+            background: #0073AA;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #005580;
+        }
+        .info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>React Authentication Integration Test</h1>
+    
+    <div class="info">
+        <strong>Test Instructions:</strong>
+        <ol>
+            <li>Generate a JWT token using: <code>http://localhost/local/courseapi/api/generate_test_token.php</code></li>
+            <li>Or authenticate via POST to: <code>http://localhost/local/courseapi/api/auth/token</code> with username/password</li>
+            <li>Paste the token below and click "Test Authentication"</li>
+        </ol>
+    </div>
+
+    <div class="test-section">
+        <h2>JWT Token Test</h2>
+        <input type="text" id="jwt-token" class="token-input" placeholder="Paste your JWT token here...">
+        <button onclick="testAuth()">Test Authentication</button>
+        
+        <div id="auth-display-root" style="margin-top: 20px;"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Generate Token via Login</h2>
+        <div>
+            <input type="text" id="username" placeholder="Username" style="width: 200px; margin: 5px;">
+            <input type="password" id="password" placeholder="Password" style="width: 200px; margin: 5px;">
+            <button onclick="login()">Login & Test</button>
+        </div>
+        <div id="login-result" style="margin-top: 10px;"></div>
+    </div>
+
+    <!-- Load React bundle -->
+    <script src="http://localhost:5173/@vite/client"></script>
+    <script src="http://localhost:5173/src/main.jsx" type="module"></script>
+
+    <script>
+        function testAuth() {
+            const token = document.getElementById('jwt-token').value;
+            if (!token) {
+                alert('Please enter a JWT token');
+                return;
+            }
+
+            // Clear previous mount
+            const root = document.getElementById('auth-display-root');
+            root.innerHTML = '';
+
+            // Mount component with token
+            if (window.MoodleReact && window.MoodleReact.mount) {
+                window.MoodleReact.mount(
+                    'AuthenticatedUserDisplay',
+                    '#auth-display-root',
+                    { 
+                        token: token,
+                        apiUrl: 'http://localhost/local/courseapi/api'
+                    }
+                );
+            } else {
+                alert('React not loaded yet. Make sure npm run dev is running.');
+            }
+        }
+
+        async function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            if (!username || !password) {
+                alert('Please enter username and password');
+                return;
+            }
+
+            try {
+                const response = await fetch('http://localhost/local/courseapi/api/auth/token', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    document.getElementById('login-result').innerHTML = 
+                        '<div class="info">Login successful! Token generated.</div>';
+                    document.getElementById('jwt-token').value = data.token;
+                    
+                    // Auto-test with the new token
+                    testAuth();
+                } else {
+                    document.getElementById('login-result').innerHTML = 
+                        '<div style="color: red;">Login failed: ' + (data.error || 'Unknown error') + '</div>';
+                }
+            } catch (error) {
+                document.getElementById('login-result').innerHTML = 
+                    '<div style="color: red;">Network error: ' + error.message + '</div>';
+            }
+        }
+    </script>
+</body>
+</html>

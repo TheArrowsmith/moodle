@@ -1,0 +1,25 @@
+.loading {
+  color: #666;
+  font-style: italic;
+  padding: 1rem;
+  text-align: center;
+}
+
+.error {
+  color: #d9534f;
+  background-color: #f2dede;
+  border: 1px solid #ebccd1;
+  padding: 1rem;
+  border-radius: 4px;
+  margin: 1rem 0;
+}
+
+.welcome {
+  color: #3c763d;
+  background-color: #dff0d8;
+  border: 1px solid #d6e9c6;
+  padding: 1rem;
+  border-radius: 4px;
+  margin: 1rem 0;
+  font-weight: 500;
+}
