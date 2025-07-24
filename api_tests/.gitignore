@@ -5,3 +5,5 @@ Gemfile.lock
 spec/reports/
 tmp/
 coverage/
+final_results.json
+rspec_results.json

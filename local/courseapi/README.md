@@ -27,8 +27,7 @@ Generate a JWT token for API authentication.
 ```json
 {
     "username": "teacher1",
-    "password": "Teacher123!",
-    "course_id": 2  // Optional
+    "password": "Teacher123!"
 }
 ```
 

@@ -47,8 +47,7 @@ module ApiHelper
     
     response = post('/auth/token', {
       username: username,
-      password: password,
-      course_id: ENV['TEST_COURSE_ID'].to_i
+      password: password
     })
 
     if response.success?
@@ -108,7 +107,7 @@ class ApiClient
   private
 
   def request(method, path, options = {})
-    url = "#{@base_uri}/local/courseapi/api#{path}"
+    url = "#{@base_uri}/local/courseapi/api/index.php#{path}"
     
     headers = {
       'Content-Type' => 'application/json',

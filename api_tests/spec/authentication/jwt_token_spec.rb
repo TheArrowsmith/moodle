@@ -4,8 +4,7 @@ RSpec.describe 'JWT Token Management' do
       it 'returns a valid JWT token for teacher' do
         response = post('/auth/token', {
           username: ENV['TEST_TEACHER_USERNAME'],
-          password: ENV['TEST_TEACHER_PASSWORD'],
-          course_id: ENV['TEST_COURSE_ID'].to_i
+          password: ENV['TEST_TEACHER_PASSWORD']
         })
 
         expect(response.code).to eq(200)
@@ -43,16 +42,16 @@ RSpec.describe 'JWT Token Management' do
       it 'includes correct JWT payload fields' do
         response = post('/auth/token', {
           username: ENV['TEST_TEACHER_USERNAME'],
-          password: ENV['TEST_TEACHER_PASSWORD'],
-          course_id: ENV['TEST_COURSE_ID'].to_i
+          password: ENV['TEST_TEACHER_PASSWORD']
         })
 
         token = response.parsed_response['token']
         payload = validate_jwt_payload(token)
         
         expect(payload).to have_key('user_id')
-        expect(payload).to have_key('course_id')
-        expect(payload['course_id']).to eq(ENV['TEST_COURSE_ID'].to_i)
+        expect(payload).to have_key('iat')
+        expect(payload).to have_key('exp')
+        expect(payload).to have_key('iss')
         
         # Check expiration is approximately 60 minutes from now
         exp_time = Time.at(payload['exp'])
@@ -80,13 +79,6 @@ RSpec.describe 'JWT Token Management' do
 
         expect(response.code).to eq(401)
         expect(response.parsed_response).to have_key('error')
-      end
-
-      it 'returns 403 for valid user without course access' do
-        skip 'Requires a user without access to test course'
-        
-        # This would test the scenario where credentials are valid
-        # but the user doesn't have access to the specified course
       end
     end
 

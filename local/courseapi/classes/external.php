@@ -84,7 +84,7 @@ class external extends external_api {
         $sectionsdata = [];
         foreach ($sections as $section) {
             $sectiondata = [
-                'id' => $section->id,
+                'id' => (int)$section->id,
                 'name' => $section->name ?? get_string('section') . ' ' . $section->section,
                 'visible' => (bool)$section->visible,
                 'summary' => format_text($section->summary, $section->summaryformat, ['context' => $context]),
@@ -297,7 +297,7 @@ class external extends external_api {
         $section = $DB->get_record('course_sections', ['id' => $params['sectionid']], '*', MUST_EXIST);
         
         return [
-            'id' => $section->id,
+            'id' => (int)$section->id,
             'name' => $section->name ?? get_string('section') . ' ' . $section->section,
             'visible' => (bool)$section->visible,
             'summary' => format_text($section->summary, $section->summaryformat, ['context' => $context])
@@ -573,40 +573,164 @@ class external extends external_api {
         $course = $DB->get_record('course', ['id' => $params['courseid']], '*', MUST_EXIST);
         $section = $DB->get_record('course_sections', ['id' => $params['sectionid'], 'course' => $params['courseid']], '*', MUST_EXIST);
         
+        // Get module info to check it exists
+        $module = $DB->get_record('modules', ['name' => $params['modname'], 'visible' => 1], '*', MUST_EXIST);
+        
         // Prepare module data
         $moduleinfo = new stdClass();
         $moduleinfo->modulename = $params['modname'];
+        $moduleinfo->module = $module->id;
         $moduleinfo->course = $params['courseid'];
-        $moduleinfo->section = $section->section;
+        $moduleinfo->section = $section->section;  // This is the section number (0-based), not the ID
         $moduleinfo->name = $params['name'];
         $moduleinfo->intro = $params['intro'];
         $moduleinfo->introformat = FORMAT_HTML;
         $moduleinfo->visible = $params['visible'] ? 1 : 0;
+        $moduleinfo->visibleoncoursepage = 1;
+        $moduleinfo->cmidnumber = '';
+        $moduleinfo->groupmode = 0;
+        $moduleinfo->groupingid = 0;
+        $moduleinfo->availability = null;
+        $moduleinfo->completion = 0;
+        $moduleinfo->completionview = 0;
+        $moduleinfo->completionexpected = 0;
+        $moduleinfo->completiongradeitemnumber = null;
+        $moduleinfo->showdescription = 0;
         
         // Add module-specific default values
         switch ($params['modname']) {
             case 'assign':
+                // Date fields
                 $moduleinfo->duedate = 0;
                 $moduleinfo->allowsubmissionsfromdate = 0;
+                $moduleinfo->cutoffdate = 0;
+                $moduleinfo->gradingduedate = 0;
+                
+                // Grade settings
                 $moduleinfo->grade = 100;
+                
+                // Submission settings
                 $moduleinfo->submissiondrafts = 0;
+                $moduleinfo->requiresubmissionstatement = 0;
+                $moduleinfo->attemptreopenmethod = 'none';
+                $moduleinfo->maxattempts = -1;
+                
+                // Notification settings
+                $moduleinfo->sendnotifications = 0;
+                $moduleinfo->sendlatenotifications = 0;
+                $moduleinfo->sendstudentnotifications = 1;
+                
+                // Team submission settings
+                $moduleinfo->teamsubmission = 0;
+                $moduleinfo->requireallteammemberssubmit = 0;
+                $moduleinfo->teamsubmissiongroupingid = 0;
+                $moduleinfo->preventsubmissionnotingroup = 0;
+                
+                // Blind marking settings
+                $moduleinfo->blindmarking = 0;
+                $moduleinfo->revealidentities = 0;
+                
+                // Marking workflow settings
+                $moduleinfo->markingworkflow = 0;
+                $moduleinfo->markingallocation = 0;
+                
+                // Other settings
+                $moduleinfo->alwaysshowdescription = 0;
+                $moduleinfo->nosubmissions = 0;
+                $moduleinfo->completionsubmit = 0;
+                
+                // Submission plugins
+                $moduleinfo->assignsubmission_onlinetext_enabled = 1;
+                $moduleinfo->assignsubmission_file_enabled = 0;
+                $moduleinfo->assignfeedback_comments_enabled = 1;
                 break;
             case 'quiz':
                 $moduleinfo->grade = 100;
+                $moduleinfo->grademethod = 1;
                 $moduleinfo->attempts = 0;
                 $moduleinfo->timeopen = 0;
                 $moduleinfo->timeclose = 0;
+                $moduleinfo->timelimit = 0;
+                $moduleinfo->preferredbehaviour = 'deferredfeedback';
+                $moduleinfo->questionsperpage = 0;
+                $moduleinfo->shufflequestions = 0;
+                $moduleinfo->shuffleanswers = 1;
+                $moduleinfo->sumgrades = 0;
+                $moduleinfo->gradecat = 0;
+                $moduleinfo->decimalpoints = 2;
+                $moduleinfo->questiondecimalpoints = -1;
+                $moduleinfo->reviewattempt = 0x11110;
+                $moduleinfo->reviewcorrectness = 0x10000;
+                $moduleinfo->reviewmarks = 0x11110;
+                $moduleinfo->reviewspecificfeedback = 0x10000;
+                $moduleinfo->reviewgeneralfeedback = 0x01000;
+                $moduleinfo->reviewrightanswer = 0x00100;
+                $moduleinfo->reviewoverallfeedback = 0x01000;
+                $moduleinfo->quizpassword = '';  // Required field
+                $moduleinfo->subnet = '';
+                $moduleinfo->browsersecurity = '-';
+                $moduleinfo->delay1 = 0;
+                $moduleinfo->delay2 = 0;
+                $moduleinfo->showuserpicture = 0;
+                $moduleinfo->showblocks = 0;
+                $moduleinfo->completionpass = 0;
                 break;
             case 'forum':
                 $moduleinfo->type = 'general';
+                $moduleinfo->forcesubscribe = 0;
+                $moduleinfo->assessed = 0;
+                $moduleinfo->scale = 0;
+                $moduleinfo->assesstimestart = 0;
+                $moduleinfo->assesstimefinish = 0;
+                $moduleinfo->maxbytes = 0;
+                $moduleinfo->maxattachments = 9;
+                $moduleinfo->displaywordcount = 0;
+                $moduleinfo->rsstype = 0;
+                $moduleinfo->rssarticles = 0;
+                $moduleinfo->trackingtype = 1;
+                $moduleinfo->lockdiscussionafter = 0;
+                $moduleinfo->blockperiod = 0;
+                $moduleinfo->blockafter = 0;
+                $moduleinfo->warnafter = 0;
                 break;
             case 'resource':
                 $moduleinfo->display = 0;
+                $moduleinfo->showsize = 0;
+                $moduleinfo->showtype = 0;
+                $moduleinfo->showdate = 0;
+                $moduleinfo->printintro = 1;
+                $moduleinfo->files = 0;  // Required field
+                break;
+            case 'page':
+                $moduleinfo->display = 0;
+                $moduleinfo->printintro = 0;
+                $moduleinfo->content = '';
+                $moduleinfo->contentformat = FORMAT_HTML;
+                break;
+            case 'url':
+                $moduleinfo->display = 0;
+                $moduleinfo->externalurl = 'https://example.com';
+                $moduleinfo->printintro = 1;
+                break;
+            case 'label':
+                // Labels don't need many extra fields
                 break;
         }
         
         // Create the module
-        $moduleinfo = add_moduleinfo($moduleinfo, $course);
+        try {
+            $moduleinfo = add_moduleinfo($moduleinfo, $course);
+        } catch (\Exception $e) {
+            // Log the actual error for debugging
+            error_log('Activity creation failed: ' . $e->getMessage());
+            error_log('Module data: ' . print_r($moduleinfo, true));
+            
+            // For API testing, return more specific error
+            if (strpos($e->getMessage(), 'Invalid section number') !== false) {
+                throw new moodle_exception('invalidsection', 'error');
+            }
+            throw new moodle_exception('errorwritingtodatabase', 'error', '', $e->getMessage());
+        }
         
         // Get module info
         $modinfo = get_fast_modinfo($course);
@@ -659,7 +783,7 @@ class external extends external_api {
         }
         
         return [
-            'id' => $USER->id,
+            'id' => (int)$USER->id,
             'username' => $USER->username,
             'firstname' => $USER->firstname,
             'lastname' => $USER->lastname

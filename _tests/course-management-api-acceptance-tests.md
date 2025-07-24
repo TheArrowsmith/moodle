@@ -1,40 +1,77 @@
 # Course Management API - Manual Acceptance Tests
 
 ## Prerequisites
-- Moodle installation with admin access
+- Moodle 3.5 or higher installation with admin access
 - A test course with at least 3 sections and 5 activities
 - Teacher/Admin role in the test course
-- Browser developer tools for inspecting network requests
-- REST client tool (Postman, curl, or browser extensions)
+- Terminal/command line with `curl` installed
+- `jq` tool for JSON parsing (optional but recommended: `brew install jq` or `apt-get install jq`)
 
 ## Test Setup
 1. Install the local_courseapi plugin
 2. Navigate to Site Administration > Notifications
-3. Complete the plugin installation
+3. Complete the plugin installation (ensure dependencies check passes)
 4. Note your test course ID (visible in URL when viewing course)
 
-## Test 1: JWT Token Generation
-**Objective**: Verify JWT tokens are properly generated and injected
+## Environment Variables Setup
+Run these commands to set up your test environment:
+```bash
+export MOODLE_URL="http://localhost:8888"
+export API_BASE="$MOODLE_URL/local/courseapi/api/index.php"
+export COURSE_ID=2  # Replace with your test course ID
+```
 
-### Steps:
-1. Navigate to any course where you have update permissions
-2. Open browser developer console (F12)
-3. In the console, type: `window.COURSE_API_TOKEN`
-4. Press Enter
+## Test 1: POST /auth/token - Generate API Token
+**Objective**: Generate JWT token via API endpoint
+
+### Command:
+```bash
+curl -X POST "$API_BASE/auth/token" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "admin",
+    "password": "ADMINadmin12!"
+  }'
+```
+
+### Save token for subsequent tests:
+```bash
+# If you have jq installed:
+export TOKEN=$(curl -s -X POST "$API_BASE/auth/token" \
+  -H "Content-Type: application/json" \
+  -d '{"username":"admin","password":"ADMINadmin12!"}' \
+  | jq -r '.token')
+
+# Verify token was saved:
+echo $TOKEN
+```
 
 ### Expected Results:
-- [ ] A JWT token string should be displayed (format: `xxxxx.yyyyy.zzzzz`)
-- [ ] Token should have three parts separated by dots
-- [ ] No error messages in console
+- [ ] Response status: 200 OK
+- [ ] Response contains JWT token:
+  ```json
+  {
+    "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
+  }
+  ```
+- [ ] Token is saved in $TOKEN variable
 
 ## Test 2: GET /user/me Endpoint
 **Objective**: Verify user authentication endpoint works correctly
 
-### Steps:
-1. Get your JWT token from Test 1
-2. Open your REST client
-3. Make a GET request to: `http://[your-moodle]/local/courseapi/api/v1/user/me`
-4. Add header: `Authorization: Bearer [your-token]`
+### Command:
+```bash
+curl -X GET "$API_BASE/user/me" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Accept: application/json"
+```
+
+### Pretty print with jq:
+```bash
+curl -s -X GET "$API_BASE/user/me" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Accept: application/json" | jq .
+```
 
 ### Expected Results:
 - [ ] Response status: 200 OK
@@ -50,20 +87,59 @@
 - [ ] Data matches your Moodle user profile
 
 ### Error Testing:
-1. Make request without Authorization header
-   - [ ] Response status: 401 Unauthorized
-   - [ ] Error message: "Authentication token is missing"
+```bash
+# Test without Authorization header:
+curl -X GET "$API_BASE/user/me" \
+  -H "Accept: application/json"
+```
+- [ ] Response status: 401 Unauthorized
+- [ ] Error message: "Authentication token is missing"
 
-2. Make request with invalid token
-   - [ ] Response status: 401 Unauthorized
-   - [ ] Error message: "Invalid or expired authentication token"
+```bash
+# Test with invalid token:
+curl -X GET "$API_BASE/user/me" \
+  -H "Authorization: Bearer invalid_token_here" \
+  -H "Accept: application/json"
+```
+- [ ] Response status: 401 Unauthorized
+- [ ] Error message: "Invalid or expired authentication token"
 
 ## Test 3: GET /course/{courseId}/management_data
 **Objective**: Verify course structure retrieval
 
-### Steps:
-1. Make a GET request to: `http://[your-moodle]/local/courseapi/api/v1/course/[courseId]/management_data`
-2. Include valid Authorization header
+### Command:
+```bash
+curl -X GET "$API_BASE/course/$COURSE_ID/management_data" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Accept: application/json"
+```
+
+### Pretty print and save to file:
+```bash
+curl -s -X GET "$API_BASE/course/$COURSE_ID/management_data" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Accept: application/json" | jq . > course_data.json
+
+# View the saved data:
+cat course_data.json
+```
+
+### Extract activity IDs for later tests:
+```bash
+# Get first activity ID:
+export ACTIVITY_ID=$(curl -s -X GET "$API_BASE/course/$COURSE_ID/management_data" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Accept: application/json" | jq -r '.sections[0].activities[0].id')
+
+echo "First activity ID: $ACTIVITY_ID"
+
+# Get first section ID:
+export SECTION_ID=$(curl -s -X GET "$API_BASE/course/$COURSE_ID/management_data" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Accept: application/json" | jq -r '.sections[0].id')
+
+echo "First section ID: $SECTION_ID"
+```
 
 ### Expected Results:
 - [ ] Response status: 200 OK
@@ -74,27 +150,28 @@
 - [ ] Section data includes: id, name, visible, summary, activities array
 
 ### Error Testing:
-1. Request non-existent course (courseId: 99999)
-   - [ ] Response status: 404 Not Found
-   - [ ] Appropriate error message
-
-2. Request course without permissions
-   - [ ] Response status: 403 Forbidden
-   - [ ] Error indicates permission denied
+```bash
+# Test non-existent course:
+curl -X GET "$API_BASE/course/99999/management_data" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Accept: application/json"
+```
+- [ ] Response status: 404 Not Found
+- [ ] Appropriate error message
 
 ## Test 4: Update Activity
 **Objective**: Test activity property modifications
 
-### Steps:
-1. Note an activity ID from Test 3 response
-2. Make a PUT request to: `http://[your-moodle]/local/courseapi/api/v1/activity/[activityId]`
-3. Include request body:
-   ```json
-   {
-     "name": "Updated Activity Name",
-     "visible": false
-   }
-   ```
+### Command:
+```bash
+curl -X PUT "$API_BASE/activity/$ACTIVITY_ID" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Updated Activity Name",
+    "visible": false
+  }'
+```
 
 ### Expected Results:
 - [ ] Response status: 200 OK
@@ -102,33 +179,39 @@
 - [ ] Refresh course page in Moodle - activity name changed
 - [ ] Activity is now hidden (grayed out)
 
-### Partial Update Test:
-1. Update only visibility:
-   ```json
-   { "visible": true }
-   ```
-   - [ ] Only visibility changes, name remains same
+### Partial Update Tests:
+```bash
+# Update only visibility:
+curl -X PUT "$API_BASE/activity/$ACTIVITY_ID" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"visible": true}'
+```
+- [ ] Only visibility changes, name remains same
 
-2. Update only name:
-   ```json
-   { "name": "Another Name" }
-   ```
-   - [ ] Only name changes, visibility remains same
+```bash
+# Update only name:
+curl -X PUT "$API_BASE/activity/$ACTIVITY_ID" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"name": "Another Name via API"}'
+```
+- [ ] Only name changes, visibility remains same
 
 ## Test 5: Update Section
 **Objective**: Test section property modifications
 
-### Steps:
-1. Note a section ID from Test 3
-2. Make a PUT request to: `http://[your-moodle]/local/courseapi/api/v1/section/[sectionId]`
-3. Include request body:
-   ```json
-   {
-     "name": "Week 1: Updated Topic",
-     "visible": false,
-     "summary": "<p>This is the updated summary.</p>"
-   }
-   ```
+### Command:
+```bash
+curl -X PUT "$API_BASE/section/$SECTION_ID" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Week 1: Updated Topic",
+    "visible": false,
+    "summary": "<p>This is the updated summary.</p>"
+  }'
+```
 
 ### Expected Results:
 - [ ] Response status: 200 OK
@@ -138,16 +221,31 @@
 ## Test 6: Reorder Activities
 **Objective**: Test drag-and-drop functionality via API
 
-### Steps:
-1. Note a section with multiple activities
-2. Note the current order of activity IDs
-3. Make a POST request to: `http://[your-moodle]/local/courseapi/api/v1/section/[sectionId]/reorder_activities`
-4. Reverse the order in request body:
-   ```json
-   {
-     "activity_ids": [103, 101, 102]
-   }
-   ```
+### Get activities in a section:
+```bash
+# Find a section with multiple activities:
+curl -s -X GET "$API_BASE/course/$COURSE_ID/management_data" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Accept: application/json" | jq '.sections[] | select(.activities | length > 2)'
+
+# Extract activity IDs from a section (adjust section index as needed):
+export ACTIVITY_IDS=$(curl -s -X GET "$API_BASE/course/$COURSE_ID/management_data" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Accept: application/json" | jq -r '.sections[0].activities[].id' | tr '\n' ',' | sed 's/,$//')
+
+echo "Activity IDs: $ACTIVITY_IDS"
+```
+
+### Reorder activities (reverse order example):
+```bash
+# Assuming you have activities 101,102,103, reverse them:
+curl -X POST "$API_BASE/section/$SECTION_ID/reorder_activities" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "activity_ids": [103, 102, 101]
+  }'
+```
 
 ### Expected Results:
 - [ ] Response status: 200 OK
@@ -155,17 +253,43 @@
 - [ ] Refresh course - activities appear in new order
 
 ### Error Testing:
-1. Include invalid activity ID in list
-   - [ ] Response status: 400 Bad Request
-   - [ ] Error indicates invalid activity
+```bash
+# Test with invalid activity ID:
+curl -X POST "$API_BASE/section/$SECTION_ID/reorder_activities" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"activity_ids": [99999, 102, 101]}'
+```
+- [ ] Response status: 400 Bad Request
+- [ ] Error indicates invalid activity
 
 ## Test 7: Delete Activity
 **Objective**: Test activity deletion
 
-### Steps:
-1. Create a test activity in your course (or use existing)
-2. Note its ID
-3. Make a DELETE request to: `http://[your-moodle]/local/courseapi/api/v1/activity/[activityId]`
+### Create a test activity first:
+```bash
+# Create an activity to delete:
+export DELETE_ACTIVITY_ID=$(curl -s -X POST "$API_BASE/activity" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "courseid": '$COURSE_ID',
+    "sectionid": '$SECTION_ID',
+    "modname": "label",
+    "name": "Activity to Delete",
+    "intro": "This will be deleted",
+    "visible": true
+  }' | jq -r '.id')
+
+echo "Created activity to delete: $DELETE_ACTIVITY_ID"
+```
+
+### Delete the activity:
+```bash
+curl -X DELETE "$API_BASE/activity/$DELETE_ACTIVITY_ID" \
+  -H "Authorization: Bearer $TOKEN" \
+  -v
+```
 
 ### Expected Results:
 - [ ] Response status: 204 No Content
@@ -174,23 +298,38 @@
 - [ ] Activity cannot be accessed directly
 
 ### Error Testing:
-1. Try to delete same activity again
-   - [ ] Response status: 404 Not Found
-   - [ ] Error indicates activity doesn't exist
+```bash
+# Try to delete same activity again:
+curl -X DELETE "$API_BASE/activity/$DELETE_ACTIVITY_ID" \
+  -H "Authorization: Bearer $TOKEN" \
+  -v
+```
+- [ ] Response status: 404 Not Found
+- [ ] Error indicates activity doesn't exist
 
 ## Test 8: Move Activity Between Sections
 **Objective**: Test moving activities to different sections
 
-### Steps:
-1. Note an activity ID and target section ID
-2. Make a POST request to: `http://[your-moodle]/local/courseapi/api/v1/section/[targetSectionId]/move_activity`
-3. Include request body:
-   ```json
-   {
-     "activityid": 101,
-     "position": 0
-   }
-   ```
+### Get a different section ID:
+```bash
+# Get the second section ID:
+export TARGET_SECTION_ID=$(curl -s -X GET "$API_BASE/course/$COURSE_ID/management_data" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Accept: application/json" | jq -r '.sections[1].id')
+
+echo "Target section ID: $TARGET_SECTION_ID"
+```
+
+### Move activity to different section:
+```bash
+curl -X POST "$API_BASE/section/$TARGET_SECTION_ID/move_activity" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "activityid": '$ACTIVITY_ID',
+    "position": 0
+  }'
+```
 
 ### Expected Results:
 - [ ] Response status: 200 OK
@@ -201,19 +340,20 @@
 ## Test 9: Create New Activity
 **Objective**: Test activity creation via API
 
-### Steps:
-1. Make a POST request to: `http://[your-moodle]/local/courseapi/api/v1/activity`
-2. Include request body:
-   ```json
-   {
-     "courseid": 2,
-     "sectionid": 1,
-     "modname": "assign",
-     "name": "API Created Assignment",
-     "intro": "This assignment was created via API",
-     "visible": true
-   }
-   ```
+### Create an assignment:
+```bash
+curl -X POST "$API_BASE/activity" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "courseid": '$COURSE_ID',
+    "sectionid": '$SECTION_ID',
+    "modname": "assign",
+    "name": "API Created Assignment",
+    "intro": "This assignment was created via API",
+    "visible": true
+  }'
+```
 
 ### Expected Results:
 - [ ] Response status: 200 OK
@@ -222,81 +362,225 @@
 - [ ] Assignment has correct name and description
 
 ### Test Different Module Types:
-1. Create a quiz: `"modname": "quiz"`
-2. Create a resource: `"modname": "resource"`
-3. Create a forum: `"modname": "forum"`
+```bash
+# Create a quiz:
+curl -X POST "$API_BASE/activity" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "courseid": '$COURSE_ID',
+    "sectionid": '$SECTION_ID',
+    "modname": "quiz",
+    "name": "API Created Quiz",
+    "intro": "Test your knowledge",
+    "visible": true
+  }'
+```
+- [ ] Quiz created successfully
+
+```bash
+# Create a forum:
+curl -X POST "$API_BASE/activity" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "courseid": '$COURSE_ID',
+    "sectionid": '$SECTION_ID',
+    "modname": "forum",
+    "name": "Discussion Forum",
+    "intro": "Discuss course topics here",
+    "visible": true
+  }'
+```
+- [ ] Forum created successfully
+
+```bash
+# Create a page:
+curl -X POST "$API_BASE/activity" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "courseid": '$COURSE_ID',
+    "sectionid": '$SECTION_ID',
+    "modname": "page",
+    "name": "Course Information",
+    "intro": "Important course details",
+    "visible": true
+  }'
+```
+- [ ] Page created successfully
 
 ## Test 10: API Error Handling
 **Objective**: Verify consistent error responses
 
 ### Test Cases:
-1. **Missing Token**
-   - Remove Authorization header
-   - [ ] All endpoints return 401 Unauthorized
 
-2. **Expired Token**
-   - Wait 61 minutes (or modify token)
-   - [ ] Response: 401 with "Invalid or expired token"
+#### 1. Missing Token:
+```bash
+curl -X GET "$API_BASE/course/$COURSE_ID/management_data" \
+  -H "Accept: application/json" \
+  -v
+```
+- [ ] Response: 401 Unauthorized
+- [ ] Error: "Authentication token is missing"
 
-3. **Invalid JSON**
-   - Send malformed JSON in PUT/POST requests
-   - [ ] Response: 422 Unprocessable Entity
+#### 2. Invalid Token:
+```bash
+curl -X GET "$API_BASE/course/$COURSE_ID/management_data" \
+  -H "Authorization: Bearer invalid.token.here" \
+  -H "Accept: application/json" \
+  -v
+```
+- [ ] Response: 401 Unauthorized
+- [ ] Error: "Invalid or expired authentication token"
 
-4. **Permission Denied**
-   - Use student account token
-   - [ ] Response: 403 Forbidden
+#### 3. Invalid JSON:
+```bash
+curl -X PUT "$API_BASE/activity/$ACTIVITY_ID" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d 'this is not valid json' \
+  -v
+```
+- [ ] Response: 422 Unprocessable Entity
 
-5. **Resource Not Found**
-   - Use non-existent IDs
-   - [ ] Response: 404 Not Found
+#### 4. Resource Not Found:
+```bash
+curl -X GET "$API_BASE/course/99999/management_data" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Accept: application/json" \
+  -v
+```
+- [ ] Response: 404 Not Found
+
+```bash
+curl -X DELETE "$API_BASE/activity/99999" \
+  -H "Authorization: Bearer $TOKEN" \
+  -v
+```
+- [ ] Response: 404 Not Found
 
 ## Test 11: CORS Support
 **Objective**: Verify cross-origin requests work
 
-### Steps:
-1. Create a simple HTML file on different domain/port
-2. Add JavaScript to make API call
-3. Open file in browser
+### Test OPTIONS preflight:
+```bash
+curl -X OPTIONS "$API_BASE/course/$COURSE_ID/management_data" \
+  -H "Origin: http://example.com" \
+  -H "Access-Control-Request-Method: GET" \
+  -H "Access-Control-Request-Headers: Authorization" \
+  -v
+```
 
 ### Expected Results:
-- [ ] No CORS errors in console
-- [ ] OPTIONS preflight requests succeed
-- [ ] API calls complete successfully
+- [ ] Response status: 200 OK
+- [ ] Response headers include:
+  - `Access-Control-Allow-Origin: *`
+  - `Access-Control-Allow-Headers: Authorization, Content-Type`
+  - `Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS`
+
+### Test cross-origin request:
+```bash
+curl -X GET "$API_BASE/course/$COURSE_ID/management_data" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Origin: http://example.com" \
+  -H "Accept: application/json" \
+  -v
+```
+- [ ] Request succeeds with proper CORS headers
 
 ## Performance Tests
 
 ### Large Course Test:
-1. Test with course containing 50+ activities
-   - [ ] GET management_data completes in < 2 seconds
-   - [ ] Response size is reasonable
+```bash
+# Time the request:
+time curl -s -X GET "$API_BASE/course/$COURSE_ID/management_data" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Accept: application/json" > /dev/null
+```
+- [ ] GET management_data completes in < 2 seconds
+- [ ] Response size is reasonable
 
-### Bulk Operations:
-1. Reorder 20+ activities in one request
-   - [ ] Operation completes successfully
-   - [ ] No timeout errors
+### Check response size:
+```bash
+curl -s -X GET "$API_BASE/course/$COURSE_ID/management_data" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Accept: application/json" | wc -c
+```
+- [ ] Response size is appropriate for course content
 
 ## Security Tests
 
 ### SQL Injection:
-1. Try activity name: `'; DROP TABLE mdl_user; --`
-   - [ ] Name is safely stored/displayed
-   - [ ] No database errors
+```bash
+# Try SQL injection in activity name:
+curl -X PUT "$API_BASE/activity/$ACTIVITY_ID" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "'; DROP TABLE mdl_user; --"
+  }'
+```
+- [ ] Name is safely stored/displayed
+- [ ] No database errors
+- [ ] Activity name shows the literal string in Moodle
 
 ### XSS Prevention:
-1. Update section summary with: `<script>alert('XSS')</script>`
-   - [ ] Script is escaped/sanitized
-   - [ ] No alert appears when viewing
+```bash
+# Try XSS in section summary:
+curl -X PUT "$API_BASE/section/$SECTION_ID" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "summary": "<script>alert(\"XSS\")</script><p>Safe content</p>"
+  }'
+```
+- [ ] Script is escaped/sanitized
+- [ ] No alert appears when viewing course
+- [ ] HTML tags like `<p>` are preserved
 
 ### Token Security:
-1. Try to decode JWT token
-   - [ ] Cannot modify user_id or course_id
-   - [ ] Modified token is rejected
+```bash
+# Decode the JWT token to inspect (requires jq):
+echo $TOKEN | cut -d. -f2 | base64 -d 2>/dev/null | jq .
+```
+- [ ] Token contains user_id
+- [ ] Token has expiration time (exp)
+- [ ] Token has issued at time (iat)
+
+```bash
+# Try modified token (change a character):
+MODIFIED_TOKEN="${TOKEN}x"
+curl -X GET "$API_BASE/user/me" \
+  -H "Authorization: Bearer $MODIFIED_TOKEN" \
+  -H "Accept: application/json"
+```
+- [ ] Response: 401 Unauthorized
+- [ ] Modified token is rejected
+
+## API Endpoint Summary
+All endpoints use the base URL: `http://localhost:8888/local/courseapi/api/index.php`
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/auth/token` | Generate JWT token |
+| GET | `/user/me` | Get current user info |
+| GET | `/course/{id}/management_data` | Get course structure |
+| PUT | `/activity/{id}` | Update activity |
+| DELETE | `/activity/{id}` | Delete activity |
+| POST | `/activity` | Create new activity |
+| PUT | `/section/{id}` | Update section |
+| POST | `/section/{id}/reorder_activities` | Reorder activities |
+| POST | `/section/{id}/move_activity` | Move activity to section |
 
 ## Final Checklist
-- [ ] All endpoints accessible via clean URLs
+- [ ] All endpoints accessible via `/api/index.php` path
+- [ ] JWT authentication working correctly
 - [ ] Consistent JSON response format
 - [ ] Appropriate HTTP status codes
-- [ ] Clear error messages
+- [ ] Clear error messages (using Moodle error codes)
 - [ ] No PHP errors in Moodle logs
 - [ ] API respects Moodle permissions
 - [ ] Changes made via API appear immediately in UI
+- [ ] All module types can be created (assign, quiz, forum, resource, page, url, label)
+- [ ] Section numbers handled correctly (not IDs)

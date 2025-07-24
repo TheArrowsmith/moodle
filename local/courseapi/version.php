@@ -25,7 +25,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->version   = 2025012400;    // The current plugin version (Date: YYYYMMDDXX)
-$plugin->requires  = 2019111800;    // Requires this Moodle version
+$plugin->requires  = 2018051700;    // Requires Moodle 3.5 or higher
 $plugin->component = 'local_courseapi';  // Full name of the plugin
 $plugin->maturity  = MATURITY_STABLE;
 $plugin->release   = '1.0.0';

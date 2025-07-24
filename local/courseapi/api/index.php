@@ -46,15 +46,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
 // Get request path
 $request_uri = $_SERVER['REQUEST_URI'];
+$parsed_path = parse_url($request_uri, PHP_URL_PATH);
+
+// Remove base path and index.php if present
 $base_path = '/local/courseapi/api';
-$path = str_replace($base_path, '', parse_url($request_uri, PHP_URL_PATH));
+$path = str_replace($base_path, '', $parsed_path);
+$path = str_replace('/index.php', '', $path);
 $path = trim($path, '/');
 
 // Get request method
 $method = $_SERVER['REQUEST_METHOD'];
 
 // Parse request body for JSON
-$input = json_decode(file_get_contents('php://input'), true);
+$raw_input = file_get_contents('php://input');
+$input = json_decode($raw_input, true);
 
 /**
  * Send JSON response
@@ -83,14 +88,26 @@ function authenticate_request() {
         return;
     }
     
-    // Get authorization header
-    $headers = getallheaders();
-    if (!isset($headers['Authorization'])) {
-        send_error('Missing authorization header', 401);
+    // Get authorization header (handle different server configs)
+    $auth = null;
+    if (function_exists('getallheaders')) {
+        $headers = getallheaders();
+        $auth = $headers['Authorization'] ?? null;
     }
     
-    // Extract token
-    $auth = $headers['Authorization'];
+    // Fallback for servers where getallheaders() doesn't work
+    if (!$auth && isset($_SERVER['HTTP_AUTHORIZATION'])) {
+        $auth = $_SERVER['HTTP_AUTHORIZATION'];
+    }
+    
+    // Another fallback for some server configurations
+    if (!$auth && isset($_SERVER['REDIRECT_HTTP_AUTHORIZATION'])) {
+        $auth = $_SERVER['REDIRECT_HTTP_AUTHORIZATION'];
+    }
+    
+    if (!$auth) {
+        send_error('Authentication token is missing', 401);
+    }
     if (!preg_match('/Bearer\s+(\S+)/', $auth, $matches)) {
         send_error('Invalid authorization header', 401);
     }
@@ -106,7 +123,7 @@ function authenticate_request() {
         $SESSION = new stdClass();
         
     } catch (Exception $e) {
-        send_error('Invalid or expired token', 401);
+        send_error('Invalid or expired authentication token', 401);
     }
 }
 
@@ -205,16 +222,16 @@ try {
                 
             } else if ($path === 'auth/token') {
                 // POST /auth/token
-                $username = $input['username'] ?? null;
-                $password = $input['password'] ?? null;
-                $course_id = $input['course_id'] ?? null;
+                
+                $username = isset($input['username']) ? $input['username'] : null;
+                $password = isset($input['password']) ? $input['password'] : null;
                 
                 if (!$username || !$password) {
                     send_error('Missing username or password', 422);
                 }
                 
                 try {
-                    $result = jwt::authenticate_user($username, $password, $course_id);
+                    $result = jwt::authenticate_user($username, $password);
                     send_response($result);
                 } catch (Exception $e) {
                     send_error('Invalid username or password', 401);
@@ -256,8 +273,22 @@ try {
         } else if ($e->errorcode === 'invalidrecord') {
             $code = 404;
         }
-        send_error($e->getMessage(), $code);
+        // For Moodle exceptions, get the localized message
+        $message = $e->errorcode;
+        if ($e->module) {
+            $message = $e->module . '/' . $e->errorcode;
+        }
+        // In development, add more details
+        if (defined('DEBUG_DEVELOPER') && DEBUG_DEVELOPER) {
+            $message .= ' - ' . $e->getMessage();
+        }
+        send_error($message, $code);
     } else {
-        send_error('Internal server error', 500);
+        // For development, show actual error
+        if (defined('DEBUG_DEVELOPER') && DEBUG_DEVELOPER) {
+            send_error('Internal server error: ' . $e->getMessage(), 500);
+        } else {
+            send_error('Internal server error', 500);
+        }
     }
 }
