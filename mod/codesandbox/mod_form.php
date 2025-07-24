@@ -51,12 +51,32 @@ class mod_codesandbox_mod_form extends moodleform_mod {
         // Adding the standard "intro" and "introformat" fields
         $this->standard_intro_elements();
         
+        // Language settings section
+        $mform->addElement('header', 'languagesettings', get_string('languagesettings', 'codesandbox'));
+        $mform->setExpanded('languagesettings');
+        
+        // Default language selection
+        $languages = array(
+            'python' => get_string('language_python', 'codesandbox'),
+            'ruby' => get_string('language_ruby', 'codesandbox'),
+            'elixir' => get_string('language_elixir', 'codesandbox')
+        );
+        $mform->addElement('select', 'language', get_string('defaultlanguage', 'codesandbox'), $languages);
+        $mform->setDefault('language', 'python');
+        $mform->addHelpButton('language', 'defaultlanguage', 'codesandbox');
+        
+        // Allowed languages (multiselect)
+        $select = $mform->addElement('select', 'allowed_languages', get_string('allowedlanguages', 'codesandbox'), $languages);
+        $select->setMultiple(true);
+        $mform->setDefault('allowed_languages', array('python', 'ruby', 'elixir'));
+        $mform->addHelpButton('allowed_languages', 'allowedlanguages', 'codesandbox');
+        
         // Starter code
         $mform->addElement('textarea', 'starter_code', get_string('startercode', 'codesandbox'), 
                           array('rows' => 10, 'cols' => 80));
         $mform->setType('starter_code', PARAM_RAW);
         $mform->addHelpButton('starter_code', 'startercode', 'codesandbox');
-        $mform->setDefault('starter_code', "# Welcome to Python Code Sandbox!\n# Write your code below:\n\n");
+        $mform->setDefault('starter_code', "# Welcome to Code Sandbox!\n# Write your code below:\n\n");
         
         // Grading settings section
         $mform->addElement('header', 'gradingsettings', get_string('gradingsettings', 'codesandbox'));
@@ -95,6 +115,11 @@ class mod_codesandbox_mod_form extends moodleform_mod {
      */
     function data_preprocessing(&$default_values) {
         parent::data_preprocessing($default_values);
+        
+        // Prepare allowed languages
+        if (!empty($default_values['allowed_languages'])) {
+            $default_values['allowed_languages'] = explode(',', $default_values['allowed_languages']);
+        }
         
         // Prepare test suite files for form
         if ($this->current->instance && !empty($this->current->id)) {

@@ -24,6 +24,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+require_once($CFG->libdir.'/ddllib.php');
+
 /**
  * Add codesandbox instance.
  *
@@ -35,6 +37,18 @@ function codesandbox_add_instance($codesandbox) {
     
     $codesandbox->timecreated = time();
     $codesandbox->timemodified = time();
+    
+    // Process allowed languages if the field exists
+    $dbman = $DB->get_manager();
+    $table = new xmldb_table('codesandbox');
+    $field = new xmldb_field('allowed_languages');
+    if ($dbman->field_exists($table, $field)) {
+        if (!empty($codesandbox->allowed_languages) && is_array($codesandbox->allowed_languages)) {
+            $codesandbox->allowed_languages = implode(',', $codesandbox->allowed_languages);
+        } else if (empty($codesandbox->allowed_languages)) {
+            $codesandbox->allowed_languages = 'python,ruby,elixir';
+        }
+    }
     
     // Process test suite file if uploaded
     if (isset($codesandbox->is_gradable) && $codesandbox->is_gradable && !empty($codesandbox->testsuitefiles)) {
@@ -66,6 +80,18 @@ function codesandbox_update_instance($codesandbox) {
     
     $codesandbox->timemodified = time();
     $codesandbox->id = $codesandbox->instance;
+    
+    // Process allowed languages if the field exists
+    $dbman = $DB->get_manager();
+    $table = new xmldb_table('codesandbox');
+    $field = new xmldb_field('allowed_languages');
+    if ($dbman->field_exists($table, $field)) {
+        if (!empty($codesandbox->allowed_languages) && is_array($codesandbox->allowed_languages)) {
+            $codesandbox->allowed_languages = implode(',', $codesandbox->allowed_languages);
+        } else if (empty($codesandbox->allowed_languages)) {
+            $codesandbox->allowed_languages = 'python,ruby,elixir';
+        }
+    }
     
     // Process test suite file if uploaded
     if (isset($codesandbox->is_gradable) && $codesandbox->is_gradable && !empty($codesandbox->testsuitefiles)) {
@@ -198,7 +224,7 @@ function codesandbox_update_grades($codesandbox, $userid = 0) {
  * @param string $code
  * @return stdClass submission record
  */
-function codesandbox_process_submission($codesandbox, $userid, $code) {
+function codesandbox_process_submission($codesandbox, $userid, $code, $language = 'python') {
     global $CFG, $DB;
     
     // Save submission
@@ -207,6 +233,14 @@ function codesandbox_process_submission($codesandbox, $userid, $code) {
     $submission->userid = $userid;
     $submission->code = $code;
     $submission->timesubmitted = time();
+    
+    // Only set language if the field exists in the database
+    $dbman = $DB->get_manager();
+    $table = new xmldb_table('codesandbox_submissions');
+    $field = new xmldb_field('language');
+    if ($dbman->field_exists($table, $field)) {
+        $submission->language = $language;
+    }
     
     if (isset($codesandbox->is_gradable) && $codesandbox->is_gradable) {
         // Get test suite content

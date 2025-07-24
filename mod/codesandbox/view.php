@@ -58,6 +58,8 @@ $PAGE->requires->css(new moodle_url('https://cdnjs.cloudflare.com/ajax/libs/code
 // Include CodeMirror JS
 $PAGE->requires->js(new moodle_url('https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js'), true);
 $PAGE->requires->js(new moodle_url('https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/python/python.min.js'), true);
+$PAGE->requires->js(new moodle_url('https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/ruby/ruby.min.js'), true);
+$PAGE->requires->js(new moodle_url('https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/erlang/erlang.min.js'), true);
 
 // Include custom CSS
 $PAGE->requires->css('/mod/codesandbox/styles.css');
@@ -73,7 +75,8 @@ $PAGE->requires->js_call_amd('mod_codesandbox/editor', 'init', array(
     $cm->id,
     $codesandbox->starter_code,
     $apiurl,
-    (bool)$codesandbox->is_gradable
+    (bool)$codesandbox->is_gradable,
+    $current_language
 ));
 
 echo $OUTPUT->header();
@@ -91,6 +94,31 @@ if (has_capability('mod/codesandbox:submit', $context)) {
                                  array('codesandboxid' => $codesandbox->id, 'userid' => $USER->id));
 }
 
+// Prepare languages for template
+// Check if language fields exist (for backward compatibility)
+$allowed_languages = array('python', 'ruby', 'elixir');
+if (property_exists($codesandbox, 'allowed_languages') && !empty($codesandbox->allowed_languages)) {
+    $allowed_languages = explode(',', $codesandbox->allowed_languages);
+}
+
+$language_options = array();
+$current_language = 'python'; // Default
+
+// Determine current language with backward compatibility
+if ($submission && property_exists($submission, 'language') && !empty($submission->language)) {
+    $current_language = $submission->language;
+} else if (property_exists($codesandbox, 'language') && !empty($codesandbox->language)) {
+    $current_language = $codesandbox->language;
+}
+
+foreach ($allowed_languages as $lang) {
+    $language_options[] = array(
+        'value' => $lang,
+        'name' => get_string('language_' . $lang, 'mod_codesandbox'),
+        'selected' => ($lang == $current_language)
+    );
+}
+
 // Render the template
 $templatecontext = array(
     'id' => $cm->id,
@@ -98,7 +126,8 @@ $templatecontext = array(
     'previouscode' => $submission ? $submission->code : '',
     'isgradable' => $codesandbox->is_gradable,
     'cansubmit' => has_capability('mod/codesandbox:submit', $context),
-    'sesskey' => sesskey()
+    'sesskey' => sesskey(),
+    'languages' => $language_options
 );
 
 echo $OUTPUT->render_from_template('mod_codesandbox/view', $templatecontext);

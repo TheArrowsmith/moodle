@@ -31,7 +31,17 @@
     <div class="row">
         <div class="col-md-6">
             <div class="editor-panel">
-                <h3>{{#str}}codeeditor, mod_codesandbox{{/str}}</h3>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h3>{{#str}}codeeditor, mod_codesandbox{{/str}}</h3>
+                    <div class="language-selector">
+                        <label for="language-select" class="mr-2">{{#str}}language, mod_codesandbox{{/str}}:</label>
+                        <select id="language-select" class="form-control form-control-sm" style="width: auto; display: inline-block;">
+                            {{#languages}}
+                            <option value="{{value}}" {{#selected}}selected{{/selected}}>{{name}}</option>
+                            {{/languages}}
+                        </select>
+                    </div>
+                </div>
                 <textarea id="code-editor" style="display: none;">{{#hassubmission}}{{previouscode}}{{/hassubmission}}</textarea>
                 <div class="editor-controls mt-2">
                     <button id="run-code" class="btn btn-primary">

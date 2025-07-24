@@ -36,10 +36,12 @@ app.add_middleware(
 
 class CodeRequest(BaseModel):
     code: str
+    language: str = "python"
 
 class GradeRequest(BaseModel):
     student_code: str
     test_code: str
+    language: str = "python"
 
 class CodeResponse(BaseModel):
     stdout: str
@@ -86,10 +88,33 @@ async def root():
 
 @app.post("/execute", response_model=CodeResponse)
 async def execute_code(request: CodeRequest):
-    """Execute Python code in a secure Docker container"""
+    """Execute code in a secure Docker container"""
     
     if not docker_client:
         raise HTTPException(status_code=503, detail="Docker service unavailable")
+    
+    # Language configuration
+    language_config = {
+        "python": {
+            "image": "python:3.8-slim",
+            "command": ["python", "/code/script.py"],
+            "file_extension": ".py"
+        },
+        "ruby": {
+            "image": "ruby:3.0-slim",
+            "command": ["ruby", "/code/script.rb"],
+            "file_extension": ".rb"
+        },
+        "elixir": {
+            "image": "elixir:1.13-slim",
+            "command": ["elixir", "/code/script.exs"],
+            "file_extension": ".exs"
+        }
+    }
+    
+    # Validate language
+    if request.language not in language_config:
+        raise HTTPException(status_code=400, detail=f"Unsupported language: {request.language}")
     
     # Create temporary directory and file in a known location
     import uuid
@@ -98,7 +123,10 @@ async def execute_code(request: CodeRequest):
     base_dir = os.path.abspath("/app/temp")
     temp_dir = os.path.join(base_dir, temp_id)
     os.makedirs(temp_dir, exist_ok=True)
-    temp_file = os.path.join(temp_dir, 'script.py')
+    
+    # Get language config
+    lang_conf = language_config[request.language]
+    temp_file = os.path.join(temp_dir, 'script' + lang_conf['file_extension'])
     with open(temp_file, 'w') as f:
         f.write(request.code)
     
@@ -108,8 +136,8 @@ async def execute_code(request: CodeRequest):
     try:
         # Prepare Docker command
         container = docker_client.containers.run(
-            "python:3.8-slim",
-            ["python", "/code/script.py"],
+            lang_conf['image'],
+            lang_conf['command'],
             volumes={host_temp_dir: {'bind': '/code', 'mode': 'ro'}},
             working_dir="/code",
             mem_limit="128m",

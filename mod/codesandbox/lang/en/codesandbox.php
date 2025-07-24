@@ -24,7 +24,7 @@
 
 $string['modulename'] = 'Code Sandbox';
 $string['modulenameplural'] = 'Code Sandboxes';
-$string['modulename_help'] = 'The Code Sandbox activity allows students to write and execute Python code directly in the browser.';
+$string['modulename_help'] = 'The Code Sandbox activity allows students to write and execute code in Python, Ruby, or Elixir directly in the browser.';
 $string['codesandbox:addinstance'] = 'Add a new Code Sandbox';
 $string['codesandbox:view'] = 'View Code Sandbox';
 $string['codesandbox:submit'] = 'Submit code to Code Sandbox';
@@ -34,6 +34,14 @@ $string['pluginname'] = 'Code Sandbox';
 
 // Form strings
 $string['name'] = 'Name';
+$string['languagesettings'] = 'Language Settings';
+$string['defaultlanguage'] = 'Default language';
+$string['defaultlanguage_help'] = 'The default programming language for this activity.';
+$string['allowedlanguages'] = 'Allowed languages';
+$string['allowedlanguages_help'] = 'Select which programming languages students can use. They will be able to switch between these languages.';
+$string['language_python'] = 'Python';
+$string['language_ruby'] = 'Ruby';
+$string['language_elixir'] = 'Elixir';
 $string['startercode'] = 'Starter code';
 $string['startercode_help'] = 'Initial code that will be displayed in the editor when students first open the activity.';
 $string['gradingsettings'] = 'Grading settings';
@@ -49,6 +57,8 @@ $string['clearoutput'] = 'Clear Output';
 $string['output'] = 'Output';
 $string['executing'] = 'Executing code...';
 $string['executionerror'] = 'Execution Error';
+$string['language'] = 'Language';
+$string['selectlanguage'] = 'Select Language';
 
 // Error messages
 $string['invalidcodesandboxid'] = 'Invalid Code Sandbox ID';

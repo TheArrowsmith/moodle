@@ -25,15 +25,37 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str'], function($, Aja
     'use strict';
 
     return {
-        init: function(cmid, starterCode, apiUrl, isGradable) {
+        init: function(cmid, starterCode, apiUrl, isGradable, initialLanguage) {
             var editor = null;
+            var currentLanguage = initialLanguage || 'python';
+            
+            // Language to CodeMirror mode mapping
+            var languageModes = {
+                'python': 'python',
+                'ruby': 'ruby',
+                'elixir': 'erlang'  // Elixir uses Erlang mode
+            };
+            
+            // Language-specific comment syntax
+            var languageComments = {
+                'python': '# ',
+                'ruby': '# ',
+                'elixir': '# '
+            };
+            
+            // Default starter codes for each language
+            var defaultStarters = {
+                'python': '# Welcome to Python Code Sandbox!\n# Write your code below:\n\n',
+                'ruby': '# Welcome to Ruby Code Sandbox!\n# Write your code below:\n\n',
+                'elixir': '# Welcome to Elixir Code Sandbox!\n# Write your code below:\n\n'
+            };
             
             // Initialize CodeMirror after DOM is ready
             $(document).ready(function() {
                 var textarea = document.getElementById('code-editor');
                 if (textarea) {
                     editor = CodeMirror.fromTextArea(textarea, {
-                        mode: 'python',
+                        mode: languageModes[currentLanguage],
                         theme: 'monokai',
                         lineNumbers: true,
                         indentUnit: 4,
@@ -45,8 +67,38 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str'], function($, Aja
                     var currentValue = editor.getValue().trim();
                     if (!currentValue && starterCode) {
                         editor.setValue(starterCode);
+                    } else if (!currentValue) {
+                        // Use language-specific default starter
+                        editor.setValue(defaultStarters[currentLanguage]);
                     }
                 }
+                
+                // Handle language change
+                $('#language-select').on('change', function() {
+                    var newLanguage = $(this).val();
+                    if (newLanguage !== currentLanguage) {
+                        currentLanguage = newLanguage;
+                        
+                        // Update CodeMirror mode
+                        editor.setOption('mode', languageModes[currentLanguage]);
+                        
+                        // If editor is empty or has default starter, update with new language starter
+                        var currentCode = editor.getValue().trim();
+                        var isDefaultStarter = false;
+                        
+                        // Check if current code is a default starter
+                        for (var lang in defaultStarters) {
+                            if (currentCode === defaultStarters[lang].trim()) {
+                                isDefaultStarter = true;
+                                break;
+                            }
+                        }
+                        
+                        if (!currentCode || isDefaultStarter) {
+                            editor.setValue(defaultStarters[currentLanguage]);
+                        }
+                    }
+                });
             });
             
             // Handle run button
@@ -63,7 +115,10 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str'], function($, Aja
                     url: apiUrl + '/execute',
                     method: 'POST',
                     contentType: 'application/json',
-                    data: JSON.stringify({code: code}),
+                    data: JSON.stringify({
+                        code: code,
+                        language: currentLanguage
+                    }),
                     success: function(response) {
                         $('#stdout').text(response.stdout || '(no output)');
                         $('#stderr').text(response.stderr || '(no errors)');
@@ -104,7 +159,8 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str'], function($, Aja
                     methodname: 'mod_codesandbox_submit_code',
                     args: {
                         cmid: cmid,
-                        code: code
+                        code: code,
+                        language: currentLanguage
                     }
                 }]);
                 

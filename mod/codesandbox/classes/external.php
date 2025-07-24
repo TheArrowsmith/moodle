@@ -41,7 +41,8 @@ class mod_codesandbox_external extends external_api {
         return new external_function_parameters(
             array(
                 'cmid' => new external_value(PARAM_INT, 'Course module ID'),
-                'code' => new external_value(PARAM_RAW, 'Code to submit')
+                'code' => new external_value(PARAM_RAW, 'Code to submit'),
+                'language' => new external_value(PARAM_ALPHA, 'Programming language', VALUE_DEFAULT, 'python')
             )
         );
     }
@@ -53,13 +54,14 @@ class mod_codesandbox_external extends external_api {
      * @param string $code Code to submit
      * @return array Result
      */
-    public static function submit_code($cmid, $code) {
+    public static function submit_code($cmid, $code, $language = 'python') {
         global $DB, $USER;
         
         // Validate parameters
         $params = self::validate_parameters(self::submit_code_parameters(), array(
             'cmid' => $cmid,
-            'code' => $code
+            'code' => $code,
+            'language' => $language
         ));
         
         // Get course module and context
@@ -75,7 +77,7 @@ class mod_codesandbox_external extends external_api {
         $codesandbox->coursemodule = $cm->id;
         
         // Process submission
-        $submission = codesandbox_process_submission($codesandbox, $USER->id, $params['code']);
+        $submission = codesandbox_process_submission($codesandbox, $USER->id, $params['code'], $params['language']);
         
         $result = array(
             'success' => true,

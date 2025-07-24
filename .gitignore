@@ -70,3 +70,4 @@ claude-flow.ps1
 hive-mind-prompt-*.txt
 node_modules
 .claude
+.claude-flow
