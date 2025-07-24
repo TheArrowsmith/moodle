@@ -70,6 +70,9 @@ if (!$apiurl) {
     $apiurl = 'http://localhost:8080';
 }
 
+// Initialize current language before use
+$current_language = 'python'; // Default
+
 // Include our JavaScript module
 $PAGE->requires->js_call_amd('mod_codesandbox/editor', 'init', array(
     $cm->id,
@@ -102,7 +105,6 @@ if (property_exists($codesandbox, 'allowed_languages') && !empty($codesandbox->a
 }
 
 $language_options = array();
-$current_language = 'python'; // Default
 
 // Determine current language with backward compatibility
 if ($submission && property_exists($submission, 'language') && !empty($submission->language)) {
