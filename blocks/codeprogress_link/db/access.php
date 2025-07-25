@@ -15,20 +15,32 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version information for local_customapi
+ * Capability definitions for block_codeprogress_link
  *
- * @package    local_customapi
+ * @package    block_codeprogress_link
  * @copyright  2024 Your Name
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->component = 'local_customapi';
-$plugin->version = 2024010103;
-$plugin->requires = 2018051700; // Moodle 3.5
-$plugin->maturity = MATURITY_STABLE;
-$plugin->release = '1.0';
-$plugin->dependencies = array(
-    'mod_codesandbox' => 2024010100
+$capabilities = array(
+
+    'block/codeprogress_link:myaddinstance' => array(
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => array(),
+        'clonepermissionsfrom' => 'moodle/my:manageblocks'
+    ),
+
+    'block/codeprogress_link:addinstance' => array(
+        'riskbitmask' => RISK_SPAM | RISK_XSS,
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_BLOCK,
+        'archetypes' => array(
+            'editingteacher' => CAP_ALLOW,
+            'manager' => CAP_ALLOW
+        ),
+        'clonepermissionsfrom' => 'moodle/site:manageblocks'
+    ),
 );

@@ -92,9 +92,25 @@ $PAGE->set_pagelayout('report');
 // Include Chart.js
 $PAGE->requires->js(new moodle_url('https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js'), true);
 
-// Include JavaScript module
+// Get data via API directly for initial load
+require_once($CFG->dirroot . '/local/customapi/classes/external.php');
+try {
+    $data = local_customapi_external::get_sandbox_grades($courseid);
+    $datajson = json_encode($data);
+    
+    // Debug: Check if we have data
+    if (debugging() && !empty($data)) {
+        debugging('Loaded ' . count($data) . ' grade records', DEBUG_DEVELOPER);
+    }
+} catch (Exception $e) {
+    $datajson = json_encode(array());
+    debugging('Error loading grades: ' . $e->getMessage(), DEBUG_DEVELOPER);
+}
+
+// Include JavaScript module with pre-loaded data
 $PAGE->requires->js_call_amd('report_codeprogress/dashboard', 'init', array(
-    'courseid' => $courseid
+    $courseid,
+    $datajson
 ));
 
 // Include custom CSS
@@ -125,5 +141,16 @@ $templatecontext = array(
     'courseid' => $courseid
 );
 echo $OUTPUT->render_from_template('report_codeprogress/dashboard', $templatecontext);
+
+// Add a noscript fallback
+echo '<noscript>';
+echo '<div class="alert alert-warning">';
+echo '<h4>JavaScript Required</h4>';
+echo '<p>This report requires JavaScript to display charts and interactive features.</p>';
+if (!empty($data)) {
+    echo '<p>Basic data: ' . count($data) . ' grade records found.</p>';
+}
+echo '</div>';
+echo '</noscript>';
 
 echo $OUTPUT->footer();

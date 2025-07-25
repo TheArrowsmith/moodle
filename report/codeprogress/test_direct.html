@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Direct Test - No Moodle</title>
+</head>
+<body>
+    <h1>Direct Links to Report - No Moodle Loading</h1>
+    <p>Click these links to test:</p>
+    
+    <h2>Option 1: Standalone Report (Recommended)</h2>
+    <p><a href="/report/codeprogress/standalone.php?course=2">Click Here for Standalone Report</a></p>
+    <p>This loads NO Moodle JavaScript at all.</p>
+    
+    <h2>Option 2: Direct URL in New Tab</h2>
+    <p>Copy and paste this URL in a NEW browser tab:</p>
+    <pre>http://localhost:8888/report/codeprogress/standalone.php?course=2</pre>
+    
+    <h2>What's Happening:</h2>
+    <ul>
+        <li>The RequireJS error is happening on the COURSE page, not the report</li>
+        <li>The block is rendered on a page that has the broken JavaScript</li>
+        <li>Once you click and go to standalone.php, there should be NO errors</li>
+    </ul>
+</body>
+</html>

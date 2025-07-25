@@ -25,9 +25,43 @@ define(['jquery', 'core/ajax', 'core/notification'], function($, Ajax, Notificat
     'use strict';
 
     return {
-        init: function(courseid) {
+        charts: {}, // Store chart instances
+        
+        init: function(courseid, preloadedData) {
             this.courseid = courseid;
-            this.loadProgressData();
+            
+            // Destroy any existing charts
+            this.destroyCharts();
+            
+            // If data is preloaded, use it directly
+            if (preloadedData) {
+                try {
+                    var data = typeof preloadedData === 'string' ? JSON.parse(preloadedData) : preloadedData;
+                    this.processData(data);
+                    this.renderTable();
+                    this.renderCharts();
+                    this.renderSummaryStats();
+                    $('#loading-message').hide();
+                    $('#progress-content').show();
+                } catch (e) {
+                    console.error('Error processing preloaded data:', e);
+                    this.loadProgressData();
+                }
+            } else {
+                this.loadProgressData();
+            }
+        },
+        
+        destroyCharts: function() {
+            // Destroy existing chart instances
+            if (this.charts.averageScores) {
+                this.charts.averageScores.destroy();
+                this.charts.averageScores = null;
+            }
+            if (this.charts.submissionStatus) {
+                this.charts.submissionStatus.destroy();
+                this.charts.submissionStatus = null;
+            }
         },
         
         loadProgressData: function() {
@@ -177,7 +211,8 @@ define(['jquery', 'core/ajax', 'core/notification'], function($, Ajax, Notificat
                 averages.push(avg.toFixed(1));
             }, this);
             
-            new Chart(ctx, {
+            if (typeof Chart !== 'undefined') {
+                this.charts.averageScores = new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: labels,
@@ -232,7 +267,8 @@ define(['jquery', 'core/ajax', 'core/notification'], function($, Ajax, Notificat
                 }, this);
             }, this);
             
-            new Chart(ctx, {
+            if (typeof Chart !== 'undefined') {
+                this.charts.submissionStatus = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
                     labels: ['Submitted', 'Not Submitted'],

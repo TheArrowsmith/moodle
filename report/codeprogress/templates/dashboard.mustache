@@ -25,6 +25,7 @@
 <div id="progress-dashboard-container">
     <div class="alert alert-info" id="loading-message">
         <i class="fa fa-spinner fa-spin"></i> {{#str}}loadingdata, report_codeprogress{{/str}}
+        <p class="small mt-2">If this message persists, check the browser console for errors.</p>
     </div>
     
     <div id="progress-content" style="display: none;">
@@ -33,7 +34,7 @@
                 <table class="table table-striped table-hover" id="progress-table">
                     <thead class="thead-light">
                         <tr id="table-header">
-                            <th class="sticky-col">{{#str}}student, core{{/str}}</th>
+                            <th class="sticky-col">{{#str}}student, report_codeprogress{{/str}}</th>
                             <!-- Assignment columns added dynamically -->
                         </tr>
                     </thead>

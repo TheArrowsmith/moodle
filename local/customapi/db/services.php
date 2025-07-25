@@ -31,7 +31,9 @@ $functions = array(
         'classpath'   => 'local/customapi/classes/external.php',
         'description' => 'Get grades for code sandbox activities in a course',
         'type'        => 'read',
-        'capabilities'=> 'moodle/grade:viewall'
+        'ajax'        => true,
+        'capabilities'=> 'moodle/grade:viewall',
+        'services'    => array(MOODLE_OFFICIAL_MOBILE_SERVICE, 'customapi')
     )
 );
 

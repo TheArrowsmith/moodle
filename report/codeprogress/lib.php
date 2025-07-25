@@ -33,11 +33,22 @@ defined('MOODLE_INTERNAL') || die();
  */
 function report_codeprogress_extend_navigation_course($navigation, $course, $context) {
     if (has_capability('report/codeprogress:view', $context)) {
-        $url = new moodle_url('/report/codeprogress/index.php', array('course' => $course->id));
+        // Use non-AMD version to avoid JavaScript issues
+        $url = new moodle_url('/report/codeprogress/index_noamd.php', array('course' => $course->id));
         $navigation->add(get_string('pluginname', 'report_codeprogress'), 
                         $url, navigation_node::TYPE_SETTING, null, null, 
                         new pix_icon('i/report', ''));
     }
+}
+
+/**
+ * This function extends the module navigation with the report items
+ *
+ * @param navigation_node $navigation The navigation node to extend
+ * @param cm_info $cm
+ */
+function report_codeprogress_extend_navigation_module($navigation, $cm) {
+    // Not applicable for this report
 }
 
 /**

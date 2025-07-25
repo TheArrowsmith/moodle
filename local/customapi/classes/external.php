@@ -61,12 +61,16 @@ class local_customapi_external extends external_api {
         self::validate_context($context);
         require_capability('moodle/grade:viewall', $context);
         
-        // Build SQL query
+        // Build SQL query - include all fields needed by fullname()
         $sql = "SELECT 
                     u.id as userid,
                     u.username,
                     u.firstname,
                     u.lastname,
+                    u.firstnamephonetic,
+                    u.lastnamephonetic,
+                    u.middlename,
+                    u.alternatename,
                     cs.id as activityid,
                     cs.name as activityname,
                     cm.id as cmid,
@@ -101,7 +105,7 @@ class local_customapi_external extends external_api {
             'courseid2' => $params['courseid']
         );
         
-        $records = $DB->get_records_sql($sql, $params);
+        $records = $DB->get_recordset_sql($sql, $params);
         
         // Format results
         $results = array();
@@ -119,6 +123,8 @@ class local_customapi_external extends external_api {
             
             $results[] = $result;
         }
+        
+        $records->close();
         
         return $results;
     }

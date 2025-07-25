@@ -15,20 +15,16 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version information for local_customapi
+ * Language strings for block_codeprogress_link
  *
- * @package    local_customapi
+ * @package    block_codeprogress_link
  * @copyright  2024 Your Name
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
-
-$plugin->component = 'local_customapi';
-$plugin->version = 2024010103;
-$plugin->requires = 2018051700; // Moodle 3.5
-$plugin->maturity = MATURITY_STABLE;
-$plugin->release = '1.0';
-$plugin->dependencies = array(
-    'mod_codesandbox' => 2024010100
-);
+$string['pluginname'] = 'Coding Progress';
+$string['codeprogress_link:addinstance'] = 'Add a coding progress block';
+$string['codeprogress_link:myaddinstance'] = 'Add a coding progress block to the My Moodle page';
+$string['blockdescription'] = 'View student progress on coding assignments with visual charts and statistics.';
+$string['viewreport'] = 'View Coding Progress Report';
+$string['allreports'] = 'All Course Reports';
