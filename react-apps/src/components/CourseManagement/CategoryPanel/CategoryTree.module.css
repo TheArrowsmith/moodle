@@ -1,0 +1,17 @@
+.tree {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.tree[role="tree"] {
+  /* Root tree styling */
+  padding: 0.5rem 0;
+}
+
+.tree[role="group"] {
+  /* Nested tree styling */
+  margin-left: 1.5rem;
+  padding-left: 0.5rem;
+  border-left: 1px solid var(--moodle-border-color, #dee2e6);
+}

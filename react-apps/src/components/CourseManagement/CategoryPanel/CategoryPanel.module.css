@@ -1,0 +1,81 @@
+.panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: var(--moodle-background-primary, #fff);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border-bottom: 1px solid var(--moodle-border-color, #dee2e6);
+  background-color: var(--moodle-background-secondary, #f8f9fa);
+}
+
+.header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--moodle-text-primary, #1a1a1a);
+}
+
+.content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.5rem;
+}
+
+.loading,
+.error {
+  padding: 2rem;
+  text-align: center;
+  color: var(--moodle-text-secondary, #6c757d);
+}
+
+.error {
+  color: var(--moodle-danger, #dc3545);
+}
+
+.bulkActions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  background-color: var(--moodle-background-secondary, #f8f9fa);
+  border-top: 1px solid var(--moodle-border-color, #dee2e6);
+}
+
+.selectedCount {
+  flex: 1;
+  font-size: 0.9rem;
+  color: var(--moodle-text-secondary, #6c757d);
+}
+
+.bulkMoveBtn,
+.bulkDeleteBtn {
+  padding: 0.25rem 0.75rem;
+  border: 1px solid var(--moodle-border-color, #dee2e6);
+  border-radius: 4px;
+  background-color: white;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.bulkMoveBtn:hover {
+  background-color: var(--moodle-primary, #0f6fc5);
+  color: white;
+  border-color: var(--moodle-primary, #0f6fc5);
+}
+
+.bulkDeleteBtn {
+  color: var(--moodle-danger, #dc3545);
+  border-color: var(--moodle-danger, #dc3545);
+}
+
+.bulkDeleteBtn:hover {
+  background-color: var(--moodle-danger, #dc3545);
+  color: white;
+}

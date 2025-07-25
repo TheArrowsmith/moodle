@@ -1,0 +1,144 @@
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.primaryActions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.createBtn,
+.bulkBtn {
+  padding: 0.25rem 0.75rem;
+  border: 1px solid var(--moodle-border-color, #dee2e6);
+  border-radius: 4px;
+  background-color: white;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.createBtn {
+  background-color: var(--moodle-success, #28a745);
+  color: white;
+  border-color: var(--moodle-success, #28a745);
+}
+
+.createBtn:hover {
+  background-color: var(--moodle-success-dark, #218838);
+  border-color: var(--moodle-success-dark, #218838);
+}
+
+.bulkBtn:hover,
+.bulkBtn.active {
+  background-color: var(--moodle-primary, #0f6fc5);
+  color: white;
+  border-color: var(--moodle-primary, #0f6fc5);
+}
+
+.bulkActions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.deleteBtn {
+  padding: 0.25rem 0.75rem;
+  border: 1px solid var(--moodle-danger, #dc3545);
+  border-radius: 4px;
+  background-color: white;
+  color: var(--moodle-danger, #dc3545);
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.deleteBtn:hover {
+  background-color: var(--moodle-danger, #dc3545);
+  color: white;
+}
+
+.createForm {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background-color: white;
+  border: 1px solid var(--moodle-border-color, #dee2e6);
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 1rem;
+  margin-top: 0.5rem;
+}
+
+.formGroup {
+  margin-bottom: 1rem;
+}
+
+.formGroup label {
+  display: block;
+  margin-bottom: 0.25rem;
+  font-weight: 500;
+  font-size: 0.875rem;
+}
+
+.formGroup input,
+.formGroup textarea {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid var(--moodle-border-color, #dee2e6);
+  border-radius: 4px;
+  font-size: 0.875rem;
+  resize: vertical;
+}
+
+.formGroup input:focus,
+.formGroup textarea:focus {
+  outline: none;
+  border-color: var(--moodle-primary, #0f6fc5);
+  box-shadow: 0 0 0 2px rgba(15, 111, 197, 0.1);
+}
+
+.formActions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
+.submitBtn,
+.cancelBtn {
+  padding: 0.5rem 1rem;
+  border: 1px solid;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.submitBtn {
+  background-color: var(--moodle-primary, #0f6fc5);
+  color: white;
+  border-color: var(--moodle-primary, #0f6fc5);
+}
+
+.submitBtn:hover:not(:disabled) {
+  background-color: var(--moodle-primary-dark, #0d5aa7);
+  border-color: var(--moodle-primary-dark, #0d5aa7);
+}
+
+.submitBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.cancelBtn {
+  background-color: white;
+  color: var(--moodle-text-secondary, #6c757d);
+  border-color: var(--moodle-border-color, #dee2e6);
+}
+
+.cancelBtn:hover {
+  background-color: var(--moodle-background-hover, #f0f0f0);
+}

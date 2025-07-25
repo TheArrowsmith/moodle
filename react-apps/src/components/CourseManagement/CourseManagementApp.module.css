@@ -1,0 +1,137 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 600px;
+  background-color: var(--moodle-background-primary, #fff);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border-bottom: 1px solid var(--moodle-border-color, #dee2e6);
+  background-color: var(--moodle-background-secondary, #f8f9fa);
+}
+
+.header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: var(--moodle-text-primary, #1a1a1a);
+}
+
+.viewModeSelector {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.viewModeSelector label {
+  font-weight: 500;
+}
+
+.viewModeSelector select {
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--moodle-border-color, #dee2e6);
+  border-radius: 4px;
+  background-color: white;
+  cursor: pointer;
+}
+
+.panels {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Layout variations */
+.twoColumn .panels {
+  grid-template-columns: 1fr 2fr;
+}
+
+.threeColumn .panels {
+  grid-template-columns: 1fr 2fr 1fr;
+}
+
+.categoriesOnly .panels {
+  grid-template-columns: 1fr;
+}
+
+.coursesOnly .panels {
+  grid-template-columns: 1fr;
+}
+
+/* Panel styling */
+.categoryPanel,
+.coursePanel,
+.detailPanel {
+  height: 100%;
+  overflow-y: auto;
+  border-right: 1px solid var(--moodle-border-color, #dee2e6);
+  background-color: var(--moodle-background-primary, #fff);
+}
+
+.categoryPanel {
+  flex: 0 0 300px;
+  min-width: 250px;
+}
+
+.coursePanel {
+  flex: 1;
+  min-width: 400px;
+}
+
+.detailPanel {
+  flex: 0 0 350px;
+  min-width: 300px;
+  border-right: none;
+}
+
+.detailPanel:last-child {
+  border-right: none;
+}
+
+/* Search section */
+.searchSection {
+  border-top: 1px solid var(--moodle-border-color, #dee2e6);
+  background-color: var(--moodle-background-secondary, #f8f9fa);
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+  .threeColumn .panels {
+    grid-template-columns: 1fr 1fr;
+  }
+  
+  .threeColumn .detailPanel {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 400px;
+    box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
+    z-index: 10;
+  }
+}
+
+@media (max-width: 768px) {
+  .panels {
+    flex-direction: column;
+  }
+  
+  .categoryPanel,
+  .coursePanel,
+  .detailPanel {
+    flex: 1;
+    border-right: none;
+    border-bottom: 1px solid var(--moodle-border-color, #dee2e6);
+  }
+  
+  .header {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+}
