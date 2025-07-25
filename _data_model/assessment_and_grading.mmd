@@ -1,0 +1,645 @@
+erDiagram
+    %% Core Gradebook Tables
+    grade_items {
+        bigint id PK
+        bigint courseid FK
+        bigint categoryid FK
+        varchar itemname
+        varchar itemtype
+        varchar itemmodule
+        bigint iteminstance
+        bigint itemnumber
+        varchar iteminfo
+        varchar idnumber
+        varchar calculation
+        bigint gradetype
+        decimal grademax
+        decimal grademin
+        bigint scaleid FK
+        bigint outcomeid FK
+        decimal gradepass
+        decimal multfactor
+        decimal plusfactor
+        decimal aggregationcoef
+        decimal aggregationcoef2
+        bigint sortorder
+        tinyint display
+        tinyint decimals
+        tinyint hidden
+        tinyint locked
+        bigint locktime
+        tinyint needsupdate
+        decimal weightoverride
+        bigint timecreated
+        bigint timemodified
+    }
+
+    grade_grades {
+        bigint id PK
+        bigint itemid FK
+        bigint userid FK
+        decimal rawgrade
+        decimal rawgrademax
+        decimal rawgrademin
+        bigint rawscaleid FK
+        bigint usermodified FK
+        decimal finalgrade
+        bigint hidden
+        bigint locked
+        bigint locktime
+        bigint exported
+        bigint overridden
+        tinyint excluded
+        longtext feedback
+        tinyint feedbackformat
+        longtext information
+        tinyint informationformat
+        bigint timecreated
+        bigint timemodified
+        decimal aggregationstatus
+        decimal aggregationweight
+    }
+
+    grade_categories {
+        bigint id PK
+        bigint courseid FK
+        bigint parent FK
+        bigint depth
+        varchar path
+        varchar fullname
+        bigint aggregation
+        bigint keephigh
+        bigint droplow
+        tinyint aggregateonlygraded
+        tinyint aggregateoutcomes
+        bigint timecreated
+        bigint timemodified
+        tinyint hidden
+    }
+
+    grade_settings {
+        bigint id PK
+        bigint courseid FK
+        varchar name
+        varchar value
+    }
+
+    grade_letters {
+        bigint id PK
+        bigint contextid FK
+        decimal lowerboundary
+        varchar letter
+    }
+
+    %% Grade History Tables
+    grade_items_history {
+        bigint id PK
+        bigint action
+        bigint oldid
+        varchar source
+        bigint timemodified
+        bigint loggeduser FK
+        bigint courseid FK
+        bigint categoryid FK
+        varchar itemname
+        varchar itemtype
+        varchar itemmodule
+        bigint iteminstance
+        bigint itemnumber
+        varchar iteminfo
+        varchar idnumber
+        varchar calculation
+        bigint gradetype
+        decimal grademax
+        decimal grademin
+        bigint scaleid FK
+        bigint outcomeid FK
+        decimal gradepass
+        decimal multfactor
+        decimal plusfactor
+        decimal aggregationcoef
+        decimal aggregationcoef2
+        bigint sortorder
+        tinyint display
+        tinyint decimals
+        tinyint hidden
+        tinyint locked
+        bigint locktime
+        tinyint needsupdate
+        decimal weightoverride
+    }
+
+    grade_grades_history {
+        bigint id PK
+        bigint action
+        bigint oldid
+        varchar source
+        bigint timemodified
+        bigint loggeduser FK
+        bigint itemid FK
+        bigint userid FK
+        decimal rawgrade
+        decimal rawgrademax
+        decimal rawgrademin
+        bigint rawscaleid FK
+        bigint usermodified FK
+        decimal finalgrade
+        bigint hidden
+        bigint locked
+        bigint locktime
+        bigint exported
+        bigint overridden
+        tinyint excluded
+        longtext feedback
+        tinyint feedbackformat
+        longtext information
+        tinyint informationformat
+    }
+
+    grade_categories_history {
+        bigint id PK
+        bigint action
+        bigint oldid
+        varchar source
+        bigint timemodified
+        bigint loggeduser FK
+        bigint courseid FK
+        bigint parent FK
+        bigint depth
+        varchar path
+        varchar fullname
+        bigint aggregation
+        bigint keephigh
+        bigint droplow
+        tinyint aggregateonlygraded
+        tinyint aggregateoutcomes
+        bigint aggregatesubcats
+    }
+
+    %% Grade Import Tables
+    grade_import_newitem {
+        bigint id PK
+        varchar itemname
+        bigint importcode
+        bigint importer FK
+    }
+
+    grade_import_values {
+        bigint id PK
+        bigint itemid FK
+        bigint newgradeitem FK
+        bigint userid FK
+        decimal finalgrade
+        longtext feedback
+        bigint importcode
+        bigint importer FK
+        tinyint importonlyfeedback
+    }
+
+    %% Outcomes Tables
+    grade_outcomes {
+        bigint id PK
+        bigint courseid FK
+        varchar shortname
+        varchar fullname
+        bigint scaleid FK
+        longtext description
+        tinyint descriptionformat
+        bigint timecreated
+        bigint timemodified
+        bigint usermodified FK
+    }
+
+    grade_outcomes_courses {
+        bigint id PK
+        bigint courseid FK
+        bigint outcomeid FK
+    }
+
+    grade_outcomes_history {
+        bigint id PK
+        bigint action
+        bigint oldid
+        varchar source
+        bigint timemodified
+        bigint loggeduser FK
+        bigint courseid FK
+        varchar shortname
+        varchar fullname
+        bigint scaleid FK
+        longtext description
+        tinyint descriptionformat
+    }
+
+    %% Scales Tables
+    scale {
+        bigint id PK
+        bigint courseid FK
+        bigint userid FK
+        varchar name
+        longtext scale
+        longtext description
+        tinyint descriptionformat
+        bigint timemodified
+    }
+
+    scale_history {
+        bigint id PK
+        bigint action
+        bigint oldid
+        varchar source
+        bigint timemodified
+        bigint loggeduser FK
+        bigint courseid FK
+        bigint userid FK
+        varchar name
+        longtext scale
+        longtext description
+    }
+
+    %% Advanced Grading Tables
+    grading_areas {
+        bigint id PK
+        bigint contextid FK
+        varchar component
+        varchar areaname
+        varchar activemethod
+    }
+
+    grading_definitions {
+        bigint id PK
+        bigint areaid FK
+        varchar method
+        varchar name
+        longtext description
+        tinyint descriptionformat
+        varchar status
+        bigint copiedfromid FK
+        bigint timecreated
+        bigint usercreated FK
+        bigint timemodified
+        bigint usermodified FK
+        bigint timecopied
+        longtext options
+    }
+
+    grading_instances {
+        bigint id PK
+        bigint definitionid FK
+        bigint raterid FK
+        bigint itemid FK
+        decimal rawgrade
+        bigint status
+        longtext feedback
+        tinyint feedbackformat
+        bigint timemodified
+    }
+
+    %% Rubric Grading
+    gradingform_rubric_criteria {
+        bigint id PK
+        bigint definitionid FK
+        bigint sortorder
+        longtext description
+        tinyint descriptionformat
+    }
+
+    gradingform_rubric_levels {
+        bigint id PK
+        bigint criterionid FK
+        decimal score
+        longtext definition
+        tinyint definitionformat
+    }
+
+    gradingform_rubric_fillings {
+        bigint id PK
+        bigint instanceid FK
+        bigint criterionid FK
+        bigint levelid FK
+        longtext remark
+        tinyint remarkformat
+    }
+
+    %% Marking Guide
+    gradingform_guide_criteria {
+        bigint id PK
+        bigint definitionid FK
+        bigint sortorder
+        varchar shortname
+        longtext description
+        tinyint descriptionformat
+        longtext descriptionmarkers
+        tinyint descriptionmarkersformat
+        decimal maxscore
+    }
+
+    gradingform_guide_comments {
+        bigint id PK
+        bigint definitionid FK
+        bigint sortorder
+        longtext description
+        tinyint descriptionformat
+    }
+
+    gradingform_guide_fillings {
+        bigint id PK
+        bigint instanceid FK
+        bigint criterionid FK
+        longtext remark
+        tinyint remarkformat
+        decimal score
+    }
+
+    %% Competency Framework
+    competency_framework {
+        bigint id PK
+        varchar shortname
+        bigint contextid FK
+        varchar idnumber
+        longtext description
+        tinyint descriptionformat
+        bigint scaleid FK
+        varchar scaleconfiguration
+        tinyint visible
+        varchar taxonomies
+        bigint timecreated
+        bigint timemodified
+        bigint usermodified FK
+    }
+
+    competency {
+        bigint id PK
+        varchar shortname
+        longtext description
+        tinyint descriptionformat
+        varchar idnumber
+        bigint competencyframeworkid FK
+        bigint parentid FK
+        varchar path
+        bigint sortorder
+        varchar ruletype
+        varchar ruleoutcome
+        varchar ruleconfig
+        bigint scaleid FK
+        varchar scaleconfiguration
+        bigint timecreated
+        bigint timemodified
+        bigint usermodified FK
+    }
+
+    competency_relatedcomp {
+        bigint id PK
+        bigint competencyid FK
+        bigint relatedcompetencyid FK
+        bigint timecreated
+        bigint timemodified
+        bigint usermodified FK
+    }
+
+    %% Competency Templates
+    competency_template {
+        bigint id PK
+        varchar shortname
+        bigint contextid FK
+        longtext description
+        tinyint descriptionformat
+        tinyint visible
+        bigint duedate
+        bigint timecreated
+        bigint timemodified
+        bigint usermodified FK
+    }
+
+    competency_templatecomp {
+        bigint id PK
+        bigint templateid FK
+        bigint competencyid FK
+        bigint timecreated
+        bigint timemodified
+        bigint usermodified FK
+        bigint sortorder
+    }
+
+    competency_templatecohort {
+        bigint id PK
+        bigint templateid FK
+        bigint cohortid FK
+        bigint timecreated
+        bigint timemodified
+        bigint usermodified FK
+    }
+
+    %% Competency Plans
+    competency_plan {
+        bigint id PK
+        varchar name
+        longtext description
+        tinyint descriptionformat
+        bigint userid FK
+        bigint templateid FK
+        bigint origtemplateid FK
+        bigint status
+        bigint duedate
+        bigint reviewerid FK
+        bigint timecreated
+        bigint timemodified
+        bigint usermodified FK
+    }
+
+    competency_plancomp {
+        bigint id PK
+        bigint planid FK
+        bigint competencyid FK
+        bigint sortorder
+        bigint timecreated
+        bigint timemodified
+        bigint usermodified FK
+    }
+
+    %% User Competencies
+    competency_usercomp {
+        bigint id PK
+        bigint userid FK
+        bigint competencyid FK
+        bigint status
+        bigint reviewerid FK
+        tinyint proficiency
+        decimal grade
+        bigint timecreated
+        bigint timemodified
+        bigint usermodified FK
+    }
+
+    competency_usercompcourse {
+        bigint id PK
+        bigint userid FK
+        bigint courseid FK
+        bigint competencyid FK
+        tinyint proficiency
+        decimal grade
+        bigint timecreated
+        bigint timemodified
+        bigint usermodified FK
+    }
+
+    competency_usercompplan {
+        bigint id PK
+        bigint userid FK
+        bigint competencyid FK
+        bigint planid FK
+        tinyint proficiency
+        decimal grade
+        bigint sortorder
+        bigint timecreated
+        bigint timemodified
+        bigint usermodified FK
+    }
+
+    %% Evidence
+    competency_evidence {
+        bigint id PK
+        bigint usercompetencyid FK
+        bigint contextid FK
+        bigint action
+        varchar actionuserid FK
+        longtext descidentifier
+        longtext desccomponent
+        longtext desca
+        varchar url
+        decimal grade
+        longtext note
+        bigint timecreated
+        bigint timemodified
+        bigint usermodified FK
+    }
+
+    competency_userevidence {
+        bigint id PK
+        bigint userid FK
+        varchar name
+        longtext description
+        tinyint descriptionformat
+        varchar url
+        bigint timecreated
+        bigint timemodified
+        bigint usermodified FK
+    }
+
+    competency_userevidencecomp {
+        bigint id PK
+        bigint userevidenceid FK
+        bigint competencyid FK
+        bigint timecreated
+        bigint timemodified
+        bigint usermodified FK
+    }
+
+    %% Course Competencies
+    competency_coursecomp {
+        bigint id PK
+        bigint courseid FK
+        bigint competencyid FK
+        varchar ruleoutcome
+        bigint sortorder
+        bigint timecreated
+        bigint timemodified
+        bigint usermodified FK
+    }
+
+    competency_coursecompsetting {
+        bigint id PK
+        bigint courseid FK
+        tinyint pushratingstouserplans
+        bigint timecreated
+        bigint timemodified
+        bigint usermodified FK
+    }
+
+    competency_modulecomp {
+        bigint id PK
+        bigint cmid FK
+        bigint timecreated
+        bigint timemodified
+        bigint usermodified FK
+        bigint sortorder
+        bigint competencyid FK
+        varchar ruleoutcome
+    }
+
+    %% RELATIONSHIPS
+
+    %% Core Gradebook Relationships
+    grade_items ||--o{ grade_grades : "has"
+    grade_categories ||--o{ grade_items : "contains"
+    grade_categories ||--o{ grade_categories : "has_parent"
+    grade_items }o--|| scale : "uses"
+    grade_items }o--|| grade_outcomes : "assesses"
+
+    %% Grade History Relationships
+    grade_items ||--o{ grade_items_history : "tracked_by"
+    grade_grades ||--o{ grade_grades_history : "tracked_by"
+    grade_categories ||--o{ grade_categories_history : "tracked_by"
+    grade_outcomes ||--o{ grade_outcomes_history : "tracked_by"
+    scale ||--o{ scale_history : "tracked_by"
+
+    %% Grade Import Relationships
+    grade_import_newitem ||--o{ grade_import_values : "imported_to"
+
+    %% Outcomes Relationships
+    grade_outcomes ||--o{ grade_outcomes_courses : "used_in"
+    grade_outcomes }o--|| scale : "measured_by"
+
+    %% Advanced Grading Relationships
+    grading_areas ||--o{ grading_definitions : "has"
+    grading_definitions ||--o{ grading_instances : "instantiated_by"
+    grading_definitions ||--o{ grading_definitions : "copied_from"
+
+    %% Rubric Relationships
+    grading_definitions ||--o{ gradingform_rubric_criteria : "defines"
+    gradingform_rubric_criteria ||--o{ gradingform_rubric_levels : "has"
+    grading_instances ||--o{ gradingform_rubric_fillings : "filled_by"
+    gradingform_rubric_criteria ||--o{ gradingform_rubric_fillings : "evaluated_in"
+    gradingform_rubric_levels ||--o{ gradingform_rubric_fillings : "selected_in"
+
+    %% Marking Guide Relationships
+    grading_definitions ||--o{ gradingform_guide_criteria : "defines"
+    grading_definitions ||--o{ gradingform_guide_comments : "has"
+    grading_instances ||--o{ gradingform_guide_fillings : "filled_by"
+    gradingform_guide_criteria ||--o{ gradingform_guide_fillings : "evaluated_in"
+
+    %% Competency Framework Relationships
+    competency_framework ||--o{ competency : "contains"
+    competency_framework }o--|| scale : "uses"
+    competency ||--o{ competency : "has_parent"
+    competency ||--o{ competency_relatedcomp : "relates_to"
+    competency ||--o{ competency_relatedcomp : "related_from"
+    competency }o--|| scale : "measured_by"
+
+    %% Template Relationships
+    competency_template ||--o{ competency_templatecomp : "includes"
+    competency ||--o{ competency_templatecomp : "included_in"
+    competency_template ||--o{ competency_templatecohort : "assigned_to"
+    competency_template ||--o{ competency_plan : "generates"
+
+    %% Plan Relationships
+    competency_plan ||--o{ competency_plancomp : "includes"
+    competency ||--o{ competency_plancomp : "planned_in"
+
+    %% User Competency Relationships
+    competency ||--o{ competency_usercomp : "achieved_by"
+    competency ||--o{ competency_usercompcourse : "achieved_in"
+    competency ||--o{ competency_usercompplan : "planned_for"
+    competency_plan ||--o{ competency_usercompplan : "tracks"
+    competency_usercomp ||--o{ competency_evidence : "evidenced_by"
+
+    %% Evidence Relationships
+    competency_userevidence ||--o{ competency_userevidencecomp : "demonstrates"
+    competency ||--o{ competency_userevidencecomp : "demonstrated_by"
+
+    %% Course Competency Relationships
+    competency ||--o{ competency_coursecomp : "taught_in"
+    competency ||--o{ competency_modulecomp : "assessed_in"
+
+    %% Grade Letters
+    grade_letters }o--|| context : "scoped_to"

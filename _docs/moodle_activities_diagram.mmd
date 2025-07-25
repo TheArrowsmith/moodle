@@ -1,0 +1,185 @@
+erDiagram
+    %% Moodle Activity Modules
+
+    mdl_assign {
+        bigint id PK
+        bigint course 
+        varchar name 
+        longtext intro 
+        smallint introformat 
+        tinyint alwaysshowdescription 
+        tinyint nosubmissions 
+        tinyint submissiondrafts 
+    }
+    mdl_assign_submission {
+        bigint id PK
+        bigint assignment 
+        bigint userid 
+        bigint timecreated 
+        bigint timemodified 
+        bigint timestarted 
+        varchar status 
+        bigint groupid 
+    }
+    mdl_assign_grades {
+        bigint id PK
+        bigint assignment 
+        bigint userid 
+        bigint timecreated 
+        bigint timemodified 
+        bigint grader 
+        decimal grade 
+        bigint attemptnumber 
+    }
+    mdl_quiz {
+        bigint id PK
+        bigint course 
+        varchar name 
+        longtext intro 
+        smallint introformat 
+        bigint timeopen 
+        bigint timeclose 
+        bigint timelimit 
+    }
+    mdl_quiz_attempts {
+        bigint id PK
+        bigint quiz 
+        bigint userid 
+        mediumint attempt 
+        bigint uniqueid 
+        longtext layout 
+        bigint currentpage 
+        smallint preview 
+    }
+    mdl_quiz_grades {
+        bigint id PK
+        bigint quiz 
+        bigint userid 
+        decimal grade 
+        bigint timemodified 
+    }
+    mdl_forum {
+        bigint id PK
+        bigint course 
+        varchar type 
+        varchar name 
+        longtext intro 
+        smallint introformat 
+        bigint duedate 
+        bigint cutoffdate 
+    }
+    mdl_forum_discussions {
+        bigint id PK
+        bigint course 
+        bigint forum 
+        varchar name 
+        bigint firstpost 
+        bigint userid 
+        bigint groupid 
+        tinyint assessed 
+    }
+    mdl_forum_posts {
+        bigint id PK
+        bigint discussion 
+        bigint parent 
+        bigint userid 
+        bigint created 
+        bigint modified 
+        tinyint mailed 
+        varchar subject 
+    }
+    mdl_choice {
+        bigint id PK
+        bigint course 
+        varchar name 
+        longtext intro 
+        smallint introformat 
+        tinyint publish 
+        tinyint showresults 
+        smallint display 
+    }
+    mdl_choice_answers {
+        bigint id PK
+        bigint choiceid 
+        bigint userid 
+        bigint optionid 
+        bigint timemodified 
+    }
+    mdl_lesson {
+        bigint id PK
+        bigint course 
+        varchar name 
+        longtext intro 
+        smallint introformat 
+        smallint practice 
+        smallint modattempts 
+        smallint usepassword 
+    }
+    mdl_lesson_pages {
+        bigint id PK
+        bigint lessonid 
+        bigint prevpageid 
+        bigint nextpageid 
+        smallint qtype 
+        smallint qoption 
+        smallint layout 
+        smallint display 
+    }
+    mdl_lesson_attempts {
+        bigint id PK
+        bigint lessonid 
+        bigint pageid 
+        bigint userid 
+        bigint answerid 
+        smallint retry 
+        bigint correct 
+        longtext useranswer 
+    }
+    mdl_workshop {
+        bigint id PK
+        bigint course 
+        varchar name 
+        longtext intro 
+        smallint introformat 
+        longtext instructauthors 
+        smallint instructauthorsformat 
+        longtext instructreviewers 
+    }
+    mdl_workshop_submissions {
+        bigint id PK
+        bigint workshopid 
+        tinyint example 
+        bigint authorid 
+        bigint timecreated 
+        bigint timemodified 
+        varchar title 
+        longtext content 
+    }
+    mdl_scorm {
+        bigint id PK
+        bigint course 
+        varchar name 
+        varchar scormtype 
+        varchar reference 
+        longtext intro 
+        smallint introformat 
+        varchar version 
+    }
+    mdl_course_modules {
+        bigint id PK
+        bigint course 
+        bigint module 
+        bigint instance 
+        bigint section 
+        varchar idnumber 
+        bigint added 
+        smallint score 
+    }
+    mdl_modules {
+        bigint id PK
+        varchar name 
+        bigint cron 
+        bigint lastcron 
+        varchar search 
+        tinyint visible 
+    }

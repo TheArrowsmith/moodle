@@ -1,0 +1,613 @@
+erDiagram
+    %% Core Logging Tables
+    logstore_standard_log {
+        bigint id PK
+        varchar eventname
+        varchar component
+        varchar action
+        varchar target
+        varchar objecttable
+        bigint objectid
+        varchar crud
+        bigint edulevel
+        bigint contextid FK
+        bigint contextlevel
+        bigint contextinstanceid
+        bigint userid FK
+        bigint courseid FK
+        bigint relateduserid FK
+        tinyint anonymous
+        longtext other
+        bigint timecreated
+        varchar origin
+        varchar ip
+        bigint realuserid FK
+    }
+
+    log {
+        bigint id PK
+        bigint time
+        bigint userid FK
+        varchar ip
+        bigint course FK
+        varchar module
+        bigint cmid FK
+        varchar action
+        varchar url
+        varchar info
+    }
+
+    log_display {
+        bigint id PK
+        varchar module
+        varchar action
+        varchar mtable
+        varchar field
+        varchar component
+    }
+
+    log_queries {
+        bigint id PK
+        bigint qtype
+        longtext sqltext
+        bigint sqlparams
+        bigint error
+        longtext info
+        longtext backtrace
+        bigint exectime
+        bigint timelogged
+    }
+
+    %% Analytics Engine
+    analytics_models {
+        bigint id PK
+        tinyint enabled
+        tinyint trained
+        varchar name
+        varchar target
+        varchar indicators
+        longtext timesplitting
+        longtext predictionsprocessor
+        bigint version
+        bigint contextid FK
+        bigint timecreated
+        bigint timemodified
+        bigint usermodified FK
+    }
+
+    analytics_models_log {
+        bigint id PK
+        bigint modelid FK
+        bigint version
+        varchar evaluationmode
+        varchar target
+        varchar indicators
+        longtext timesplitting
+        decimal score
+        longtext info
+        varchar dir
+        bigint timecreated
+        bigint usermodified FK
+    }
+
+    analytics_predictions {
+        bigint id PK
+        bigint modelid FK
+        bigint contextid FK
+        bigint sampleid
+        bigint rangeindex
+        decimal prediction
+        decimal predictionscore
+        longtext calculations
+        bigint timecreated
+        bigint timestart
+        bigint timeend
+    }
+
+    analytics_prediction_actions {
+        bigint id PK
+        bigint predictionid FK
+        bigint userid FK
+        varchar actionname
+        bigint timecreated
+    }
+
+    analytics_train_samples {
+        bigint id PK
+        bigint modelid FK
+        bigint analysableid
+        varchar timesplitting
+        bigint sampleids
+        bigint timecreated
+    }
+
+    analytics_predict_samples {
+        bigint id PK
+        bigint modelid FK
+        bigint analysableid
+        varchar timesplitting
+        bigint rangeindex
+        bigint sampleids
+        longtext sampledata
+        bigint timecreated
+        bigint timemodified
+    }
+
+    analytics_indicator_calc {
+        bigint id PK
+        bigint starttime
+        bigint endtime
+        bigint contextid FK
+        varchar sampleorigin
+        bigint sampleid
+        varchar indicator
+        decimal value
+        bigint timecreated
+    }
+
+    analytics_used_analysables {
+        bigint id PK
+        bigint modelid FK
+        varchar action
+        bigint analysableid
+        bigint firstanalysis
+        bigint timeanalysed
+    }
+
+    analytics_used_files {
+        bigint id PK
+        bigint modelid FK
+        bigint fileid FK
+        varchar action
+        bigint time
+    }
+
+    %% Course Completion Tracking
+    course_completions {
+        bigint id PK
+        bigint userid FK
+        bigint course FK
+        bigint timeenrolled
+        bigint timestarted
+        bigint timecompleted
+        bigint reaggregate
+    }
+
+    course_completion_criteria {
+        bigint id PK
+        bigint course FK
+        bigint criteriatype
+        varchar module
+        bigint moduleinstance
+        bigint courseinstance
+        bigint enrolperiod
+        bigint timeend
+        decimal gradepass
+        bigint role FK
+    }
+
+    course_completion_crit_compl {
+        bigint id PK
+        bigint userid FK
+        bigint course FK
+        bigint criteriaid FK
+        decimal gradefinal
+        bigint unenroled
+        bigint timecompleted
+    }
+
+    course_completion_aggr_methd {
+        bigint id PK
+        bigint course FK
+        bigint criteriatype
+        tinyint method
+        decimal value
+    }
+
+    course_modules_completion {
+        bigint id PK
+        bigint coursemoduleid FK
+        bigint userid FK
+        tinyint completionstate
+        tinyint viewed
+        tinyint overrideby FK
+        bigint timemodified
+    }
+
+    course_completion_defaults {
+        bigint id PK
+        bigint course FK
+        bigint module FK
+        tinyint completion
+        bigint completionview
+        bigint completionusegrade
+        bigint completionexpected
+        longtext customrules
+    }
+
+    %% Statistics Tables
+    stats_daily {
+        bigint id PK
+        bigint courseid FK
+        bigint timeend
+        bigint roleid FK
+        bigint stattype
+        bigint stat1
+        bigint stat2
+    }
+
+    stats_weekly {
+        bigint id PK
+        bigint courseid FK
+        bigint timeend
+        bigint roleid FK
+        bigint stattype
+        bigint stat1
+        bigint stat2
+    }
+
+    stats_monthly {
+        bigint id PK
+        bigint courseid FK
+        bigint timeend
+        bigint roleid FK
+        bigint stattype
+        bigint stat1
+        bigint stat2
+    }
+
+    stats_user_daily {
+        bigint id PK
+        bigint courseid FK
+        bigint userid FK
+        bigint roleid FK
+        bigint timeend
+        bigint statsreads
+        bigint statswrites
+        bigint stattype
+    }
+
+    stats_user_weekly {
+        bigint id PK
+        bigint courseid FK
+        bigint userid FK
+        bigint roleid FK
+        bigint timeend
+        bigint statsreads
+        bigint statswrites
+        bigint stattype
+    }
+
+    stats_user_monthly {
+        bigint id PK
+        bigint courseid FK
+        bigint userid FK
+        bigint roleid FK
+        bigint timeend
+        bigint statsreads
+        bigint statswrites
+        bigint stattype
+    }
+
+    %% Event Monitoring
+    event {
+        bigint id PK
+        varchar name
+        longtext description
+        tinyint format
+        bigint courseid FK
+        bigint groupid FK
+        bigint userid FK
+        bigint repeatid
+        varchar modulename
+        bigint instance
+        varchar type
+        varchar eventtype
+        bigint timestart
+        bigint timeduration
+        bigint timesort
+        tinyint visible
+        varchar uuid
+        bigint sequence
+        bigint timemodified
+        bigint subscriptionid FK
+    }
+
+    event_subscriptions {
+        bigint id PK
+        varchar url
+        bigint courseid FK
+        bigint groupid FK
+        bigint userid FK
+        varchar eventtype
+        bigint pollinterval
+        bigint lastupdated
+        varchar name
+    }
+
+    events_handlers {
+        bigint id PK
+        varchar eventname
+        varchar component
+        varchar handlerfile
+        varchar handlerfunction
+        varchar schedule
+        bigint status
+        tinyint internal
+    }
+
+    events_queue {
+        bigint id PK
+        longtext eventdata
+        varchar stackdump
+        bigint userid FK
+        bigint timecreated
+    }
+
+    events_queue_handlers {
+        bigint id PK
+        bigint queuedeventid FK
+        bigint handlerid FK
+        bigint status
+        varchar errormessage
+        bigint timemodified
+    }
+
+    %% Tool Monitoring
+    tool_monitor_events {
+        bigint id PK
+        varchar eventname
+        bigint contextid FK
+        bigint contextlevel
+        bigint contextinstanceid
+        varchar link
+        bigint courseid FK
+        bigint timecreated
+    }
+
+    tool_monitor_history {
+        bigint id PK
+        bigint sid FK
+        bigint userid FK
+        bigint timesent
+    }
+
+    tool_monitor_rules {
+        bigint id PK
+        varchar name
+        longtext description
+        tinyint descriptionformat
+        bigint userid FK
+        bigint courseid FK
+        varchar plugin
+        varchar eventname
+        varchar template
+        tinyint templateformat
+        bigint frequency
+        bigint timewindow
+        bigint timemodified
+        bigint timecreated
+    }
+
+    tool_monitor_subscriptions {
+        bigint id PK
+        bigint courseid FK
+        bigint ruleid FK
+        bigint cmid FK
+        bigint userid FK
+        bigint timecreated
+        bigint lastnotificationsent
+        bigint inactivedate
+    }
+
+    %% Report Builder
+    report_builder {
+        bigint id PK
+        varchar source
+        tinyint hidden
+        varchar fullname
+        varchar shortname
+        longtext summary
+        tinyint summaryformat
+        tinyint obsolete
+        bigint timemodified
+    }
+
+    report_builder_columns {
+        bigint id PK
+        bigint reportid FK
+        varchar type
+        varchar value
+        varchar transform
+        varchar heading
+        bigint sortorder
+        tinyint hidden
+        varchar customheading
+        bigint aggregation
+    }
+
+    report_builder_filters {
+        bigint id PK
+        bigint reportid FK
+        varchar type
+        varchar value
+        tinyint advanced
+        bigint sortorder
+        varchar heading
+        varchar customname
+        bigint ftype
+        varchar defaultvalue
+    }
+
+    report_builder_graph {
+        bigint id PK
+        bigint reportid FK
+        varchar type
+        tinyint stacked
+        tinyint horizontal
+        varchar legendtitle
+        varchar series
+        bigint maxrecords
+    }
+
+    report_builder_saved {
+        bigint id PK
+        bigint reportid FK
+        bigint userid FK
+        varchar name
+        longtext search
+        tinyint ispublic
+        bigint timemodified
+    }
+
+    report_builder_schedule {
+        bigint id PK
+        bigint reportid FK
+        bigint userid FK
+        bigint savedsearchid FK
+        varchar format
+        varchar exporttofilesystem
+        bigint frequency
+        varchar schedule
+        bigint nextreport
+        bigint usermodified FK
+        bigint lastmodified
+    }
+
+    %% Config and Backup Logs
+    config_log {
+        bigint id PK
+        bigint userid FK
+        bigint timemodified
+        varchar plugin
+        varchar name
+        longtext value
+        longtext oldvalue
+    }
+
+    backup_logs {
+        bigint id PK
+        bigint backupid FK
+        bigint loglevel
+        longtext message
+        bigint timecreated
+    }
+
+    portfolio_log {
+        bigint id PK
+        bigint userid FK
+        bigint time
+        bigint portfolio FK
+        varchar caller_class
+        varchar caller_file
+        varchar caller_component
+        varchar caller_sha1
+        bigint tempdataid
+        varchar returnurl
+        bigint continueurl
+    }
+
+    mnet_log {
+        bigint id PK
+        bigint hostid FK
+        bigint remoteid
+        bigint time
+        bigint userid FK
+        varchar ip
+        bigint course FK
+        varchar coursename
+        varchar module
+        bigint cmid
+        varchar action
+        varchar url
+        varchar info
+    }
+
+    %% RELATIONSHIPS
+
+    %% Core Logging
+    logstore_standard_log }o--|| context : "logged_in"
+    logstore_standard_log }o--|| user : "performed_by"
+    logstore_standard_log }o--|| course : "in_course"
+    logstore_standard_log }o--|| user : "related_to"
+    logstore_standard_log }o--|| user : "on_behalf_of"
+
+    log }o--|| user : "performed_by"
+    log }o--|| course : "in_course"
+    log }o--|| course_modules : "on_module"
+
+    %% Analytics
+    analytics_models ||--o{ analytics_models_log : "logged_by"
+    analytics_models ||--o{ analytics_predictions : "generates"
+    analytics_models ||--o{ analytics_train_samples : "trains_with"
+    analytics_models ||--o{ analytics_predict_samples : "predicts_with"
+    analytics_models ||--o{ analytics_used_analysables : "analyzes"
+    analytics_models ||--o{ analytics_used_files : "uses"
+    analytics_predictions ||--o{ analytics_prediction_actions : "acted_upon"
+    analytics_indicator_calc }o--|| context : "calculated_in"
+
+    %% Course Completion
+    course ||--o{ course_completions : "tracks"
+    course ||--o{ course_completion_criteria : "defines"
+    course ||--o{ course_completion_aggr_methd : "aggregates_by"
+    course ||--o{ course_completion_defaults : "has_defaults"
+    course_completion_criteria ||--o{ course_completion_crit_compl : "completed_by"
+    course_modules ||--o{ course_modules_completion : "tracks"
+    modules ||--o{ course_completion_defaults : "has_defaults_for"
+    user ||--o{ course_completions : "progresses_in"
+    user ||--o{ course_completion_crit_compl : "completes"
+    user ||--o{ course_modules_completion : "completes"
+
+    %% Statistics
+    course ||--o{ stats_daily : "tracked_by"
+    course ||--o{ stats_weekly : "tracked_by"
+    course ||--o{ stats_monthly : "tracked_by"
+    user ||--o{ stats_user_daily : "tracked_by"
+    user ||--o{ stats_user_weekly : "tracked_by"
+    user ||--o{ stats_user_monthly : "tracked_by"
+    role ||--o{ stats_daily : "for_role"
+    role ||--o{ stats_weekly : "for_role"
+    role ||--o{ stats_monthly : "for_role"
+    role ||--o{ stats_user_daily : "for_role"
+    role ||--o{ stats_user_weekly : "for_role"
+    role ||--o{ stats_user_monthly : "for_role"
+
+    %% Events
+    event }o--|| course : "scheduled_in"
+    event }o--|| user : "created_by"
+    event }o--|| event_subscriptions : "from_subscription"
+    event_subscriptions }o--|| course : "for_course"
+    event_subscriptions }o--|| user : "owned_by"
+    events_handlers ||--o{ events_queue_handlers : "processes"
+    events_queue ||--o{ events_queue_handlers : "handled_by"
+    events_queue }o--|| user : "for_user"
+
+    %% Tool Monitoring
+    tool_monitor_events }o--|| context : "occurred_in"
+    tool_monitor_events }o--|| course : "in_course"
+    tool_monitor_rules ||--o{ tool_monitor_subscriptions : "subscribed_to"
+    tool_monitor_rules }o--|| user : "created_by"
+    tool_monitor_rules }o--|| course : "monitors"
+    tool_monitor_subscriptions }o--|| user : "owned_by"
+    tool_monitor_subscriptions }o--|| course : "monitors"
+    tool_monitor_subscriptions }o--|| course_modules : "monitors"
+    tool_monitor_subscriptions ||--o{ tool_monitor_history : "notified_in"
+    tool_monitor_history }o--|| user : "sent_to"
+
+    %% Report Builder
+    report_builder ||--o{ report_builder_columns : "has"
+    report_builder ||--o{ report_builder_filters : "filtered_by"
+    report_builder ||--o{ report_builder_graph : "visualized_by"
+    report_builder ||--o{ report_builder_saved : "saved_as"
+    report_builder ||--o{ report_builder_schedule : "scheduled_by"
+    report_builder_saved }o--|| user : "saved_by"
+    report_builder_saved ||--o{ report_builder_schedule : "scheduled_with"
+    report_builder_schedule }o--|| user : "scheduled_by"
+    report_builder_schedule }o--|| user : "modified_by"
+
+    %% Logs
+    config_log }o--|| user : "changed_by"
+    backup_logs }o--|| backup_courses : "for_backup"
+    portfolio_log }o--|| user : "exported_by"
+    mnet_log }o--|| user : "performed_by"
+    mnet_log }o--|| course : "in_course"

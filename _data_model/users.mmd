@@ -1,0 +1,473 @@
+erDiagram
+    %% Core User Tables
+    user {
+        bigint id PK
+        varchar auth
+        tinyint confirmed
+        tinyint deleted
+        tinyint suspended
+        bigint mnethostid FK
+        varchar username
+        varchar password
+        varchar email
+        bigint firstaccess
+        bigint lastaccess
+        bigint lastlogin
+        bigint currentlogin
+        varchar lastip
+        bigint timecreated
+        bigint timemodified
+    }
+
+    user_devices {
+        bigint id PK
+        bigint userid FK
+        varchar appid
+        varchar name
+        varchar model
+        varchar platform
+        varchar version
+        varchar pushid
+        bigint timecreated
+        bigint timemodified
+    }
+
+    user_enrolments {
+        bigint id PK
+        bigint enrolid FK
+        bigint userid FK
+        bigint timestart
+        bigint timeend
+        bigint timecreated
+        bigint timemodified
+    }
+
+    user_info_category {
+        bigint id PK
+        varchar name
+        bigint sortorder
+    }
+
+    user_info_field {
+        bigint id PK
+        varchar shortname
+        varchar name
+        bigint categoryid FK
+        bigint sortorder
+        tinyint required
+        tinyint visible
+        tinyint forceunique
+    }
+
+    user_info_data {
+        bigint id PK
+        bigint userid FK
+        bigint fieldid FK
+        longtext data
+        tinyint dataformat
+    }
+
+    user_lastaccess {
+        bigint id PK
+        bigint userid FK
+        bigint courseid FK
+        bigint timeaccess
+    }
+
+    user_password_history {
+        bigint id PK
+        bigint userid FK
+        varchar hash
+        bigint timecreated
+    }
+
+    user_password_resets {
+        bigint id PK
+        bigint userid FK
+        varchar token
+        bigint timerequested
+        bigint timererequested
+    }
+
+    user_preferences {
+        bigint id PK
+        bigint userid FK
+        varchar name
+        varchar value
+    }
+
+    user_private_key {
+        bigint id PK
+        varchar script
+        varchar value
+        bigint userid FK
+        bigint instance
+        varchar iprestriction
+        bigint validuntil
+        bigint timecreated
+    }
+
+    %% User Activity/Stats Tables
+    stats_user_daily {
+        bigint id PK
+        bigint courseid FK
+        bigint userid FK
+        bigint roleid FK
+        bigint timeend
+        bigint statsreads
+        bigint statswrites
+    }
+
+    stats_user_monthly {
+        bigint id PK
+        bigint courseid FK
+        bigint userid FK
+        bigint roleid FK
+        bigint timeend
+        bigint statsreads
+        bigint statswrites
+    }
+
+    stats_user_weekly {
+        bigint id PK
+        bigint courseid FK
+        bigint userid FK
+        bigint roleid FK
+        bigint timeend
+        bigint statsreads
+        bigint statswrites
+    }
+
+    %% User Messaging/Actions
+    message_user_actions {
+        bigint id PK
+        bigint userid FK
+        bigint messageid FK
+        bigint action
+        bigint timecreated
+    }
+
+    %% Core Auth Tables
+    sessions {
+        bigint id PK
+        bigint state
+        varchar sid
+        bigint userid FK
+        varchar sessdata
+        varchar sesstimeout
+        bigint timecreated
+        bigint timemodified
+        varchar firstip
+        varchar lastip
+    }
+
+    external_tokens {
+        bigint id PK
+        varchar token
+        bigint tokentype
+        bigint userid FK
+        bigint externalserviceid FK
+        varchar sid
+        bigint contextid FK
+        bigint creatorid FK
+        varchar iprestriction
+        bigint validuntil
+        bigint timecreated
+        bigint lastaccess
+    }
+
+    auth_oauth2_linked_login {
+        bigint id PK
+        bigint userid FK
+        bigint issuerid FK
+        varchar username
+        varchar email
+        bigint confirmtoken
+        bigint confirmtokenexpires
+    }
+
+    %% OAuth2 Tables
+    oauth2_issuer {
+        bigint id PK
+        varchar name
+        varchar image
+        varchar baseurl
+        varchar clientid
+        varchar clientsecret
+        varchar loginscopes
+        varchar loginscopesoffline
+        varchar loginparams
+        varchar loginparamsoffline
+        varchar alloweddomains
+        tinyint enabled
+        bigint showonloginpage
+        bigint sortorder
+        bigint timecreated
+        bigint timemodified
+        bigint usermodified FK
+    }
+
+    oauth2_endpoint {
+        bigint id PK
+        bigint issuerid FK
+        varchar name
+        varchar url
+        bigint timecreated
+        bigint timemodified
+        bigint usermodified FK
+    }
+
+    oauth2_system_account {
+        bigint id PK
+        bigint issuerid FK
+        varchar refreshtoken
+        varchar grantedscopes
+        varchar email
+        varchar username
+        bigint timecreated
+        bigint timemodified
+        bigint usermodified FK
+    }
+
+    oauth2_user_field_mapping {
+        bigint id PK
+        bigint issuerid FK
+        varchar externalfield
+        varchar internalfield
+        bigint timecreated
+        bigint timemodified
+        bigint usermodified FK
+    }
+
+    %% Role & Permission Tables
+    role {
+        bigint id PK
+        varchar name
+        varchar shortname
+        varchar description
+        bigint sortorder
+        varchar archetype
+    }
+
+    role_assignments {
+        bigint id PK
+        bigint roleid FK
+        bigint contextid FK
+        bigint userid FK
+        bigint timemodified
+        bigint modifierid FK
+        varchar component
+        bigint itemid
+        bigint sortorder
+    }
+
+    role_capabilities {
+        bigint id PK
+        bigint contextid FK
+        bigint roleid FK
+        varchar capability FK
+        bigint permission
+        bigint timemodified
+        bigint modifierid FK
+    }
+
+    role_allow_assign {
+        bigint id PK
+        bigint roleid FK
+        bigint allowassign FK
+    }
+
+    role_allow_override {
+        bigint id PK
+        bigint roleid FK
+        bigint allowoverride FK
+    }
+
+    role_allow_switch {
+        bigint id PK
+        bigint roleid FK
+        bigint allowswitch FK
+    }
+
+    role_allow_view {
+        bigint id PK
+        bigint roleid FK
+        bigint allowview FK
+    }
+
+    role_context_levels {
+        bigint id PK
+        bigint roleid FK
+        bigint contextlevel
+    }
+
+    role_names {
+        bigint id PK
+        bigint roleid FK
+        bigint contextid FK
+        varchar name
+    }
+
+    role_sortorder {
+        bigint id PK
+        bigint userid FK
+        bigint roleid FK
+        bigint contextid FK
+        bigint sortoder
+    }
+
+    %% Context Tables
+    context {
+        bigint id PK
+        bigint contextlevel
+        bigint instanceid
+        varchar path
+        bigint depth
+    }
+
+    capabilities {
+        bigint id PK
+        varchar name
+        varchar captype
+        bigint contextlevel
+        varchar component
+        bigint riskbitmask
+    }
+
+    %% External Service Authentication
+    external_services_users {
+        bigint id PK
+        bigint externalserviceid FK
+        bigint userid FK
+        varchar iprestriction
+        bigint validuntil
+        bigint timecreated
+    }
+
+    mnet_session {
+        bigint id PK
+        bigint userid FK
+        varchar username
+        varchar token
+        bigint mnethostid FK
+        varchar useragent
+        bigint confirm_timeout
+        varchar session_id
+        bigint expires
+    }
+
+    %% Additional User-Related Tables
+    enrol_lti_users {
+        bigint id PK
+        bigint userid FK
+        bigint toolid FK
+        varchar serviceurl
+        varchar sourceid
+        varchar consumerkey
+        varchar consumersecret
+        varchar membershipsurl
+        varchar membershipsid
+        bigint lastgrade
+        bigint lastaccess
+        bigint timecreated
+    }
+
+    chat_users {
+        bigint id PK
+        bigint chatid FK
+        bigint userid FK
+        bigint groupid
+        varchar version
+        varchar ip
+        varchar firstping
+        varchar lastping
+        varchar lastmessageping
+        varchar sid
+        bigint course FK
+        varchar lang
+    }
+
+    tool_cohortroles {
+        bigint id PK
+        bigint cohortid FK
+        bigint roleid FK
+        bigint userid FK
+        bigint timecreated
+        bigint timemodified
+        bigint usermodified FK
+    }
+
+    %% Core User Relationships
+    user ||--o{ user_devices : "has"
+    user ||--o{ user_enrolments : "has"
+    user ||--o{ user_info_data : "has"
+    user ||--o{ user_lastaccess : "tracks"
+    user ||--o{ user_password_history : "has"
+    user ||--o{ user_password_resets : "can_have"
+    user ||--o{ user_preferences : "has"
+    user ||--o{ user_private_key : "owns"
+
+    %% User Info Relationships
+    user_info_category ||--o{ user_info_field : "contains"
+    user_info_field ||--o{ user_info_data : "stores"
+
+    %% Stats Relationships
+    user ||--o{ stats_user_daily : "generates"
+    user ||--o{ stats_user_monthly : "generates"
+    user ||--o{ stats_user_weekly : "generates"
+    role ||--o{ stats_user_daily : "tracked_in"
+    role ||--o{ stats_user_monthly : "tracked_in"
+    role ||--o{ stats_user_weekly : "tracked_in"
+
+    %% Messaging Relationships
+    user ||--o{ message_user_actions : "performs"
+
+    %% Auth Relationships
+    user ||--o{ sessions : "has"
+    user ||--o{ external_tokens : "owns"
+    user ||--o{ auth_oauth2_linked_login : "has"
+
+    %% OAuth2 Relationships
+    oauth2_issuer ||--o{ oauth2_endpoint : "has"
+    oauth2_issuer ||--o{ oauth2_system_account : "has"
+    oauth2_issuer ||--o{ oauth2_user_field_mapping : "defines"
+    oauth2_issuer ||--o{ auth_oauth2_linked_login : "provides"
+
+    %% Role Relationships
+    role ||--o{ role_assignments : "assigned_to"
+    role ||--o{ role_capabilities : "has"
+    role ||--o{ role_allow_assign : "can_assign"
+    role ||--o{ role_allow_override : "can_override"
+    role ||--o{ role_allow_switch : "can_switch_to"
+    role ||--o{ role_allow_view : "can_view"
+    role ||--o{ role_context_levels : "valid_at"
+    role ||--o{ role_names : "named_as"
+    role ||--o{ role_sortorder : "ordered_by"
+
+    %% Role to User Relationships
+    user ||--o{ role_assignments : "has"
+    user ||--o{ role_sortorder : "orders"
+
+    %% Context Relationships
+    context ||--o{ role_assignments : "scope_of"
+    context ||--o{ role_capabilities : "scope_of"
+    context ||--o{ external_tokens : "scoped_to"
+    context ||--o{ role_names : "names_in"
+    context ||--o{ role_sortorder : "sorts_in"
+
+    %% Capabilities Relationships
+    capabilities ||--o{ role_capabilities : "granted_by"
+
+    %% External Service Relationships
+    user ||--o{ external_services_users : "authorized_for"
+    user ||--o{ mnet_session : "has"
+    user ||--o{ enrol_lti_users : "linked_as"
+
+    %% Additional Relationships
+    user ||--o{ chat_users : "participates_as"
+    user ||--o{ tool_cohortroles : "manages"
+    role ||--o{ tool_cohortroles : "assigned_via"
+
+    %% External tokens relationships
+    external_tokens }o--|| context : "scoped_to"
+    external_tokens }o--|| user : "created_by"

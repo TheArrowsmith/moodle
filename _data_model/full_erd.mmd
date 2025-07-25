@@ -1,0 +1,728 @@
+erDiagram
+    %% Complete Moodle Database Schema
+    %% Auto-generated from database analysis
+
+    mdl_assign {
+        bigint id PK
+        varchar name 
+    }
+    mdl_assign_grades {
+        bigint id PK
+        bigint userid 
+    }
+    mdl_assign_overrides {
+        bigint id PK
+        bigint assignid 
+        bigint groupid 
+        bigint userid 
+    }
+    mdl_assign_submission {
+        bigint id PK
+        bigint userid 
+        bigint groupid 
+    }
+    mdl_assign_user_flags {
+        bigint id PK
+        bigint userid 
+    }
+    mdl_badge {
+        bigint id PK
+        varchar name 
+        bigint courseid 
+    }
+    mdl_bigbluebuttonbn_recordings {
+        bigint id PK
+        bigint courseid 
+        bigint bigbluebuttonbnid 
+        bigint groupid 
+        varchar recordingid 
+    }
+    mdl_block_recent_activity {
+        bigint id PK
+        bigint courseid 
+        bigint cmid 
+        bigint userid 
+    }
+    mdl_block_recentlyaccesseditems {
+        bigint id PK
+        bigint courseid 
+        bigint cmid 
+        bigint userid 
+    }
+    mdl_capabilities {
+        bigint id PK
+        varchar name 
+    }
+    mdl_chat {
+        bigint id PK
+        varchar name 
+    }
+    mdl_chat_messages {
+        bigint id PK
+        bigint chatid 
+        bigint userid 
+        bigint groupid 
+    }
+    mdl_chat_messages_current {
+        bigint id PK
+        bigint chatid 
+        bigint userid 
+        bigint groupid 
+    }
+    mdl_chat_users {
+        bigint id PK
+        bigint chatid 
+        bigint userid 
+        bigint groupid 
+        varchar sid 
+    }
+    mdl_choice {
+        bigint id PK
+        varchar name 
+    }
+    mdl_cohort {
+        bigint id PK
+        bigint contextid 
+        varchar name 
+    }
+    mdl_comments {
+        bigint id PK
+        bigint contextid 
+        bigint itemid 
+        bigint userid 
+    }
+    mdl_competency {
+        bigint id PK
+        varchar shortname 
+        bigint competencyframeworkid 
+        bigint parentid 
+        bigint scaleid 
+    }
+    mdl_competency_coursecomp {
+        bigint id PK
+        bigint courseid 
+        bigint competencyid 
+    }
+    mdl_competency_evidence {
+        bigint id PK
+        bigint usercompetencyid 
+        bigint contextid 
+        bigint actionuserid 
+    }
+    mdl_competency_framework {
+        bigint id PK
+        varchar shortname 
+        bigint contextid 
+        bigint scaleid 
+    }
+    mdl_competency_modulecomp {
+        bigint id PK
+        bigint cmid 
+        bigint competencyid 
+    }
+    mdl_competency_plan {
+        bigint id PK
+        varchar name 
+        bigint userid 
+        bigint templateid 
+        bigint origtemplateid 
+        bigint reviewerid 
+    }
+    mdl_competency_template {
+        bigint id PK
+        varchar shortname 
+        bigint contextid 
+    }
+    mdl_competency_templatecohort {
+        bigint id PK
+        bigint templateid 
+        bigint cohortid 
+    }
+    mdl_competency_templatecomp {
+        bigint id PK
+        bigint templateid 
+        bigint competencyid 
+    }
+    mdl_competency_usercomp {
+        bigint id PK
+        bigint userid 
+        bigint competencyid 
+        bigint reviewerid 
+    }
+    mdl_competency_usercompcourse {
+        bigint id PK
+        bigint userid 
+        bigint courseid 
+        bigint competencyid 
+    }
+    mdl_competency_usercompplan {
+        bigint id PK
+        bigint userid 
+        bigint competencyid 
+        bigint planid 
+    }
+    mdl_context {
+        bigint id PK
+        bigint instanceid 
+    }
+    mdl_course {
+        bigint id PK
+        varchar fullname 
+        varchar shortname 
+    }
+    mdl_course_categories {
+        bigint id PK
+        varchar name 
+    }
+    mdl_course_completion_crit_compl {
+        bigint id PK
+        bigint userid 
+        bigint criteriaid 
+    }
+    mdl_course_completion_criteria {
+        bigint id PK
+    }
+    mdl_course_modules {
+        bigint id PK
+        bigint groupingid 
+    }
+    mdl_course_modules_completion {
+        bigint id PK
+        bigint coursemoduleid 
+        bigint userid 
+    }
+    mdl_course_sections {
+        bigint id PK
+        varchar name 
+        bigint itemid 
+    }
+    mdl_data {
+        bigint id PK
+        varchar name 
+    }
+    mdl_data_records {
+        bigint id PK
+        bigint userid 
+        bigint groupid 
+        bigint dataid 
+    }
+    mdl_enrol {
+        bigint id PK
+        bigint courseid 
+        varchar name 
+    }
+    mdl_enrol_flatfile {
+        bigint id PK
+        bigint roleid 
+        bigint userid 
+        bigint courseid 
+    }
+    mdl_event {
+        bigint id PK
+        longtext name 
+        bigint categoryid 
+        bigint courseid 
+        bigint groupid 
+        bigint userid 
+        bigint repeatid 
+    }
+    mdl_event_subscriptions {
+        bigint id PK
+        bigint categoryid 
+        bigint courseid 
+        bigint groupid 
+        bigint userid 
+        varchar name 
+    }
+    mdl_favourite {
+        bigint id PK
+        bigint itemid 
+        bigint contextid 
+        bigint userid 
+    }
+    mdl_files {
+        bigint id PK
+        bigint contextid 
+        bigint itemid 
+        bigint userid 
+    }
+    mdl_forum {
+        bigint id PK
+        varchar name 
+    }
+    mdl_forum_discussion_subs {
+        bigint id PK
+        bigint userid 
+    }
+    mdl_forum_discussions {
+        bigint id PK
+        varchar name 
+        bigint userid 
+        bigint groupid 
+    }
+    mdl_forum_grades {
+        bigint id PK
+        bigint userid 
+    }
+    mdl_forum_posts {
+        bigint id PK
+        bigint userid 
+    }
+    mdl_forum_queue {
+        bigint id PK
+        bigint userid 
+        bigint discussionid 
+        bigint postid 
+    }
+    mdl_forum_read {
+        bigint id PK
+        bigint userid 
+        bigint forumid 
+        bigint discussionid 
+        bigint postid 
+    }
+    mdl_glossary {
+        bigint id PK
+        varchar name 
+    }
+    mdl_grade_categories {
+        bigint id PK
+        bigint courseid 
+        varchar fullname 
+    }
+    mdl_grade_categories_history {
+        bigint id PK
+        bigint oldid 
+        bigint courseid 
+        varchar fullname 
+    }
+    mdl_grade_grades {
+        bigint id PK
+        bigint itemid 
+        bigint userid 
+        bigint rawscaleid 
+    }
+    mdl_grade_grades_history {
+        bigint id PK
+        bigint oldid 
+        bigint itemid 
+        bigint userid 
+        bigint rawscaleid 
+    }
+    mdl_grade_import_values {
+        bigint id PK
+        bigint itemid 
+        bigint userid 
+    }
+    mdl_grade_items {
+        bigint id PK
+        bigint courseid 
+        bigint categoryid 
+        bigint scaleid 
+    }
+    mdl_grade_items_history {
+        bigint id PK
+        bigint oldid 
+        bigint courseid 
+        bigint categoryid 
+    }
+    mdl_grade_outcomes {
+        bigint id PK
+        bigint courseid 
+        varchar shortname 
+        longtext fullname 
+        bigint scaleid 
+    }
+    mdl_grade_outcomes_history {
+        bigint id PK
+        bigint oldid 
+        bigint courseid 
+        varchar shortname 
+        longtext fullname 
+        bigint scaleid 
+    }
+    mdl_groups {
+        bigint id PK
+        bigint courseid 
+        varchar name 
+    }
+    mdl_groups_members {
+        bigint id PK
+        bigint groupid 
+        bigint userid 
+        bigint itemid 
+    }
+    mdl_h5pactivity {
+        bigint id PK
+        varchar name 
+    }
+    mdl_lesson {
+        bigint id PK
+        varchar name 
+    }
+    mdl_lesson_answers {
+        bigint id PK
+        bigint lessonid 
+        bigint pageid 
+    }
+    mdl_lesson_attempts {
+        bigint id PK
+        bigint lessonid 
+        bigint pageid 
+        bigint userid 
+        bigint answerid 
+    }
+    mdl_lesson_branch {
+        bigint id PK
+        bigint lessonid 
+        bigint userid 
+        bigint pageid 
+        bigint nextpageid 
+    }
+    mdl_lesson_grades {
+        bigint id PK
+        bigint lessonid 
+        bigint userid 
+    }
+    mdl_lesson_overrides {
+        bigint id PK
+        bigint lessonid 
+        bigint groupid 
+        bigint userid 
+    }
+    mdl_log {
+        bigint id PK
+        bigint userid 
+        bigint cmid 
+    }
+    mdl_logstore_standard_log {
+        bigint id PK
+        bigint objectid 
+        bigint contextid 
+        bigint contextinstanceid 
+        bigint userid 
+        bigint courseid 
+        bigint relateduserid 
+    }
+    mdl_lti {
+        bigint id PK
+        varchar name 
+        bigint typeid 
+    }
+    mdl_mnet_log {
+        bigint id PK
+        bigint hostid 
+        bigint remoteid 
+        bigint userid 
+        bigint cmid 
+    }
+    mdl_modules {
+        bigint id PK
+        varchar name 
+    }
+    mdl_moodlenet_share_progress {
+        bigint id PK
+        bigint courseid 
+        bigint cmid 
+        bigint userid 
+    }
+    mdl_page {
+        bigint id PK
+        varchar name 
+    }
+    mdl_post {
+        bigint id PK
+        bigint userid 
+        bigint courseid 
+        bigint groupid 
+        bigint moduleid 
+        bigint coursemoduleid 
+    }
+    mdl_question {
+        bigint id PK
+        varchar name 
+    }
+    mdl_question_categories {
+        bigint id PK
+        varchar name 
+        bigint contextid 
+    }
+    mdl_question_usages {
+        bigint id PK
+        bigint contextid 
+    }
+    mdl_quiz {
+        bigint id PK
+        varchar name 
+    }
+    mdl_quiz_grades {
+        bigint id PK
+        bigint userid 
+    }
+    mdl_quiz_overrides {
+        bigint id PK
+        bigint groupid 
+        bigint userid 
+    }
+    mdl_quizaccess_seb_quizsettings {
+        bigint id PK
+        bigint quizid 
+        bigint cmid 
+        bigint templateid 
+    }
+    mdl_rating {
+        bigint id PK
+        bigint contextid 
+        bigint itemid 
+        bigint scaleid 
+        bigint userid 
+    }
+    mdl_reportbuilder_report {
+        bigint id PK
+        varchar name 
+        bigint contextid 
+        bigint itemid 
+    }
+    mdl_resource {
+        bigint id PK
+        varchar name 
+    }
+    mdl_role {
+        bigint id PK
+        varchar name 
+        varchar shortname 
+    }
+    mdl_role_assignments {
+        bigint id PK
+        bigint roleid 
+        bigint contextid 
+        bigint userid 
+        bigint modifierid 
+        bigint itemid 
+    }
+    mdl_role_capabilities {
+        bigint id PK
+        bigint contextid 
+        bigint roleid 
+        bigint modifierid 
+    }
+    mdl_scale {
+        bigint id PK
+        bigint courseid 
+        bigint userid 
+        varchar name 
+    }
+    mdl_scale_history {
+        bigint id PK
+        bigint oldid 
+        bigint courseid 
+        bigint userid 
+        varchar name 
+    }
+    mdl_search_simpledb_index {
+        bigint id PK
+        varchar docid 
+        bigint itemid 
+        bigint contextid 
+        varchar areaid 
+        bigint courseid 
+        bigint owneruserid 
+        bigint userid 
+    }
+    mdl_tool_brickfield_areas {
+        bigint id PK
+        bigint contextid 
+        bigint itemid 
+        bigint refid 
+        bigint cmid 
+        bigint courseid 
+        bigint categoryid 
+    }
+    mdl_tool_cohortroles {
+        bigint id PK
+        bigint cohortid 
+        bigint roleid 
+        bigint userid 
+    }
+    mdl_user {
+        bigint id PK
+        bigint mnethostid 
+    }
+    mdl_user_info_field {
+        bigint id PK
+        varchar shortname 
+        longtext name 
+        bigint categoryid 
+    }
+    mdl_workshop {
+        bigint id PK
+        varchar name 
+    }
+    mdl_assign_grades ||--o{ mdl_user : "userid"
+    mdl_assign_overrides ||--o{ mdl_assign : "assignid"
+    mdl_assign_overrides ||--o{ mdl_groups : "groupid"
+    mdl_assign_overrides ||--o{ mdl_user : "userid"
+    mdl_assign_submission ||--o{ mdl_user : "userid"
+    mdl_assign_submission ||--o{ mdl_groups : "groupid"
+    mdl_assign_user_flags ||--o{ mdl_user : "userid"
+    mdl_badge ||--o{ mdl_course : "courseid"
+    mdl_bigbluebuttonbn_recordings ||--o{ mdl_course : "courseid"
+    mdl_bigbluebuttonbn_recordings ||--o{ mdl_groups : "groupid"
+    mdl_block_recent_activity ||--o{ mdl_course : "courseid"
+    mdl_block_recent_activity ||--o{ mdl_user : "userid"
+    mdl_block_recentlyaccesseditems ||--o{ mdl_course : "courseid"
+    mdl_block_recentlyaccesseditems ||--o{ mdl_user : "userid"
+    mdl_chat_messages ||--o{ mdl_chat : "chatid"
+    mdl_chat_messages ||--o{ mdl_user : "userid"
+    mdl_chat_messages ||--o{ mdl_groups : "groupid"
+    mdl_chat_messages_current ||--o{ mdl_chat : "chatid"
+    mdl_chat_messages_current ||--o{ mdl_user : "userid"
+    mdl_chat_messages_current ||--o{ mdl_groups : "groupid"
+    mdl_chat_users ||--o{ mdl_chat : "chatid"
+    mdl_chat_users ||--o{ mdl_user : "userid"
+    mdl_chat_users ||--o{ mdl_groups : "groupid"
+    mdl_cohort ||--o{ mdl_context : "contextid"
+    mdl_comments ||--o{ mdl_context : "contextid"
+    mdl_comments ||--o{ mdl_grade_items : "itemid"
+    mdl_comments ||--o{ mdl_user : "userid"
+    mdl_competency ||--o{ mdl_scale : "scaleid"
+    mdl_competency_coursecomp ||--o{ mdl_course : "courseid"
+    mdl_competency_coursecomp ||--o{ mdl_competency : "competencyid"
+    mdl_competency_evidence ||--o{ mdl_context : "contextid"
+    mdl_competency_framework ||--o{ mdl_context : "contextid"
+    mdl_competency_framework ||--o{ mdl_scale : "scaleid"
+    mdl_competency_modulecomp ||--o{ mdl_competency : "competencyid"
+    mdl_competency_plan ||--o{ mdl_user : "userid"
+    mdl_competency_plan ||--o{ mdl_competency_template : "templateid"
+    mdl_competency_template ||--o{ mdl_context : "contextid"
+    mdl_competency_templatecohort ||--o{ mdl_competency_template : "templateid"
+    mdl_competency_templatecohort ||--o{ mdl_cohort : "cohortid"
+    mdl_competency_templatecomp ||--o{ mdl_competency_template : "templateid"
+    mdl_competency_templatecomp ||--o{ mdl_competency : "competencyid"
+    mdl_competency_usercomp ||--o{ mdl_user : "userid"
+    mdl_competency_usercomp ||--o{ mdl_competency : "competencyid"
+    mdl_competency_usercompcourse ||--o{ mdl_user : "userid"
+    mdl_competency_usercompcourse ||--o{ mdl_course : "courseid"
+    mdl_competency_usercompcourse ||--o{ mdl_competency : "competencyid"
+    mdl_competency_usercompplan ||--o{ mdl_user : "userid"
+    mdl_competency_usercompplan ||--o{ mdl_competency : "competencyid"
+    mdl_course_completion_crit_compl ||--o{ mdl_user : "userid"
+    mdl_course_modules_completion ||--o{ mdl_user : "userid"
+    mdl_course_sections ||--o{ mdl_grade_items : "itemid"
+    mdl_data_records ||--o{ mdl_user : "userid"
+    mdl_data_records ||--o{ mdl_groups : "groupid"
+    mdl_data_records ||--o{ mdl_data : "dataid"
+    mdl_enrol ||--o{ mdl_course : "courseid"
+    mdl_enrol ||--o{ mdl_role : "roleid"
+    mdl_enrol_flatfile ||--o{ mdl_role : "roleid"
+    mdl_enrol_flatfile ||--o{ mdl_user : "userid"
+    mdl_enrol_flatfile ||--o{ mdl_course : "courseid"
+    mdl_event ||--o{ mdl_course_categories : "categoryid"
+    mdl_event ||--o{ mdl_course : "courseid"
+    mdl_event ||--o{ mdl_groups : "groupid"
+    mdl_event ||--o{ mdl_user : "userid"
+    mdl_event_subscriptions ||--o{ mdl_course_categories : "categoryid"
+    mdl_event_subscriptions ||--o{ mdl_course : "courseid"
+    mdl_event_subscriptions ||--o{ mdl_groups : "groupid"
+    mdl_event_subscriptions ||--o{ mdl_user : "userid"
+    mdl_favourite ||--o{ mdl_grade_items : "itemid"
+    mdl_favourite ||--o{ mdl_context : "contextid"
+    mdl_favourite ||--o{ mdl_user : "userid"
+    mdl_files ||--o{ mdl_context : "contextid"
+    mdl_files ||--o{ mdl_grade_items : "itemid"
+    mdl_files ||--o{ mdl_user : "userid"
+    mdl_forum_discussion_subs ||--o{ mdl_user : "userid"
+    mdl_forum_discussions ||--o{ mdl_user : "userid"
+    mdl_forum_discussions ||--o{ mdl_groups : "groupid"
+    mdl_forum_grades ||--o{ mdl_user : "userid"
+    mdl_forum_posts ||--o{ mdl_user : "userid"
+    mdl_forum_queue ||--o{ mdl_user : "userid"
+    mdl_forum_queue ||--o{ mdl_forum_discussions : "discussionid"
+    mdl_forum_queue ||--o{ mdl_forum_posts : "postid"
+    mdl_forum_read ||--o{ mdl_user : "userid"
+    mdl_forum_read ||--o{ mdl_forum : "forumid"
+    mdl_forum_read ||--o{ mdl_forum_discussions : "discussionid"
+    mdl_forum_read ||--o{ mdl_forum_posts : "postid"
+    mdl_grade_categories ||--o{ mdl_course : "courseid"
+    mdl_grade_categories_history ||--o{ mdl_course : "courseid"
+    mdl_grade_grades ||--o{ mdl_grade_items : "itemid"
+    mdl_grade_grades ||--o{ mdl_user : "userid"
+    mdl_grade_grades_history ||--o{ mdl_grade_items : "itemid"
+    mdl_grade_grades_history ||--o{ mdl_user : "userid"
+    mdl_grade_import_values ||--o{ mdl_grade_items : "itemid"
+    mdl_grade_import_values ||--o{ mdl_user : "userid"
+    mdl_grade_items ||--o{ mdl_course : "courseid"
+    mdl_grade_items ||--o{ mdl_course_categories : "categoryid"
+    mdl_grade_items ||--o{ mdl_scale : "scaleid"
+    mdl_grade_items ||--o{ mdl_grade_outcomes : "outcomeid"
+    mdl_grade_items_history ||--o{ mdl_course : "courseid"
+    mdl_grade_items_history ||--o{ mdl_course_categories : "categoryid"
+    mdl_grade_items_history ||--o{ mdl_scale : "scaleid"
+    mdl_grade_items_history ||--o{ mdl_grade_outcomes : "outcomeid"
+    mdl_grade_outcomes ||--o{ mdl_course : "courseid"
+    mdl_grade_outcomes ||--o{ mdl_scale : "scaleid"
+    mdl_grade_outcomes_history ||--o{ mdl_course : "courseid"
+    mdl_grade_outcomes_history ||--o{ mdl_scale : "scaleid"
+    mdl_groups ||--o{ mdl_course : "courseid"
+    mdl_groups_members ||--o{ mdl_groups : "groupid"
+    mdl_groups_members ||--o{ mdl_user : "userid"
+    mdl_groups_members ||--o{ mdl_grade_items : "itemid"
+    mdl_lesson_answers ||--o{ mdl_lesson : "lessonid"
+    mdl_lesson_answers ||--o{ mdl_page : "pageid"
+    mdl_lesson_attempts ||--o{ mdl_lesson : "lessonid"
+    mdl_lesson_attempts ||--o{ mdl_page : "pageid"
+    mdl_lesson_attempts ||--o{ mdl_user : "userid"
+    mdl_lesson_branch ||--o{ mdl_lesson : "lessonid"
+    mdl_lesson_branch ||--o{ mdl_user : "userid"
+    mdl_lesson_branch ||--o{ mdl_page : "pageid"
+    mdl_lesson_grades ||--o{ mdl_lesson : "lessonid"
+    mdl_lesson_grades ||--o{ mdl_user : "userid"
+    mdl_lesson_overrides ||--o{ mdl_lesson : "lessonid"
+    mdl_lesson_overrides ||--o{ mdl_groups : "groupid"
+    mdl_lesson_overrides ||--o{ mdl_user : "userid"
+    mdl_log ||--o{ mdl_user : "userid"
+    mdl_logstore_standard_log ||--o{ mdl_context : "contextid"
+    mdl_logstore_standard_log ||--o{ mdl_user : "userid"
+    mdl_logstore_standard_log ||--o{ mdl_course : "courseid"
+    mdl_mnet_log ||--o{ mdl_user : "userid"
+    mdl_moodlenet_share_progress ||--o{ mdl_course : "courseid"
+    mdl_moodlenet_share_progress ||--o{ mdl_user : "userid"
+    mdl_post ||--o{ mdl_user : "userid"
+    mdl_post ||--o{ mdl_course : "courseid"
+    mdl_post ||--o{ mdl_groups : "groupid"
+    mdl_post ||--o{ mdl_modules : "moduleid"
+    mdl_question_categories ||--o{ mdl_context : "contextid"
+    mdl_question_usages ||--o{ mdl_context : "contextid"
+    mdl_quiz_grades ||--o{ mdl_user : "userid"
+    mdl_quiz_overrides ||--o{ mdl_groups : "groupid"
+    mdl_quiz_overrides ||--o{ mdl_user : "userid"
+    mdl_quizaccess_seb_quizsettings ||--o{ mdl_quiz : "quizid"
+    mdl_quizaccess_seb_quizsettings ||--o{ mdl_competency_template : "templateid"
+    mdl_rating ||--o{ mdl_context : "contextid"
+    mdl_rating ||--o{ mdl_grade_items : "itemid"
+    mdl_rating ||--o{ mdl_scale : "scaleid"
+    mdl_rating ||--o{ mdl_user : "userid"
+    mdl_reportbuilder_report ||--o{ mdl_context : "contextid"
+    mdl_reportbuilder_report ||--o{ mdl_grade_items : "itemid"
+    mdl_role_assignments ||--o{ mdl_role : "roleid"
+    mdl_role_assignments ||--o{ mdl_context : "contextid"
+    mdl_role_assignments ||--o{ mdl_user : "userid"
+    mdl_role_assignments ||--o{ mdl_grade_items : "itemid"
+    mdl_role_capabilities ||--o{ mdl_context : "contextid"
+    mdl_role_capabilities ||--o{ mdl_role : "roleid"
+    mdl_scale ||--o{ mdl_course : "courseid"
+    mdl_scale ||--o{ mdl_user : "userid"
+    mdl_scale_history ||--o{ mdl_course : "courseid"
+    mdl_scale_history ||--o{ mdl_user : "userid"
+    mdl_search_simpledb_index ||--o{ mdl_grade_items : "itemid"
+    mdl_search_simpledb_index ||--o{ mdl_context : "contextid"
+    mdl_search_simpledb_index ||--o{ mdl_course : "courseid"
+    mdl_search_simpledb_index ||--o{ mdl_user : "userid"
+    mdl_tool_brickfield_areas ||--o{ mdl_context : "contextid"
+    mdl_tool_brickfield_areas ||--o{ mdl_grade_items : "itemid"
+    mdl_tool_brickfield_areas ||--o{ mdl_course : "courseid"
+    mdl_tool_brickfield_areas ||--o{ mdl_course_categories : "categoryid"
+    mdl_tool_cohortroles ||--o{ mdl_cohort : "cohortid"
+    mdl_tool_cohortroles ||--o{ mdl_role : "roleid"
+    mdl_tool_cohortroles ||--o{ mdl_user : "userid"
+    mdl_user_info_field ||--o{ mdl_course_categories : "categoryid"

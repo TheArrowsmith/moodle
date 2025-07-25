@@ -1,0 +1,64 @@
+erDiagram
+    %% Moodle Quiz Module Tables
+
+    mdl_quiz {
+        bigint id PK
+        varchar name 
+        bigint timecreated 
+        bigint timemodified 
+    }
+    mdl_quiz_attempts {
+        bigint id PK
+        bigint timemodified 
+        bigint userid 
+    }
+    mdl_quiz_feedback {
+        bigint id PK
+    }
+    mdl_quiz_grade_items {
+        bigint id PK
+        varchar name 
+    }
+    mdl_quiz_grades {
+        bigint id PK
+        bigint timemodified 
+        bigint userid 
+    }
+    mdl_quiz_overrides {
+        bigint id PK
+        bigint userid 
+    }
+    mdl_quiz_overview_regrades {
+        bigint id PK
+        bigint timemodified 
+    }
+    mdl_quiz_reports {
+        bigint id PK
+        varchar name 
+    }
+    mdl_quiz_sections {
+        bigint id PK
+    }
+    mdl_quiz_slots {
+        bigint id PK
+    }
+    mdl_quiz_statistics {
+        bigint id PK
+        bigint timemodified 
+    }
+    mdl_quizaccess_seb_quizsettings {
+        bigint id PK
+        bigint timecreated 
+        bigint timemodified 
+    }
+    mdl_quizaccess_seb_template {
+        bigint id PK
+        varchar name 
+        bigint timecreated 
+        bigint timemodified 
+    }
+    mdl_quiz_feedback ||--o{ mdl_quiz : "quizid"
+    mdl_quiz_grade_items ||--o{ mdl_quiz : "quizid"
+    mdl_quiz_sections ||--o{ mdl_quiz : "quizid"
+    mdl_quiz_slots ||--o{ mdl_quiz : "quizid"
+    mdl_quizaccess_seb_quizsettings ||--o{ mdl_quiz : "quizid"

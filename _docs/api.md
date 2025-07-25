@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Course Management API is a RESTful web service that provides programmatic access to Moodle course management features. It uses JWT (JSON Web Token) authentication and supports full CRUD operations on courses, sections, and activities.
+The Course Management API is a RESTful web service that provides programmatic access to Moodle course management features. It uses JWT (JSON Web Token) authentication and supports full CRUD operations on courses, categories, sections, and activities.
 
 ## Base URL
 
@@ -107,6 +107,102 @@ curl -X GET "http://localhost:8888/local/courseapi/api/index.php/user/me" \
 }
 ```
 
+## Category Management Endpoints
+
+### Get Category Tree
+```
+GET /category/tree?parent={id}&includeHidden={bool}
+```
+Returns the full category hierarchy starting from the specified parent (0 for top level).
+
+**Query Parameters:**
+- `parent` (optional): Parent category ID (default: 0)
+- `includeHidden` (optional): Include hidden categories (default: false)
+
+**Response:**
+```json
+{
+  "categories": [
+    {
+      "id": 1,
+      "name": "Miscellaneous",
+      "parent": 0,
+      "visible": true,
+      "coursecount": 5,
+      "depth": 1,
+      "path": "/1",
+      "children": [],
+      "can_edit": true,
+      "can_delete": false,
+      "can_move": true,
+      "can_create_course": true
+    }
+  ]
+}
+```
+
+### Get Single Category
+```
+GET /category/{id}
+```
+Returns details for a specific category.
+
+### Get Category Courses
+```
+GET /category/{id}/courses?page={n}&perpage={n}&sort={field}&direction={asc|desc}&search={query}
+```
+Returns paginated list of courses in a category.
+
+**Query Parameters:**
+- `page`: Page number (default: 0)
+- `perpage`: Items per page (default: 20)
+- `sort`: Sort field - fullname, shortname, idnumber, timecreated, timemodified, sortorder (default: fullname)
+- `direction`: Sort direction - asc or desc (default: asc)
+- `search`: Search query to filter courses
+
+### Create Category
+```
+POST /category
+{
+  "name": "New Category",
+  "parent": 0,
+  "description": "Category description",
+  "visible": true
+}
+```
+
+### Update Category
+```
+PUT /category/{id}
+{
+  "name": "Updated Name",
+  "description": "Updated description",
+  "visible": false
+}
+```
+
+### Delete Category
+```
+DELETE /category/{id}?recursive={bool}
+```
+**Query Parameters:**
+- `recursive`: Delete subcategories as well (default: false)
+
+### Toggle Category Visibility
+```
+POST /category/{id}/visibility
+```
+Toggles the visibility status of a category.
+
+### Move Category
+```
+POST /category/{id}/move
+{
+  "direction": "up" | "down"
+}
+```
+Moves category up or down in the sort order.
+
 ## Course Endpoints
 
 ### Get Course Management Data
@@ -168,6 +264,78 @@ curl -X GET "http://localhost:8888/local/courseapi/api/index.php/course/2/manage
 **Error Responses:**
 - `403 Forbidden` - User doesn't have permission to manage this course
 - `404 Not Found` - Course doesn't exist
+
+### List All Courses
+```
+GET /course/list?category={id}&search={query}&page={n}&perpage={n}&sort={field}&direction={asc|desc}
+```
+Returns a filtered, paginated list of courses.
+
+**Query Parameters:**
+- `category`: Filter by category ID (0 for all)
+- `search`: Search in fullname, shortname, or idnumber
+- `page`: Page number (default: 0)
+- `perpage`: Items per page (default: 20)
+- `sort`: Sort field (default: fullname)
+- `direction`: Sort direction (default: asc)
+
+### Update Course
+```
+PUT /course/{id}
+{
+  "fullname": "Updated Course Name",
+  "shortname": "UPDATED",
+  "summary": "Updated summary",
+  "visible": true,
+  "startdate": 1704067200,
+  "enddate": 1735689600
+}
+```
+
+### Toggle Course Visibility
+```
+POST /course/{id}/visibility
+```
+Toggles the visibility status of a course.
+
+### Move Course to Category
+```
+POST /course/{id}/move
+{
+  "categoryid": 5
+}
+```
+Moves a course to a different category.
+
+### Get Course Teachers
+```
+GET /course/{id}/teachers
+```
+Returns list of teachers and enrollment information for a course.
+
+**Response:**
+```json
+{
+  "teachers": [
+    {
+      "id": 2,
+      "fullname": "John Doe",
+      "email": "john@example.com",
+      "role": "editingteacher",
+      "picture": ""
+    }
+  ],
+  "enrollments": [
+    {
+      "method": "manual",
+      "name": "Manual enrolments",
+      "count": 45,
+      "enabled": true
+    }
+  ],
+  "total_enrolled": 45
+}
+```
 
 ## Activity Endpoints
 
@@ -305,6 +473,35 @@ curl -X DELETE "http://localhost:8888/local/courseapi/api/index.php/activity/15"
 - `403 Forbidden` - User lacks permission to delete this activity
 - `404 Not Found` - Activity doesn't exist or was already deleted
 
+### List Course Activities
+```
+GET /activity/list?courseid={id}
+```
+Returns all activities in a course.
+
+### Toggle Activity Visibility
+```
+POST /activity/{id}/visibility
+```
+Toggles the visibility status of an activity.
+
+### Duplicate Activity
+```
+POST /activity/{id}/duplicate
+```
+Creates a duplicate of an activity.
+
+**Response:**
+```json
+{
+  "id": 123,
+  "name": "Copy of Original Activity",
+  "modname": "assign",
+  "visible": true,
+  "sectionid": 5
+}
+```
+
 ## Section Endpoints
 
 ### Update Section
@@ -354,6 +551,29 @@ curl -X PUT "http://localhost:8888/local/courseapi/api/index.php/section/2" \
 **Error Responses:**
 - `403 Forbidden` - User lacks permission to update course sections
 - `404 Not Found` - Section doesn't exist
+
+### Create Section
+```
+POST /section
+{
+  "courseid": 2,
+  "name": "New Section",
+  "summary": "Section description",
+  "visible": true
+}
+```
+
+### Delete Section
+```
+DELETE /section/{id}
+```
+Deletes a section (must be empty).
+
+### Toggle Section Visibility
+```
+POST /section/{id}/visibility
+```
+Toggles the visibility status of a section.
 
 ### Reorder Activities in Section
 
@@ -463,12 +683,14 @@ All error responses follow a consistent format:
 ### Common HTTP Status Codes
 
 - `200 OK` - Request succeeded
+- `201 Created` - Resource created successfully
 - `204 No Content` - Request succeeded with no response body (e.g., DELETE)
 - `400 Bad Request` - Invalid request or parameters
 - `401 Unauthorized` - Missing or invalid authentication token
 - `403 Forbidden` - Authenticated but lacking required permissions
 - `404 Not Found` - Resource not found
 - `422 Unprocessable Entity` - Missing required fields or invalid data
+- `500 Internal Server Error` - Server error
 
 ### Moodle-Specific Error Codes
 
@@ -484,9 +706,13 @@ Some errors return Moodle error codes in the format `module/errorcode`:
 
 All API operations respect Moodle's capability system:
 
-- **Course Management Data**: Requires `moodle/course:update` capability
-- **Create/Update/Delete Activities**: Requires `moodle/course:manageactivities` capability
-- **Update Sections**: Requires `moodle/course:update` capability
+- **Category Management**: Requires `moodle/category:manage` capability
+- **Course Creation**: Requires `moodle/course:create` capability
+- **Course Update**: Requires `moodle/course:update` capability
+- **Course Deletion**: Requires `moodle/course:delete` capability
+- **Course Visibility**: Requires `moodle/course:visibility` capability
+- **Activity Management**: Requires `moodle/course:manageactivities` capability
+- **Section Management**: Requires `moodle/course:update`, `moodle/course:sectionvisibility` capabilities
 
 Users must be enrolled in the course with appropriate roles (e.g., Teacher, Manager) or be a site administrator.
 
@@ -628,7 +854,7 @@ curl -X GET "$API_BASE/course/2/management_data" \
 // Get token
 const tokenResponse = await fetch('http://localhost:8888/local/courseapi/api/index.php/auth/token', {
   method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
+  headers: { 'Content-Type': application/json' },
   body: JSON.stringify({
     username: 'admin',
     password: 'ADMINadmin12!'
@@ -645,6 +871,16 @@ const courseResponse = await fetch('http://localhost:8888/local/courseapi/api/in
 const courseData = await courseResponse.json();
 console.log(courseData);
 ```
+
+### Testing All Endpoints
+
+Use the provided test script to verify all endpoints:
+
+```bash
+php test_course_api.php
+```
+
+This will test all endpoints and provide a summary of which ones are working correctly.
 
 ## Troubleshooting
 
@@ -681,8 +917,9 @@ This will output detailed request/response information when using the provided t
 
 ## Version History
 
-- **1.0.0** - Initial release with full CRUD operations for activities and sections
+- **1.0.0** - Initial release with basic CRUD operations for activities and sections
 - **1.1.0** - Changed from course-scoped to user-level JWT tokens
+- **2.0.0** - Added full course and category management endpoints
 
 ## Additional Resources
 

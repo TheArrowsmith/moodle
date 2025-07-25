@@ -1,0 +1,511 @@
+erDiagram
+    %% Core Course Tables
+    course {
+        bigint id PK
+        bigint category FK
+        bigint sortorder
+        varchar fullname
+        varchar shortname
+        varchar idnumber
+        longtext summary
+        tinyint summaryformat
+        varchar format
+        tinyint showgrades
+        mediumint newsitems
+        bigint startdate
+        bigint enddate
+        bigint marker
+        bigint maxbytes
+        smallint visible
+        smallint groupmode
+        smallint groupmodeforce
+        bigint defaultgroupingid FK
+        varchar lang
+        varchar theme
+        bigint timecreated
+        bigint timemodified
+        tinyint enablecompletion
+        tinyint completionnotify
+    }
+
+    course_categories {
+        bigint id PK
+        varchar name
+        varchar idnumber
+        longtext description
+        tinyint descriptionformat
+        bigint parent FK
+        bigint sortorder
+        bigint coursecount
+        tinyint visible
+        bigint timemodified
+        bigint depth
+        varchar path
+        varchar theme
+    }
+
+    course_request {
+        bigint id PK
+        varchar fullname
+        varchar shortname
+        longtext summary
+        tinyint summaryformat
+        longtext reason
+        bigint requester FK
+        bigint password
+        bigint category FK
+        bigint approved
+        bigint timecreated
+        bigint timemodified
+    }
+
+    %% Course Structure Tables
+    course_sections {
+        bigint id PK
+        bigint course FK
+        bigint section
+        varchar name
+        longtext summary
+        tinyint summaryformat
+        longtext sequence
+        tinyint visible
+        longtext availability
+        bigint timemodified
+    }
+
+    course_modules {
+        bigint id PK
+        bigint course FK
+        bigint module FK
+        bigint instance
+        bigint section FK
+        varchar idnumber
+        bigint added
+        tinyint score
+        smallint indent
+        tinyint visible
+        tinyint visibleoncoursepage
+        tinyint visibleold
+        smallint groupmode
+        bigint groupingid FK
+        tinyint completion
+        bigint completiongradeitemnumber
+        bigint completionview
+        bigint completionexpected
+        tinyint showdescription
+        longtext availability
+        tinyint deletioninprogress
+    }
+
+    modules {
+        bigint id PK
+        varchar name
+        bigint cron
+        bigint lastcron
+        varchar search
+        tinyint visible
+    }
+
+    course_format_options {
+        bigint id PK
+        bigint courseid FK
+        varchar format
+        bigint sectionid FK
+        varchar name
+        longtext value
+    }
+
+    %% Enrollment Tables
+    enrol {
+        bigint id PK
+        varchar enrol
+        varchar status
+        bigint courseid FK
+        bigint sortorder
+        varchar name
+        bigint enrolperiod
+        bigint enrolstartdate
+        bigint enrolenddate
+        tinyint expirynotify
+        bigint expirythreshold
+        tinyint notifyall
+        varchar password
+        varchar cost
+        varchar currency
+        bigint roleid FK
+        bigint customint1
+        bigint customint2
+        bigint customint3
+        bigint customint4
+        bigint customint5
+        bigint customint6
+        bigint customint7
+        bigint customint8
+        varchar customchar1
+        varchar customchar2
+        varchar customchar3
+        decimal customdec1
+        decimal customdec2
+        longtext customtext1
+        longtext customtext2
+        longtext customtext3
+        longtext customtext4
+        bigint timecreated
+        bigint timemodified
+    }
+
+    user_enrolments {
+        bigint id PK
+        varchar status
+        bigint enrolid FK
+        bigint userid FK
+        bigint timestart
+        bigint timeend
+        bigint modifierid FK
+        bigint timecreated
+        bigint timemodified
+    }
+
+    enrol_flatfile {
+        bigint id PK
+        varchar action
+        bigint roleid FK
+        bigint userid FK
+        bigint courseid FK
+        bigint timestart
+        bigint timeend
+        bigint timemodified
+    }
+
+    enrol_paypal {
+        bigint id PK
+        varchar business
+        varchar receiver_email
+        varchar receiver_id
+        varchar item_name
+        bigint courseid FK
+        bigint userid FK
+        bigint instanceid FK
+        varchar memo
+        varchar tax
+        varchar option_name1
+        varchar option_selection1_x
+        varchar option_name2
+        varchar option_selection2_x
+        varchar payment_status
+        varchar pending_reason
+        varchar reason_code
+        varchar txn_id
+        varchar parent_txn_id
+        varchar payment_type
+        bigint timeupdated
+    }
+
+    %% Course Completion Tables
+    course_completions {
+        bigint id PK
+        bigint userid FK
+        bigint course FK
+        bigint timeenrolled
+        bigint timestarted
+        bigint timecompleted
+        bigint reaggregate
+    }
+
+    course_completion_criteria {
+        bigint id PK
+        bigint course FK
+        bigint criteriatype
+        varchar module
+        bigint moduleinstance
+        bigint courseinstance
+        bigint enrolperiod
+        bigint timeend
+        decimal gradepass
+        bigint role FK
+    }
+
+    course_completion_crit_compl {
+        bigint id PK
+        bigint userid FK
+        bigint course FK
+        bigint criteriaid FK
+        decimal gradefinal
+        bigint unenroled
+        bigint timecompleted
+    }
+
+    course_completion_aggr_methd {
+        bigint id PK
+        bigint course FK
+        bigint criteriatype
+        tinyint method
+        decimal value
+    }
+
+    course_modules_completion {
+        bigint id PK
+        bigint coursemoduleid FK
+        bigint userid FK
+        tinyint completionstate
+        tinyint viewed
+        tinyint overrideby FK
+        bigint timemodified
+    }
+
+    course_completion_defaults {
+        bigint id PK
+        bigint course FK
+        bigint module FK
+        tinyint completion
+        bigint completionview
+        bigint completionusegrade
+        bigint completionexpected
+        longtext customrules
+    }
+
+    %% Groups and Cohorts
+    groups {
+        bigint id PK
+        bigint courseid FK
+        varchar idnumber
+        varchar name
+        longtext description
+        tinyint descriptionformat
+        varchar enrolmentkey
+        bigint picture
+        tinyint hidepicture
+        bigint timecreated
+        bigint timemodified
+    }
+
+    groups_members {
+        bigint id PK
+        bigint groupid FK
+        bigint userid FK
+        bigint timeadded
+        varchar component
+        bigint itemid
+    }
+
+    groupings {
+        bigint id PK
+        bigint courseid FK
+        varchar idnumber
+        varchar name
+        longtext description
+        tinyint descriptionformat
+        longtext configdata
+        bigint timecreated
+        bigint timemodified
+    }
+
+    groupings_groups {
+        bigint id PK
+        bigint groupingid FK
+        bigint groupid FK
+        bigint timeadded
+    }
+
+    cohort {
+        bigint id PK
+        bigint contextid FK
+        varchar name
+        varchar idnumber
+        longtext description
+        tinyint descriptionformat
+        tinyint visible
+        varchar component
+        bigint timecreated
+        bigint timemodified
+    }
+
+    cohort_members {
+        bigint id PK
+        bigint cohortid FK
+        bigint userid FK
+        bigint timeadded
+    }
+
+    %% Grade Management Tables
+    grade_items {
+        bigint id PK
+        bigint courseid FK
+        bigint categoryid FK
+        varchar itemname
+        varchar itemtype
+        varchar itemmodule
+        bigint iteminstance
+        bigint itemnumber
+        varchar iteminfo
+        varchar idnumber
+        varchar calculation
+        bigint gradetype
+        decimal grademax
+        decimal grademin
+        bigint scaleid FK
+        bigint outcomeid FK
+        decimal gradepass
+        decimal multfactor
+        decimal plusfactor
+        decimal aggregationcoef
+        decimal aggregationcoef2
+        bigint sortorder
+        tinyint display
+        tinyint decimals
+        tinyint hidden
+        tinyint locked
+        bigint locktime
+        tinyint needsupdate
+        decimal weightoverride
+        bigint timecreated
+        bigint timemodified
+    }
+
+    grade_grades {
+        bigint id PK
+        bigint itemid FK
+        bigint userid FK
+        decimal rawgrade
+        decimal rawgrademax
+        decimal rawgrademin
+        bigint rawscaleid FK
+        bigint usermodified FK
+        decimal finalgrade
+        bigint hidden
+        bigint locked
+        bigint locktime
+        bigint exported
+        bigint overridden
+        tinyint excluded
+        longtext feedback
+        tinyint feedbackformat
+        longtext information
+        tinyint informationformat
+        bigint timecreated
+        bigint timemodified
+        decimal aggregationstatus
+        decimal aggregationweight
+    }
+
+    grade_categories {
+        bigint id PK
+        bigint courseid FK
+        bigint parent FK
+        bigint depth
+        varchar path
+        varchar fullname
+        bigint aggregation
+        bigint keephigh
+        bigint droplow
+        tinyint aggregateonlygraded
+        tinyint aggregateoutcomes
+        bigint timecreated
+        bigint timemodified
+        tinyint hidden
+    }
+
+    grade_outcomes {
+        bigint id PK
+        bigint courseid FK
+        varchar shortname
+        varchar fullname
+        bigint scaleid FK
+        longtext description
+        tinyint descriptionformat
+        bigint timecreated
+        bigint timemodified
+        bigint usermodified FK
+    }
+
+    grade_outcomes_courses {
+        bigint id PK
+        bigint courseid FK
+        bigint outcomeid FK
+    }
+
+    %% Additional Course Management Tables
+    course_published {
+        bigint id PK
+        bigint huburl FK
+        bigint courseid FK
+        bigint timepublished
+        bigint enrollable
+        bigint hubcourseid
+        tinyint status
+        bigint timechecked
+    }
+
+    backup_courses {
+        bigint id PK
+        bigint courseid FK
+        bigint laststarttime
+        bigint lastendtime
+        varchar laststatus
+        bigint nextstarttime
+    }
+
+    tool_recyclebin_course {
+        bigint id PK
+        bigint courseid FK
+        bigint section FK
+        bigint coursemoduleid FK
+        varchar name
+        bigint timecreated
+    }
+
+    %% Core Relationships
+    course }o--|| course_categories : "belongs_to"
+    course_categories ||--o{ course_categories : "has_parent"
+    course_request }o--|| course_categories : "requests_in"
+
+    %% Course Structure Relationships
+    course ||--o{ course_sections : "has"
+    course ||--o{ course_modules : "contains"
+    course_modules }o--|| modules : "instance_of"
+    course_modules }o--|| course_sections : "in_section"
+    course ||--o{ course_format_options : "has_options"
+    course_sections ||--o{ course_format_options : "has_options"
+
+    %% Enrollment Relationships
+    course ||--o{ enrol : "has_methods"
+    enrol ||--o{ user_enrolments : "creates"
+    course ||--o{ enrol_flatfile : "enrolled_via"
+    course ||--o{ enrol_paypal : "payments_for"
+    enrol_paypal }o--|| enrol : "instance_of"
+
+    %% Course Completion Relationships
+    course ||--o{ course_completions : "tracks"
+    course ||--o{ course_completion_criteria : "defines"
+    course ||--o{ course_completion_aggr_methd : "aggregates_by"
+    course ||--o{ course_completion_defaults : "has_defaults"
+    course_completion_criteria ||--o{ course_completion_crit_compl : "completed_by"
+    course_modules ||--o{ course_modules_completion : "tracks"
+    modules ||--o{ course_completion_defaults : "has_defaults_for"
+
+    %% Groups and Cohorts Relationships
+    course ||--o{ groups : "has"
+    course ||--o{ groupings : "has"
+    groups ||--o{ groups_members : "has_members"
+    groupings ||--o{ groupings_groups : "contains"
+    groups ||--o{ groupings_groups : "belongs_to"
+    cohort ||--o{ cohort_members : "has_members"
+    course_modules }o--|| groupings : "restricted_to"
+
+    %% Grade Management Relationships
+    course ||--o{ grade_items : "has"
+    course ||--o{ grade_categories : "has"
+    grade_categories ||--o{ grade_categories : "has_parent"
+    grade_categories ||--o{ grade_items : "contains"
+    grade_items ||--o{ grade_grades : "has"
+    course ||--o{ grade_outcomes : "defines"
+    grade_outcomes ||--o{ grade_outcomes_courses : "used_in"
+    course ||--o{ grade_outcomes_courses : "uses"
+    grade_outcomes ||--o{ grade_items : "assessed_by"
+
+    %% Additional Management Relationships
+    course ||--o{ course_published : "published_as"
+    course ||--o{ backup_courses : "backed_up_by"
+    course ||--o{ tool_recyclebin_course : "has_deleted_items"
+    course_sections ||--o{ tool_recyclebin_course : "deleted_from"
+    course_modules ||--o{ tool_recyclebin_course : "moved_to"

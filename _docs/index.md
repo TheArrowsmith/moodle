@@ -1,4 +1,4 @@
-# Moodle 3.5 Functional Domains
+# Core concepts
 
 Moodle 3.5 is a Learning Management System (LMS) with several major functional domains:
 
@@ -6,6 +6,7 @@ Moodle 3.5 is a Learning Management System (LMS) with several major functional d
 The core of Moodle - organizing educational content into courses. Includes course creation, categories, enrollment methods, and course formats (weekly, topics-based, etc.).
 
 **Key Database Tables:**
+
 - `mdl_course` - Core course information
 - `mdl_course_categories` - Course category hierarchy
 - `mdl_course_sections` - Course sections/topics
@@ -13,6 +14,7 @@ The core of Moodle - organizing educational content into courses. Includes cours
 - `mdl_course_format_options` - Course format settings
 
 **Key Code Locations:**
+
 - `/course/` - Main course management code
 - `/course/format/` - Course format plugins
 - `/lib/coursecatlib.php` - Course category library
@@ -22,6 +24,7 @@ The core of Moodle - organizing educational content into courses. Includes cours
 Handles user accounts, roles (student, teacher, admin), permissions, and various authentication methods (manual, LDAP, SSO, etc.).
 
 **Key Database Tables:**
+
 - `mdl_user` - User accounts
 - `mdl_role` - Role definitions
 - `mdl_role_assignments` - User role assignments
@@ -30,6 +33,7 @@ Handles user accounts, roles (student, teacher, admin), permissions, and various
 - `mdl_user_lastaccess` - Access tracking
 
 **Key Code Locations:**
+
 - `/user/` - User management pages
 - `/auth/` - Authentication plugins
 - `/lib/authlib.php` - Authentication library
@@ -41,6 +45,7 @@ Handles user accounts, roles (student, teacher, admin), permissions, and various
 - **Resources**: Static content like files, folders, pages, URLs, and books
 
 **Key Database Tables:**
+
 - `mdl_assign` - Assignment activity
 - `mdl_quiz` - Quiz activity
 - `mdl_forum` - Forum activity
@@ -49,6 +54,7 @@ Handles user accounts, roles (student, teacher, admin), permissions, and various
 - `mdl_book` - Book resources
 
 **Key Code Locations:**
+
 - `/mod/` - All activity and resource modules
 - `/mod/assign/` - Assignment module
 - `/mod/quiz/` - Quiz module
@@ -59,6 +65,7 @@ Handles user accounts, roles (student, teacher, admin), permissions, and various
 Comprehensive grading system including gradebook, rubrics, outcomes, competencies, and various grading methods and scales.
 
 **Key Database Tables:**
+
 - `mdl_grade_items` - Gradebook items
 - `mdl_grade_grades` - Actual grades
 - `mdl_grade_categories` - Grade categories
@@ -67,6 +74,7 @@ Comprehensive grading system including gradebook, rubrics, outcomes, competencie
 - `mdl_competency_usercomp` - User competency records
 
 **Key Code Locations:**
+
 - `/grade/` - Gradebook system
 - `/lib/gradelib.php` - Grading library
 - `/grade/grading/` - Advanced grading methods
@@ -77,6 +85,7 @@ Comprehensive grading system including gradebook, rubrics, outcomes, competencie
 Forums, messaging, chat, comments, notifications, and announcement systems for interaction between users.
 
 **Key Database Tables:**
+
 - `mdl_message` - Messages between users
 - `mdl_notifications` - System notifications
 - `mdl_forum_posts` - Forum posts
@@ -85,6 +94,7 @@ Forums, messaging, chat, comments, notifications, and announcement systems for i
 - `mdl_comments` - Comments on various items
 
 **Key Code Locations:**
+
 - `/message/` - Messaging system
 - `/mod/forum/` - Forum module
 - `/mod/chat/` - Chat module
@@ -95,6 +105,7 @@ Forums, messaging, chat, comments, notifications, and announcement systems for i
 Activity logs, completion tracking, progress reports, analytics for learning patterns, and custom report generation.
 
 **Key Database Tables:**
+
 - `mdl_logstore_standard_log` - Activity logs
 - `mdl_course_completions` - Course completion records
 - `mdl_course_modules_completion` - Activity completion
@@ -102,6 +113,7 @@ Activity logs, completion tracking, progress reports, analytics for learning pat
 - `mdl_report_builder` - Custom reports
 
 **Key Code Locations:**
+
 - `/report/` - Report plugins
 - `/analytics/` - Analytics subsystem
 - `/completion/` - Completion tracking
@@ -112,6 +124,7 @@ Activity logs, completion tracking, progress reports, analytics for learning pat
 Organizing users into groups within courses or site-wide cohorts for differentiated learning experiences.
 
 **Key Database Tables:**
+
 - `mdl_groups` - Group definitions
 - `mdl_groups_members` - Group membership
 - `mdl_groupings` - Groupings (groups of groups)
@@ -119,6 +132,7 @@ Organizing users into groups within courses or site-wide cohorts for differentia
 - `mdl_cohort_members` - Cohort membership
 
 **Key Code Locations:**
+
 - `/group/` - Group management
 - `/cohort/` - Cohort management
 - `/lib/grouplib.php` - Group library
@@ -128,12 +142,14 @@ Organizing users into groups within courses or site-wide cohorts for differentia
 Achievement system with badges, completion criteria, and external badge backpack integration.
 
 **Key Database Tables:**
+
 - `mdl_badge` - Badge definitions
 - `mdl_badge_issued` - Issued badges
 - `mdl_badge_criteria` - Badge criteria
 - `mdl_badge_backpack` - External backpack connections
 
 **Key Code Locations:**
+
 - `/badges/` - Badge system
 - `/lib/badgeslib.php` - Badges library
 - `/badges/criteria/` - Badge criteria types
@@ -142,11 +158,13 @@ Achievement system with badges, completion criteria, and external badge backpack
 Extensible system supporting activity modules, blocks, themes, authentication plugins, and more.
 
 **Key Database Tables:**
+
 - `mdl_config_plugins` - Plugin configuration
 - `mdl_tool_installaddon_installfrom` - Plugin installation records
 - `mdl_upgrade_log` - Plugin upgrade history
 
 **Key Code Locations:**
+
 - `/mod/` - Activity modules
 - `/blocks/` - Block plugins
 - `/theme/` - Themes
@@ -158,6 +176,7 @@ Extensible system supporting activity modules, blocks, themes, authentication pl
 File management, repositories (internal and external), portfolio integration, and backup/restore functionality.
 
 **Key Database Tables:**
+
 - `mdl_files` - File storage
 - `mdl_repository` - Repository configurations
 - `mdl_repository_instances` - Repository instances
@@ -165,6 +184,7 @@ File management, repositories (internal and external), portfolio integration, an
 - `mdl_portfolio_instance` - Portfolio connections
 
 **Key Code Locations:**
+
 - `/repository/` - Repository plugins
 - `/portfolio/` - Portfolio plugins
 - `/backup/` - Backup and restore

@@ -1,0 +1,70 @@
+erDiagram
+    %% Moodle Assignment Module Tables
+
+    mdl_assign {
+        bigint id PK
+        varchar name 
+        bigint timemodified 
+    }
+    mdl_assign_grades {
+        bigint id PK
+        bigint timecreated 
+        bigint timemodified 
+        bigint userid 
+    }
+    mdl_assign_overrides {
+        bigint id PK
+        bigint userid 
+    }
+    mdl_assign_plugin_config {
+        bigint id PK
+        varchar name 
+    }
+    mdl_assign_submission {
+        bigint id PK
+        bigint timecreated 
+        bigint timemodified 
+        bigint userid 
+    }
+    mdl_assign_user_flags {
+        bigint id PK
+        bigint userid 
+    }
+    mdl_assign_user_mapping {
+        bigint id PK
+        bigint userid 
+    }
+    mdl_assignfeedback_comments {
+        bigint id PK
+    }
+    mdl_assignfeedback_editpdf_annot {
+        bigint id PK
+    }
+    mdl_assignfeedback_editpdf_cmnt {
+        bigint id PK
+    }
+    mdl_assignfeedback_editpdf_quick {
+        bigint id PK
+        bigint userid 
+    }
+    mdl_assignfeedback_editpdf_rot {
+        bigint id PK
+    }
+    mdl_assignfeedback_file {
+        bigint id PK
+    }
+    mdl_assignsubmission_file {
+        bigint id PK
+    }
+    mdl_assignsubmission_onlinetext {
+        bigint id PK
+    }
+    mdl_role_allow_assign {
+        bigint id PK
+    }
+    mdl_role_assignments {
+        bigint id PK
+        bigint timemodified 
+        bigint userid 
+    }
+    mdl_assign_overrides ||--o{ mdl_assign : "assignid"

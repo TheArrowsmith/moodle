@@ -1,0 +1,173 @@
+erDiagram
+    %% Moodle Database Schema - Core Tables
+    %% Generated from MySQL database analysis
+
+    %% Users and authentication
+    mdl_user {
+        bigint id PK
+        varchar username 
+        varchar email 
+        bigint timecreated 
+        bigint timemodified 
+    }
+
+    %% Course management
+    mdl_course {
+        bigint id PK
+        varchar fullname 
+        varchar shortname 
+        bigint timecreated 
+        bigint timemodified 
+    }
+
+    %% Course categories
+    mdl_course_categories {
+        bigint id PK
+        varchar name 
+        bigint timemodified 
+    }
+
+    %% Permission contexts
+    mdl_context {
+        bigint id PK
+    }
+
+    %% User roles
+    mdl_role {
+        bigint id PK
+        varchar name 
+        varchar shortname 
+    }
+
+    %% Role assignments
+    mdl_role_assignments {
+        bigint id PK
+        bigint userid 
+        bigint timemodified 
+    }
+
+    %% Course groups
+    mdl_groups {
+        bigint id PK
+        bigint courseid 
+        varchar name 
+        bigint timecreated 
+        bigint timemodified 
+    }
+
+    %% Discussion forums
+    mdl_forum {
+        bigint id PK
+        varchar name 
+        bigint timemodified 
+    }
+
+    %% Assignments
+    mdl_assign {
+        bigint id PK
+        varchar name 
+        bigint timemodified 
+    }
+
+    %% Quizzes
+    mdl_quiz {
+        bigint id PK
+        varchar name 
+        bigint timecreated 
+        bigint timemodified 
+    }
+
+    %% Quiz questions
+    mdl_question {
+        bigint id PK
+        varchar name 
+        bigint timecreated 
+        bigint timemodified 
+    }
+
+    %% Gradebook items
+    mdl_grade_items {
+        bigint id PK
+        bigint courseid 
+        bigint timecreated 
+        bigint timemodified 
+    }
+
+    %% Student grades
+    mdl_grade_grades {
+        bigint id PK
+        bigint userid 
+        bigint timecreated 
+        bigint timemodified 
+    }
+
+    %% File storage
+    mdl_files {
+        bigint id PK
+        bigint userid 
+        bigint timecreated 
+        bigint timemodified 
+    }
+
+    %% Activity modules
+    mdl_modules {
+        bigint id PK
+        varchar name 
+    }
+
+    %% Course activities
+    mdl_course_modules {
+        bigint id PK
+    }
+
+    %% Enrollment plugins
+    mdl_enrol {
+        bigint id PK
+        bigint courseid 
+        varchar name 
+        bigint timecreated 
+        bigint timemodified 
+    }
+
+    %% User enrollments
+    mdl_user_enrolments {
+        bigint id PK
+        bigint userid 
+        bigint timecreated 
+        bigint timemodified 
+    }
+
+    %% Competencies
+    mdl_competency {
+        bigint id PK
+        varchar shortname 
+        bigint timecreated 
+        bigint timemodified 
+    }
+
+    %% Badges and achievements
+    mdl_badge {
+        bigint id PK
+        varchar name 
+        bigint timecreated 
+        bigint timemodified 
+        bigint courseid 
+    }
+
+    mdl_badge ||--o{ mdl_course : "courseid"
+    mdl_course ||--o{ mdl_course : "originalcourseid"
+    mdl_enrol ||--o{ mdl_course : "courseid"
+    mdl_enrol ||--o{ mdl_role : "roleid"
+    mdl_files ||--o{ mdl_context : "contextid"
+    mdl_files ||--o{ mdl_grade_items : "itemid"
+    mdl_files ||--o{ mdl_user : "userid"
+    mdl_grade_grades ||--o{ mdl_grade_items : "itemid"
+    mdl_grade_grades ||--o{ mdl_user : "userid"
+    mdl_grade_items ||--o{ mdl_course : "courseid"
+    mdl_grade_items ||--o{ mdl_course_categories : "categoryid"
+    mdl_groups ||--o{ mdl_course : "courseid"
+    mdl_role_assignments ||--o{ mdl_role : "roleid"
+    mdl_role_assignments ||--o{ mdl_context : "contextid"
+    mdl_role_assignments ||--o{ mdl_user : "userid"
+    mdl_role_assignments ||--o{ mdl_grade_items : "itemid"
+    mdl_user_enrolments ||--o{ mdl_user : "userid"

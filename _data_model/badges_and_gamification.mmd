@@ -1,0 +1,267 @@
+erDiagram
+    %% Core Badge Tables
+    badge {
+        bigint id PK
+        varchar name
+        longtext description
+        tinyint descriptionformat
+        bigint timecreated
+        bigint timemodified
+        bigint usercreated FK
+        bigint usermodified FK
+        varchar issuername
+        varchar issuerurl
+        varchar issuercontact
+        bigint expiredate
+        bigint expireperiod
+        tinyint type
+        bigint courseid FK
+        longtext message
+        tinyint messagesubject
+        varchar attachment
+        tinyint notification
+        tinyint status
+        bigint nextcron
+        varchar version
+        varchar language
+        varchar imageauthorname
+        varchar imageauthoremail
+        varchar imageauthorurl
+        varchar imagecaption
+    }
+
+    badge_criteria {
+        bigint id PK
+        bigint badgeid FK
+        bigint criteriatype
+        varchar method
+        longtext description
+        tinyint descriptionformat
+    }
+
+    badge_criteria_param {
+        bigint id PK
+        bigint critid FK
+        varchar name
+        varchar value
+    }
+
+    badge_criteria_met {
+        bigint id PK
+        bigint issuedid FK
+        bigint critid FK
+        bigint userid FK
+        bigint datemet
+    }
+
+    badge_issued {
+        bigint id PK
+        bigint badgeid FK
+        bigint userid FK
+        bigint uniquehash
+        bigint dateissued
+        bigint dateexpire
+        tinyint visible
+        bigint issuernotified
+    }
+
+    badge_manual_award {
+        bigint id PK
+        bigint badgeid FK
+        bigint recipientid FK
+        bigint issuerid FK
+        bigint issuerrole FK
+        bigint datemet
+    }
+
+    %% External Badge Integration
+    badge_external {
+        bigint id PK
+        bigint backpackid FK
+        bigint collectionid
+    }
+
+    badge_backpack {
+        bigint id PK
+        bigint userid FK
+        varchar email
+        varchar backpackurl
+        bigint backpackuid
+        tinyint autosync
+        varchar password
+    }
+
+    %% Related Core Tables
+    user {
+        bigint id PK
+        varchar username
+        varchar firstname
+        varchar lastname
+        varchar email
+    }
+
+    course {
+        bigint id PK
+        varchar fullname
+        varchar shortname
+    }
+
+    course_modules {
+        bigint id PK
+        bigint course FK
+        bigint module FK
+        bigint instance
+    }
+
+    course_completions {
+        bigint id PK
+        bigint userid FK
+        bigint course FK
+        bigint timecompleted
+    }
+
+    %% Competency Integration (for badges)
+    competency_usercomp {
+        bigint id PK
+        bigint userid FK
+        bigint competencyid FK
+        tinyint proficiency
+    }
+
+    competency {
+        bigint id PK
+        varchar shortname
+        varchar idnumber
+    }
+
+    %% Role-based criteria
+    role {
+        bigint id PK
+        varchar name
+        varchar shortname
+    }
+
+    role_assignments {
+        bigint id PK
+        bigint roleid FK
+        bigint contextid FK
+        bigint userid FK
+    }
+
+    %% Activity completion for badges
+    course_modules_completion {
+        bigint id PK
+        bigint coursemoduleid FK
+        bigint userid FK
+        tinyint completionstate
+        bigint timemodified
+    }
+
+    %% Grade-based criteria
+    grade_items {
+        bigint id PK
+        bigint courseid FK
+        varchar itemname
+        decimal gradepass
+    }
+
+    grade_grades {
+        bigint id PK
+        bigint itemid FK
+        bigint userid FK
+        decimal finalgrade
+    }
+
+    %% Profile field criteria
+    user_info_field {
+        bigint id PK
+        varchar shortname
+        varchar name
+    }
+
+    user_info_data {
+        bigint id PK
+        bigint userid FK
+        bigint fieldid FK
+        longtext data
+    }
+
+    %% Cohort membership criteria
+    cohort {
+        bigint id PK
+        varchar name
+        varchar idnumber
+    }
+
+    cohort_members {
+        bigint id PK
+        bigint cohortid FK
+        bigint userid FK
+    }
+
+    %% RELATIONSHIPS
+
+    %% Core Badge Relationships
+    badge ||--o{ badge_criteria : "has"
+    badge }o--|| course : "belongs_to"
+    badge }o--|| user : "created_by"
+    badge }o--|| user : "modified_by"
+
+    %% Criteria Relationships
+    badge_criteria ||--o{ badge_criteria_param : "configured_by"
+    badge_criteria ||--o{ badge_criteria_met : "satisfied_by"
+
+    %% Issuance Relationships
+    badge ||--o{ badge_issued : "awarded_as"
+    badge_issued }o--|| user : "awarded_to"
+    badge_issued ||--o{ badge_criteria_met : "justified_by"
+    badge_criteria_met }o--|| user : "achieved_by"
+
+    %% Manual Award Relationships
+    badge ||--o{ badge_manual_award : "manually_awarded"
+    badge_manual_award }o--|| user : "awarded_to"
+    badge_manual_award }o--|| user : "awarded_by"
+    badge_manual_award }o--|| role : "with_role"
+
+    %% External Badge Relationships
+    badge_external }o--|| badge_backpack : "stored_in"
+    badge_backpack }o--|| user : "owned_by"
+
+    %% Criteria Type Relationships
+    %% Activity completion criteria
+    badge_criteria_param }o--|| course_modules : "requires_completion"
+    course_modules_completion }o--|| user : "completed_by"
+    course_modules_completion }o--|| course_modules : "completes"
+
+    %% Course completion criteria
+    badge_criteria_param }o--|| course : "requires_completion"
+    course_completions }o--|| user : "completed_by"
+    course_completions }o--|| course : "completes"
+
+    %% Grade criteria
+    badge_criteria_param }o--|| grade_items : "requires_grade"
+    grade_grades }o--|| user : "achieved_by"
+    grade_grades }o--|| grade_items : "for_item"
+
+    %% Competency criteria
+    badge_criteria_param }o--|| competency : "requires_proficiency"
+    competency_usercomp }o--|| user : "achieved_by"
+    competency_usercomp }o--|| competency : "demonstrates"
+
+    %% Role criteria
+    badge_criteria_param }o--|| role : "requires_role"
+    role_assignments }o--|| user : "assigned_to"
+    role_assignments }o--|| role : "assigns"
+
+    %% Profile field criteria
+    badge_criteria_param }o--|| user_info_field : "checks_field"
+    user_info_data }o--|| user : "belongs_to"
+    user_info_data }o--|| user_info_field : "stores"
+
+    %% Cohort membership criteria
+    badge_criteria_param }o--|| cohort : "requires_membership"
+    cohort_members }o--|| user : "includes"
+    cohort_members }o--|| cohort : "member_of"
+
+    %% Badge dependency criteria
+    badge_criteria_param }o--|| badge : "requires_badge"

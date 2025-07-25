@@ -1,0 +1,21 @@
+site_name: Moodle Docs
+docs_dir: _docs
+plugins:
+  - mermaid2
+nav:
+  - Home: index.md
+  - Asset management:
+      Legacy: legacy_asset_management.md
+      New: assets.md
+  - Database:
+    - Core tables: core_db_tables.md
+    - All tables: moodle_database_tables_overview.md
+    - schema.sql: schema.md
+  - Dir structure: directory_structure.md
+  - Features:
+    - Automated grading: automated-unit-test-grading.md
+    - Coding progress test: coding-progress-test.md
+    - Instructor dashboard: instructor-progress-dashboard.md
+    - Syntax highlighting: markdown-syntax-highlighting.md
+    - Code sandbox: live-code-sandbox.md
+    - API: api.md

@@ -1,0 +1,269 @@
+erDiagram
+    %% Cohorts (Site-wide Groups)
+    cohort {
+        bigint id PK
+        bigint contextid FK
+        varchar name
+        varchar idnumber
+        longtext description
+        tinyint descriptionformat
+        tinyint visible
+        varchar component
+        bigint timecreated
+        bigint timemodified
+    }
+
+    cohort_members {
+        bigint id PK
+        bigint cohortid FK
+        bigint userid FK
+        bigint timeadded
+    }
+
+    tool_cohortroles {
+        bigint id PK
+        bigint cohortid FK
+        bigint roleid FK
+        bigint userid FK
+        bigint timecreated
+        bigint timemodified
+        bigint usermodified FK
+    }
+
+    %% Course Groups
+    groups {
+        bigint id PK
+        bigint courseid FK
+        varchar idnumber
+        varchar name
+        longtext description
+        tinyint descriptionformat
+        varchar enrolmentkey
+        bigint picture
+        tinyint hidepicture
+        bigint timecreated
+        bigint timemodified
+    }
+
+    groups_members {
+        bigint id PK
+        bigint groupid FK
+        bigint userid FK
+        bigint timeadded
+        varchar component
+        bigint itemid
+    }
+
+    %% Groupings (Collections of Groups)
+    groupings {
+        bigint id PK
+        bigint courseid FK
+        varchar idnumber
+        varchar name
+        longtext description
+        tinyint descriptionformat
+        longtext configdata
+        bigint timecreated
+        bigint timemodified
+    }
+
+    groupings_groups {
+        bigint id PK
+        bigint groupingid FK
+        bigint groupid FK
+        bigint timeadded
+    }
+
+    %% Related Tables for Context
+    context {
+        bigint id PK
+        bigint contextlevel
+        bigint instanceid
+        varchar path
+        bigint depth
+    }
+
+    course {
+        bigint id PK
+        bigint category FK
+        varchar fullname
+        varchar shortname
+        bigint defaultgroupingid FK
+    }
+
+    user {
+        bigint id PK
+        varchar username
+        varchar firstname
+        varchar lastname
+        varchar email
+    }
+
+    role {
+        bigint id PK
+        varchar name
+        varchar shortname
+        varchar description
+    }
+
+    role_assignments {
+        bigint id PK
+        bigint roleid FK
+        bigint contextid FK
+        bigint userid FK
+        bigint timemodified
+        bigint modifierid FK
+        varchar component
+        bigint itemid
+        bigint sortorder
+    }
+
+    %% Group-Related Activity Settings
+    course_modules {
+        bigint id PK
+        bigint course FK
+        bigint module FK
+        bigint instance
+        smallint groupmode
+        bigint groupingid FK
+    }
+
+    forum {
+        bigint id PK
+        bigint course FK
+        varchar name
+    }
+
+    forum_discussions {
+        bigint id PK
+        bigint forum FK
+        bigint groupid FK
+        varchar name
+    }
+
+    assign {
+        bigint id PK
+        bigint course FK
+        tinyint teamsubmission
+        bigint teamsubmissiongroupingid FK
+    }
+
+    wiki_subwikis {
+        bigint id PK
+        bigint wikiid FK
+        bigint groupid FK
+        bigint userid FK
+    }
+
+    chat_messages {
+        bigint id PK
+        bigint chatid FK
+        bigint userid FK
+        bigint groupid FK
+        longtext message
+    }
+
+    data_records {
+        bigint id PK
+        bigint userid FK
+        bigint groupid FK
+        bigint dataid FK
+    }
+
+    %% Competency Integration
+    competency_templatecohort {
+        bigint id PK
+        bigint templateid FK
+        bigint cohortid FK
+        bigint timecreated
+        bigint timemodified
+        bigint usermodified FK
+    }
+
+    competency_template {
+        bigint id PK
+        varchar shortname
+        bigint contextid FK
+        longtext description
+    }
+
+    %% Enrollment Integration
+    enrol {
+        bigint id PK
+        varchar enrol
+        bigint courseid FK
+        bigint customint5
+        bigint customint6
+    }
+
+    enrol_cohort_sync {
+        bigint enrolid FK
+        bigint cohortid FK
+        bigint roleid FK
+    }
+
+    %% Messaging Integration
+    message_conversations {
+        bigint id PK
+        bigint type
+        varchar name
+        bigint contextid FK
+        bigint itemid
+    }
+
+    message_conversation_members {
+        bigint id PK
+        bigint conversationid FK
+        bigint userid FK
+    }
+
+    %% RELATIONSHIPS
+
+    %% Cohort Relationships
+    cohort }o--|| context : "exists_in"
+    cohort ||--o{ cohort_members : "has"
+    cohort ||--o{ tool_cohortroles : "assigns"
+    user ||--o{ cohort_members : "belongs_to"
+    tool_cohortroles }o--|| role : "assigns"
+    tool_cohortroles }o--|| user : "managed_by"
+    tool_cohortroles }o--|| user : "modified_by"
+
+    %% Group Relationships
+    course ||--o{ groups : "contains"
+    course }o--|| groupings : "default_grouping"
+    groups ||--o{ groups_members : "has"
+    user ||--o{ groups_members : "belongs_to"
+
+    %% Grouping Relationships
+    course ||--o{ groupings : "contains"
+    groupings ||--o{ groupings_groups : "includes"
+    groups ||--o{ groupings_groups : "grouped_in"
+
+    %% Activity Group Integration
+    course_modules }o--|| groupings : "restricted_to"
+    forum_discussions }o--|| groups : "visible_to"
+    assign }o--|| groupings : "uses_for_teams"
+    wiki_subwikis }o--|| groups : "created_for"
+    chat_messages }o--|| groups : "sent_to"
+    data_records }o--|| groups : "submitted_by"
+
+    %% Competency Integration
+    competency_template ||--o{ competency_templatecohort : "assigned_via"
+    cohort ||--o{ competency_templatecohort : "assigned_to"
+    competency_templatecohort }o--|| user : "modified_by"
+
+    %% Enrollment Integration
+    cohort ||--o{ enrol_cohort_sync : "enrolled_via"
+    enrol ||--o{ enrol_cohort_sync : "syncs_with"
+    enrol_cohort_sync }o--|| role : "with_role"
+
+    %% Messaging Integration
+    groups ||--o{ message_conversations : "has_conversation"
+    message_conversations ||--o{ message_conversation_members : "includes"
+    user ||--o{ message_conversation_members : "participates_in"
+
+    %% Role Assignment Context
+    cohort ||--o{ role_assignments : "assigns_roles_via"
+    user ||--o{ role_assignments : "has_roles"
+    role ||--o{ role_assignments : "assigned_to"
+    context ||--o{ role_assignments : "scoped_in"

@@ -1,0 +1,51 @@
+erDiagram
+    %% Moodle Forum Module Tables
+
+    mdl_forum {
+        bigint id PK
+        varchar name 
+        bigint timemodified 
+    }
+    mdl_forum_digests {
+        bigint id PK
+        bigint userid 
+    }
+    mdl_forum_discussion_subs {
+        bigint id PK
+        bigint userid 
+    }
+    mdl_forum_discussions {
+        bigint id PK
+        varchar name 
+        bigint timemodified 
+        bigint userid 
+    }
+    mdl_forum_grades {
+        bigint id PK
+        bigint timecreated 
+        bigint timemodified 
+        bigint userid 
+    }
+    mdl_forum_posts {
+        bigint id PK
+        bigint userid 
+    }
+    mdl_forum_queue {
+        bigint id PK
+        bigint timemodified 
+        bigint userid 
+    }
+    mdl_forum_read {
+        bigint id PK
+        bigint userid 
+    }
+    mdl_forum_subscriptions {
+        bigint id PK
+        bigint userid 
+    }
+    mdl_forum_track_prefs {
+        bigint id PK
+        bigint userid 
+    }
+    mdl_forum_read ||--o{ mdl_forum : "forumid"
+    mdl_forum_track_prefs ||--o{ mdl_forum : "forumid"

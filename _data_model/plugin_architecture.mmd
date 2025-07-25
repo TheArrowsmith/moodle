@@ -1,0 +1,444 @@
+erDiagram
+    %% Core Plugin Configuration
+    config_plugins {
+        bigint id PK
+        varchar plugin
+        varchar name
+        longtext value
+    }
+
+    config {
+        bigint id PK
+        varchar name
+        longtext value
+    }
+
+    config_log {
+        bigint id PK
+        bigint userid FK
+        bigint timemodified
+        varchar plugin
+        varchar name
+        longtext value
+        longtext oldvalue
+    }
+
+    %% Activity Modules
+    modules {
+        bigint id PK
+        varchar name
+        bigint cron
+        bigint lastcron
+        varchar search
+        tinyint visible
+    }
+
+    course_modules {
+        bigint id PK
+        bigint course FK
+        bigint module FK
+        bigint instance
+        bigint section FK
+        varchar idnumber
+        bigint added
+        tinyint score
+        smallint indent
+        tinyint visible
+        tinyint visibleoncoursepage
+        tinyint visibleold
+        smallint groupmode
+        bigint groupingid FK
+        tinyint completion
+        bigint completiongradeitemnumber
+        bigint completionview
+        bigint completionexpected
+        tinyint showdescription
+        longtext availability
+        tinyint deletioninprogress
+    }
+
+    %% Block Plugins
+    block {
+        bigint id PK
+        varchar name
+        bigint cron
+        bigint lastcron
+        tinyint visible
+    }
+
+    block_instances {
+        bigint id PK
+        varchar blockname
+        bigint parentcontextid FK
+        bigint showinsubcontexts
+        bigint requiredbytheme
+        varchar pagetypepattern
+        varchar subpagepattern
+        varchar defaultregion
+        bigint defaultweight
+        longtext configdata
+        bigint timecreated
+        bigint timemodified
+    }
+
+    block_positions {
+        bigint id PK
+        bigint blockinstanceid FK
+        bigint contextid FK
+        varchar pagetype
+        varchar subpage
+        tinyint visible
+        varchar region
+        bigint weight
+    }
+
+    %% Authentication Plugins
+    auth_oauth2_linked_login {
+        bigint id PK
+        bigint userid FK
+        bigint issuerid FK
+        varchar username
+        varchar email
+        bigint confirmtoken
+        bigint confirmtokenexpires
+    }
+
+    oauth2_issuer {
+        bigint id PK
+        varchar name
+        varchar image
+        varchar baseurl
+        varchar clientid
+        varchar clientsecret
+        varchar loginscopes
+        varchar loginscopesoffline
+        varchar loginparams
+        varchar loginparamsoffline
+        varchar alloweddomains
+        tinyint enabled
+        bigint showonloginpage
+        bigint sortorder
+        bigint timecreated
+        bigint timemodified
+        bigint usermodified FK
+    }
+
+    %% Enrollment Plugins
+    enrol {
+        bigint id PK
+        varchar enrol
+        varchar status
+        bigint courseid FK
+        bigint sortorder
+        varchar name
+        bigint enrolperiod
+        bigint enrolstartdate
+        bigint enrolenddate
+        tinyint expirynotify
+        bigint expirythreshold
+        tinyint notifyall
+        varchar password
+        varchar cost
+        varchar currency
+        bigint roleid FK
+        bigint customint1
+        bigint customint2
+        bigint customint3
+        bigint customint4
+        bigint customint5
+        bigint customint6
+        bigint customint7
+        bigint customint8
+        varchar customchar1
+        varchar customchar2
+        varchar customchar3
+        decimal customdec1
+        decimal customdec2
+        longtext customtext1
+        longtext customtext2
+        longtext customtext3
+        longtext customtext4
+        bigint timecreated
+        bigint timemodified
+    }
+
+    user_enrolments {
+        bigint id PK
+        varchar status
+        bigint enrolid FK
+        bigint userid FK
+        bigint timestart
+        bigint timeend
+        bigint modifierid FK
+        bigint timecreated
+        bigint timemodified
+    }
+
+    enrol_lti_tools {
+        bigint id PK
+        bigint enrolid FK
+        bigint contextid FK
+        bigint institution
+        varchar lang
+        varchar timezone
+        bigint maxenrolled
+        tinyint maildisplay
+        varchar city
+        varchar country
+        tinyint gradesync
+        tinyint gradesynccompletion
+        tinyint membersync
+        tinyint membersyncmode
+        tinyint roleinstructor
+        tinyint rolelearner
+        varchar secret
+        bigint timecreated
+        bigint timemodified
+    }
+
+    enrol_paypal {
+        bigint id PK
+        varchar business
+        varchar receiver_email
+        varchar receiver_id
+        varchar item_name
+        bigint courseid FK
+        bigint userid FK
+        bigint instanceid FK
+        varchar memo
+        varchar tax
+        varchar option_name1
+        varchar option_selection1_x
+        varchar option_name2
+        varchar option_selection2_x
+        varchar payment_status
+        varchar pending_reason
+        varchar reason_code
+        varchar txn_id
+        varchar parent_txn_id
+        varchar payment_type
+        bigint timeupdated
+    }
+
+    %% Repository Plugins
+    repository {
+        bigint id PK
+        varchar type
+        tinyint visible
+        bigint sortorder
+    }
+
+    repository_instances {
+        bigint id PK
+        varchar name
+        bigint typeid FK
+        bigint userid FK
+        bigint contextid FK
+        varchar username
+        varchar password
+        bigint timecreated
+        bigint timemodified
+        tinyint readonly
+    }
+
+    repository_instance_config {
+        bigint id PK
+        bigint instanceid FK
+        varchar name
+        longtext value
+    }
+
+    %% Filter Plugins
+    filter_active {
+        bigint id PK
+        varchar filter
+        bigint contextid FK
+        bigint active
+        bigint sortorder
+    }
+
+    filter_config {
+        bigint id PK
+        varchar filter
+        bigint contextid FK
+        varchar name
+        longtext value
+    }
+
+    %% Editor Plugins
+    editor_atto_autosave {
+        bigint id PK
+        bigint elementid
+        bigint contextid FK
+        varchar pagehash
+        bigint userid FK
+        longtext drafttext
+        longtext draftid
+        varchar pageinstance
+        bigint timemodified
+    }
+
+    %% Cache Configuration
+    cache_filters {
+        bigint id PK
+        varchar filter
+        bigint version
+        bigint md5key
+        longtext rawtext
+        bigint timemodified
+    }
+
+    cache_flags {
+        bigint id PK
+        bigint flagtype
+        varchar name
+        bigint timemodified
+        longtext value
+        bigint expiry
+    }
+
+    %% Theme Configuration
+    theme_config {
+        bigint id PK
+        varchar theme
+        varchar name
+        longtext value
+    }
+
+    %% Tool Plugins
+    tool_customlang {
+        bigint id PK
+        varchar lang
+        bigint componentid FK
+        varchar stringid
+        longtext original
+        longtext master
+        longtext local
+        bigint timemodified
+        bigint timecustomized
+        tinyint outdated
+        tinyint modified
+    }
+
+    tool_customlang_components {
+        bigint id PK
+        varchar name
+        bigint version
+    }
+
+    %% Message Output Plugins
+    message_processors {
+        bigint id PK
+        varchar name
+        tinyint enabled
+    }
+
+    message_providers {
+        bigint id PK
+        varchar name
+        varchar component
+        varchar capability
+    }
+
+    %% Event Handlers
+    events_handlers {
+        bigint id PK
+        varchar eventname
+        varchar component
+        varchar handlerfile
+        varchar handlerfunction
+        varchar schedule
+        bigint status
+        tinyint internal
+    }
+
+    %% Web Service Plugins
+    external_functions {
+        bigint id PK
+        varchar name
+        varchar classname
+        varchar methodname
+        varchar classpath
+        varchar component
+        varchar capabilities
+        varchar services
+    }
+
+    external_services {
+        bigint id PK
+        varchar name
+        tinyint enabled
+        tinyint requiredcapability
+        tinyint restrictedusers
+        varchar component
+        bigint timecreated
+        bigint timemodified
+        varchar shortname
+        tinyint downloadfiles
+        tinyint uploadfiles
+    }
+
+    external_services_functions {
+        bigint id PK
+        bigint externalserviceid FK
+        varchar functionname
+    }
+
+    %% RELATIONSHIPS
+
+    %% Core Configuration
+    config_log }o--|| user : "changed_by"
+
+    %% Module Relationships
+    modules ||--o{ course_modules : "instantiated_as"
+    course_modules }o--|| course : "in_course"
+    course_modules }o--|| course_sections : "in_section"
+
+    %% Block Relationships
+    block ||--o{ block_instances : "instantiated_as"
+    block_instances }o--|| context : "in_context"
+    block_instances ||--o{ block_positions : "positioned_by"
+    block_positions }o--|| context : "in_context"
+
+    %% Authentication Relationships
+    oauth2_issuer ||--o{ auth_oauth2_linked_login : "authenticates"
+    auth_oauth2_linked_login }o--|| user : "links_to"
+    oauth2_issuer }o--|| user : "modified_by"
+
+    %% Enrollment Relationships
+    enrol }o--|| course : "for_course"
+    enrol }o--|| role : "assigns_role"
+    enrol ||--o{ user_enrolments : "creates"
+    user_enrolments }o--|| user : "enrolls"
+    user_enrolments }o--|| user : "modified_by"
+    enrol ||--o{ enrol_lti_tools : "configured_as"
+    enrol_paypal }o--|| course : "for_course"
+    enrol_paypal }o--|| user : "purchased_by"
+    enrol_paypal }o--|| enrol : "for_instance"
+
+    %% Repository Relationships
+    repository ||--o{ repository_instances : "has_instances"
+    repository_instances }o--|| user : "owned_by"
+    repository_instances }o--|| context : "in_context"
+    repository_instances ||--o{ repository_instance_config : "configured_by"
+
+    %% Filter Relationships
+    filter_active }o--|| context : "active_in"
+    filter_config }o--|| context : "configured_in"
+
+    %% Editor Relationships
+    editor_atto_autosave }o--|| context : "saved_in"
+    editor_atto_autosave }o--|| user : "saved_by"
+
+    %% Tool Relationships
+    tool_customlang }o--|| tool_customlang_components : "belongs_to"
+
+    %% Message Plugin Relationships
+    message_processors ||--o{ message_providers : "processes"
+
+    %% Event Handler Relationships
+    events_handlers ||--o{ events_queue_handlers : "handles"
+
+    %% Web Service Relationships
+    external_services ||--o{ external_services_functions : "provides"
+    external_services_functions }o--|| external_functions : "includes"

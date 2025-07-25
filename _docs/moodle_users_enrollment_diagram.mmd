@@ -1,0 +1,155 @@
+erDiagram
+    %% Moodle Users and Enrollments
+
+    mdl_user {
+        bigint id PK
+        varchar auth 
+        tinyint confirmed 
+        tinyint policyagreed 
+        tinyint deleted 
+        tinyint suspended 
+        bigint mnethostid 
+        varchar username 
+    }
+    mdl_user_info_data {
+        bigint id PK
+        bigint userid 
+        bigint fieldid 
+        longtext data 
+        tinyint dataformat 
+    }
+    mdl_user_info_field {
+        bigint id PK
+        varchar shortname 
+        longtext name 
+        varchar datatype 
+        longtext description 
+        tinyint descriptionformat 
+        bigint categoryid 
+        bigint sortorder 
+    }
+    mdl_role {
+        bigint id PK
+        varchar name 
+        varchar shortname 
+        longtext description 
+        bigint sortorder 
+        varchar archetype 
+    }
+    mdl_role_assignments {
+        bigint id PK
+        bigint roleid 
+        bigint contextid 
+        bigint userid 
+        bigint timemodified 
+        bigint modifierid 
+        varchar component 
+        bigint itemid 
+    }
+    mdl_role_capabilities {
+        bigint id PK
+        bigint contextid 
+        bigint roleid 
+        varchar capability 
+        bigint permission 
+        bigint timemodified 
+        bigint modifierid 
+    }
+    mdl_context {
+        bigint id PK
+        bigint contextlevel 
+        bigint instanceid 
+        varchar path 
+        tinyint depth 
+        tinyint locked 
+    }
+    mdl_enrol {
+        bigint id PK
+        varchar enrol 
+        bigint status 
+        bigint courseid 
+        bigint sortorder 
+        varchar name 
+        bigint enrolperiod 
+        bigint enrolstartdate 
+    }
+    mdl_user_enrolments {
+        bigint id PK
+        bigint status 
+        bigint enrolid 
+        bigint userid 
+        bigint timestart 
+        bigint timeend 
+        bigint modifierid 
+        bigint timecreated 
+    }
+    mdl_cohort {
+        bigint id PK
+        bigint contextid 
+        varchar name 
+        varchar idnumber 
+        longtext description 
+        tinyint descriptionformat 
+        tinyint visible 
+        varchar component 
+    }
+    mdl_cohort_members {
+        bigint id PK
+        bigint cohortid 
+        bigint userid 
+        bigint timeadded 
+    }
+    mdl_groups {
+        bigint id PK
+        bigint courseid 
+        varchar idnumber 
+        varchar name 
+        longtext description 
+        tinyint descriptionformat 
+        varchar enrolmentkey 
+        bigint picture 
+    }
+    mdl_groups_members {
+        bigint id PK
+        bigint groupid 
+        bigint userid 
+        bigint timeadded 
+        varchar component 
+        bigint itemid 
+    }
+    mdl_course {
+        bigint id PK
+        bigint category 
+        bigint sortorder 
+        varchar fullname 
+        varchar shortname 
+        varchar idnumber 
+        longtext summary 
+        tinyint summaryformat 
+    }
+    mdl_course_categories {
+        bigint id PK
+        varchar name 
+        varchar idnumber 
+        longtext description 
+        tinyint descriptionformat 
+        bigint parent 
+        bigint sortorder 
+        bigint coursecount 
+    }
+    mdl_cohort ||--o{ mdl_context : "contextid"
+    mdl_cohort_members ||--o{ mdl_user : "userid"
+    mdl_course ||--o{ mdl_course : "originalcourseid"
+    mdl_enrol ||--o{ mdl_course : "courseid"
+    mdl_enrol ||--o{ mdl_role : "roleid"
+    mdl_groups ||--o{ mdl_course : "courseid"
+    mdl_groups_members ||--o{ mdl_groups : "groupid"
+    mdl_groups_members ||--o{ mdl_user : "userid"
+    mdl_role_assignments ||--o{ mdl_role : "roleid"
+    mdl_role_assignments ||--o{ mdl_context : "contextid"
+    mdl_role_assignments ||--o{ mdl_user : "userid"
+    mdl_role_capabilities ||--o{ mdl_context : "contextid"
+    mdl_role_capabilities ||--o{ mdl_role : "roleid"
+    mdl_user_enrolments ||--o{ mdl_user : "userid"
+    mdl_user_info_data ||--o{ mdl_user : "userid"
+    mdl_user_info_field ||--o{ mdl_course_categories : "categoryid"

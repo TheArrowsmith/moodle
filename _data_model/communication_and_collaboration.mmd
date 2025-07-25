@@ -1,0 +1,520 @@
+erDiagram
+    %% Messaging System
+    message_conversations {
+        bigint id PK
+        bigint type
+        varchar name
+        tinyint enabled
+        bigint timecreated
+        bigint timemodified
+        varchar component
+        bigint itemid
+        bigint contextid FK
+        bigint convhash
+    }
+
+    message_conversation_members {
+        bigint id PK
+        bigint conversationid FK
+        bigint userid FK
+        bigint timecreated
+    }
+
+    messages {
+        bigint id PK
+        bigint useridfrom FK
+        bigint conversationid FK
+        varchar subject
+        longtext fullmessage
+        tinyint fullmessageformat
+        longtext fullmessagehtml
+        longtext smallmessage
+        bigint notification
+        bigint contexturl
+        varchar contexturlname
+        bigint timecreated
+        bigint timeread
+        bigint timeuserfromdeleted
+        varchar component
+        varchar eventtype
+        longtext customdata
+    }
+
+    message {
+        bigint id PK
+        bigint useridfrom FK
+        bigint useridto FK
+        varchar subject
+        longtext fullmessage
+        tinyint fullmessageformat
+        longtext fullmessagehtml
+        longtext smallmessage
+        bigint notification
+        bigint contexturl
+        varchar contexturlname
+        bigint timecreated
+        bigint timeuserfromdeleted
+        bigint timeusertodeleted
+        varchar component
+        varchar eventtype
+        longtext customdata
+    }
+
+    message_read {
+        bigint id PK
+        bigint useridfrom FK
+        bigint useridto FK
+        varchar subject
+        longtext fullmessage
+        tinyint fullmessageformat
+        longtext fullmessagehtml
+        longtext smallmessage
+        bigint notification
+        bigint contexturl
+        varchar contexturlname
+        bigint timecreated
+        bigint timeread
+        bigint timeuserfromdeleted
+        bigint timeusertodeleted
+        varchar component
+        varchar eventtype
+        longtext customdata
+    }
+
+    message_contacts {
+        bigint id PK
+        bigint userid FK
+        bigint contactid FK
+        bigint timecreated
+    }
+
+    message_user_actions {
+        bigint id PK
+        bigint userid FK
+        bigint messageid FK
+        bigint action
+        bigint timecreated
+    }
+
+    %% Message Processing
+    message_processors {
+        bigint id PK
+        varchar name
+        tinyint enabled
+    }
+
+    message_providers {
+        bigint id PK
+        varchar name
+        varchar component
+        varchar capability
+    }
+
+    message_popup {
+        bigint id PK
+        bigint messagereadid FK
+        tinyint isread
+    }
+
+    message_popup_notifications {
+        bigint id PK
+        bigint notificationid FK
+    }
+
+    message_airnotifier_devices {
+        bigint id PK
+        bigint userdeviceid FK
+        tinyint enable
+    }
+
+    %% Inbound Email Processing
+    messageinbound_handlers {
+        bigint id PK
+        varchar component
+        bigint classname
+        bigint defaultexpiration
+        bigint validateaddress
+        tinyint enabled
+    }
+
+    messageinbound_datakeys {
+        bigint id PK
+        bigint handler FK
+        bigint datavalue
+        varchar datakey
+        bigint timecreated
+        bigint expires
+    }
+
+    messageinbound_messagelist {
+        bigint id PK
+        bigint messageid
+        bigint userid FK
+        varchar address
+        bigint timecreated
+    }
+
+    %% Notifications
+    notifications {
+        bigint id PK
+        bigint useridfrom FK
+        bigint useridto FK
+        varchar subject
+        longtext fullmessage
+        tinyint fullmessageformat
+        longtext fullmessagehtml
+        longtext smallmessage
+        varchar component
+        varchar eventtype
+        bigint contexturl
+        varchar contexturlname
+        bigint timeread
+        bigint timecreated
+        longtext customdata
+    }
+
+    %% Comments System
+    comments {
+        bigint id PK
+        bigint contextid FK
+        varchar component
+        varchar commentarea
+        bigint itemid
+        longtext content
+        tinyint format
+        bigint userid FK
+        bigint timecreated
+    }
+
+    %% Blog System
+    post {
+        bigint id PK
+        varchar module
+        bigint userid FK
+        bigint courseid FK
+        bigint groupid FK
+        bigint moduleid FK
+        bigint coursemoduleid FK
+        varchar subject
+        longtext summary
+        longtext content
+        bigint uniquehash
+        bigint rating
+        tinyint format
+        varchar attachment
+        bigint publishstate
+        bigint lastmodified
+        bigint created
+        bigint usermodified FK
+    }
+
+    blog_external {
+        bigint id PK
+        bigint userid FK
+        varchar name
+        longtext description
+        tinyint descriptionformat
+        varchar url
+        varchar filtertags
+        tinyint failedlastsync
+        bigint timemodified
+        bigint timefetched
+    }
+
+    blog_association {
+        bigint id PK
+        bigint contextid FK
+        bigint blogid FK
+    }
+
+    %% Tag System
+    tag {
+        bigint id PK
+        bigint userid FK
+        bigint tagcollid FK
+        varchar name
+        varchar rawname
+        tinyint isstandard
+        longtext description
+        tinyint descriptionformat
+        bigint flag
+        bigint timemodified
+    }
+
+    tag_area {
+        bigint id PK
+        varchar component
+        varchar itemtype
+        tinyint enabled
+        bigint tagcollid FK
+        varchar callback
+        varchar callbackfile
+        tinyint showstandard
+        tinyint multiplecontexts
+    }
+
+    tag_coll {
+        bigint id PK
+        varchar name
+        tinyint isdefault
+        varchar component
+        bigint sortorder
+        tinyint searchable
+        tinyint customurl
+    }
+
+    tag_instance {
+        bigint id PK
+        bigint tagid FK
+        varchar component
+        varchar itemtype
+        bigint itemid
+        bigint contextid FK
+        bigint tiuserid FK
+        bigint ordering
+        bigint timecreated
+        bigint timemodified
+    }
+
+    tag_correlation {
+        bigint id PK
+        bigint tagid FK
+        bigint correlatedtags
+    }
+
+    %% Forum (Communication Hub)
+    forum {
+        bigint id PK
+        bigint course FK
+        varchar type
+        varchar name
+        longtext intro
+        tinyint introformat
+        tinyint assessed
+        bigint assesstimestart
+        bigint assesstimefinish
+        bigint scale FK
+        bigint maxbytes
+        bigint maxattachments
+        tinyint forcesubscribe
+        tinyint trackingtype
+        bigint rsstype
+        bigint rssarticles
+        bigint timemodified
+        bigint warnafter
+        bigint blockafter
+        bigint blockperiod
+        bigint completiondiscussions
+        bigint completionreplies
+        bigint completionposts
+        tinyint displaywordcount
+        tinyint lockdiscussionafter
+    }
+
+    forum_discussions {
+        bigint id PK
+        varchar name
+        bigint forum FK
+        bigint course FK
+        longtext message
+        tinyint messageformat
+        tinyint messagetrust
+        bigint userid FK
+        bigint groupid FK
+        bigint assessed
+        bigint timemodified
+        bigint usermodified FK
+        bigint timestart
+        bigint timeend
+        tinyint pinned
+        bigint timelocked
+    }
+
+    forum_posts {
+        bigint id PK
+        bigint discussion FK
+        bigint parent FK
+        bigint userid FK
+        bigint created
+        bigint modified
+        tinyint mailed
+        varchar subject
+        longtext message
+        tinyint messageformat
+        tinyint messagetrust
+        varchar attachment
+        bigint totalscore
+        bigint mailnow
+        tinyint deleted
+        bigint privatereplyto FK
+    }
+
+    forum_queue {
+        bigint id PK
+        bigint userid FK
+        bigint discussionid FK
+        bigint postid FK
+        bigint timemodified
+    }
+
+    forum_subscriptions {
+        bigint id PK
+        bigint userid FK
+        bigint forum FK
+    }
+
+    forum_discussion_subs {
+        bigint id PK
+        bigint forum FK
+        bigint userid FK
+        bigint discussion FK
+        bigint preference
+    }
+
+    forum_digests {
+        bigint id PK
+        bigint userid FK
+        bigint forum FK
+        bigint maildigest
+    }
+
+    forum_read {
+        bigint id PK
+        bigint userid FK
+        bigint forumid FK
+        bigint discussionid FK
+        bigint postid FK
+        bigint firstread
+        bigint lastread
+    }
+
+    forum_track_prefs {
+        bigint id PK
+        bigint userid FK
+        bigint forumid FK
+    }
+
+    %% Chat (Real-time Communication)
+    chat {
+        bigint id PK
+        bigint course FK
+        varchar name
+        longtext intro
+        tinyint introformat
+        bigint keepdays
+        tinyint studentlogs
+        bigint chattime
+        varchar schedule
+        bigint timemodified
+    }
+
+    chat_messages {
+        bigint id PK
+        bigint chatid FK
+        bigint userid FK
+        bigint groupid FK
+        tinyint system
+        longtext message
+        tinyint messageformat
+        bigint timestamp
+    }
+
+    chat_messages_current {
+        bigint id PK
+        bigint chatid FK
+        bigint userid FK
+        bigint groupid FK
+        tinyint system
+        longtext message
+        tinyint messageformat
+        bigint timestamp
+    }
+
+    chat_users {
+        bigint id PK
+        bigint chatid FK
+        bigint userid FK
+        bigint groupid FK
+        varchar version
+        varchar ip
+        varchar firstping
+        varchar lastping
+        varchar lastmessageping
+        varchar sid
+        bigint course FK
+        varchar lang
+    }
+
+    %% RELATIONSHIPS
+
+    %% Message Conversation Relationships
+    message_conversations ||--o{ message_conversation_members : "has_members"
+    message_conversations ||--o{ messages : "contains"
+    message_conversation_members }o--|| user : "includes"
+
+    %% Legacy Messaging Relationships
+    message }o--|| user : "sent_by"
+    message }o--|| user : "sent_to"
+    message_read }o--|| user : "sent_by"
+    message_read }o--|| user : "sent_to"
+    message_read ||--o{ message_popup : "displayed_as"
+
+    %% Message Contacts and Actions
+    user ||--o{ message_contacts : "has_contacts"
+    user ||--o{ message_contacts : "is_contact_of"
+    messages ||--o{ message_user_actions : "acted_upon"
+    
+    %% Notification Relationships
+    notifications }o--|| user : "sent_by"
+    notifications }o--|| user : "sent_to"
+    notifications ||--o{ message_popup_notifications : "displayed_as"
+
+    %% Message Processing
+    message_processors ||--o{ message_providers : "processes"
+    message_airnotifier_devices }o--|| user_devices : "configures"
+
+    %% Inbound Email
+    messageinbound_handlers ||--o{ messageinbound_datakeys : "uses"
+    messageinbound_messagelist }o--|| user : "received_by"
+
+    %% Comments
+    comments }o--|| context : "posted_in"
+    comments }o--|| user : "posted_by"
+
+    %% Blog System
+    post }o--|| user : "authored_by"
+    post }o--|| course : "posted_in"
+    post }o--|| user : "modified_by"
+    post ||--o{ blog_association : "associated_with"
+    blog_external }o--|| user : "owned_by"
+    blog_association }o--|| context : "linked_to"
+
+    %% Tag System
+    tag_coll ||--o{ tag : "contains"
+    tag_coll ||--o{ tag_area : "manages"
+    tag }o--|| user : "created_by"
+    tag ||--o{ tag_instance : "applied_to"
+    tag ||--o{ tag_correlation : "correlates_with"
+    tag_instance }o--|| context : "applied_in"
+
+    %% Forum Relationships
+    forum ||--o{ forum_discussions : "contains"
+    forum ||--o{ forum_subscriptions : "has_subscribers"
+    forum ||--o{ forum_digests : "sends_digests"
+    forum ||--o{ forum_track_prefs : "tracks_preferences"
+    forum_discussions ||--o{ forum_posts : "contains"
+    forum_discussions ||--o{ forum_discussion_subs : "has_subscribers"
+    forum_discussions ||--o{ forum_queue : "queued_in"
+    forum_posts ||--o{ forum_posts : "replies_to"
+    forum_posts ||--o{ forum_read : "read_status"
+    forum_posts ||--o{ forum_queue : "queued_as"
+    forum_posts }o--|| user : "posted_by"
+    forum_posts }o--|| user : "privately_replied_to"
+
+    %% Chat Relationships
+    chat ||--o{ chat_messages : "contains"
+    chat ||--o{ chat_messages_current : "shows_current"
+    chat ||--o{ chat_users : "has_participants"
+    chat_messages }o--|| user : "sent_by"
+    chat_messages_current }o--|| user : "sent_by"
+    chat_users }o--|| user : "represents"

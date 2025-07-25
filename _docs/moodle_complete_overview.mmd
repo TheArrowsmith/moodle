@@ -1,0 +1,50 @@
+erDiagram
+    %% Complete Moodle Database Schema
+    %% Total tables: 494
+
+    MOODLE_SUMMARY {
+        string functional_area
+        int table_count
+    }
+
+    mdl_user {
+        bigint id PK
+    }
+    mdl_course {
+        bigint id PK
+    }
+    mdl_context {
+        bigint id PK
+    }
+    mdl_role {
+        bigint id PK
+    }
+    mdl_course_modules {
+        bigint id PK
+    }
+    mdl_modules {
+        bigint id PK
+    }
+    mdl_course_categories {
+        bigint id PK
+    }
+    mdl_groups {
+        bigint id PK
+    }
+    mdl_cohort {
+        bigint id PK
+    }
+    mdl_enrol {
+        bigint id PK
+    }
+    mdl_grade_items {
+        bigint id PK
+    }
+
+    %% Core Relationships
+    mdl_course_modules ||--o{ mdl_course : "course"
+    mdl_course_modules ||--o{ mdl_modules : "module"
+    mdl_groups ||--o{ mdl_course : "course"
+    mdl_enrol ||--o{ mdl_course : "course"
+    mdl_grade_items ||--o{ mdl_course : "course"
+    mdl_course ||--o{ mdl_course_categories : "category"

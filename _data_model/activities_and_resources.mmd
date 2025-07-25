@@ -1,0 +1,1313 @@
+erDiagram
+    %% ACTIVITIES SECTION
+
+    %% Assignment Activity
+    assign {
+        bigint id PK
+        bigint course FK
+        varchar name
+        longtext intro
+        smallint introformat
+        tinyint alwaysshowdescription
+        tinyint nosubmissions
+        tinyint submissiondrafts
+        tinyint sendnotifications
+        tinyint sendlatenotifications
+        bigint duedate
+        bigint allowsubmissionsfromdate
+        bigint grade
+        bigint timemodified
+        tinyint completionsubmit
+        bigint cutoffdate
+        bigint gradingduedate
+        tinyint teamsubmission
+        bigint teamsubmissiongroupingid FK
+        tinyint blindmarking
+        tinyint markingworkflow
+        tinyint markingallocation
+    }
+
+    assign_submission {
+        bigint id PK
+        bigint assignment FK
+        bigint userid FK
+        bigint timecreated
+        bigint timemodified
+        varchar status
+        bigint groupid FK
+        bigint attemptnumber
+        tinyint latest
+    }
+
+    assign_grades {
+        bigint id PK
+        bigint assignment FK
+        bigint userid FK
+        bigint timecreated
+        bigint timemodified
+        bigint grader FK
+        decimal grade
+        bigint attemptnumber
+    }
+
+    assign_user_flags {
+        bigint id PK
+        bigint userid FK
+        bigint assignment FK
+        tinyint locked
+        tinyint mailed
+        tinyint extensionduedate
+        varchar workflowstate
+        bigint allocatedmarker FK
+    }
+
+    assign_user_mapping {
+        bigint id PK
+        bigint assignment FK
+        bigint userid FK
+    }
+
+    assign_plugin_config {
+        bigint id PK
+        bigint assignment FK
+        varchar plugin
+        varchar subtype
+        varchar name
+        longtext value
+    }
+
+    assign_overrides {
+        bigint id PK
+        bigint assignid FK
+        bigint groupid FK
+        bigint userid FK
+        bigint sortorder
+        bigint allowsubmissionsfromdate
+        bigint duedate
+        bigint cutoffdate
+    }
+
+    assignsubmission_file {
+        bigint id PK
+        bigint assignment FK
+        bigint submission FK
+        bigint numfiles
+    }
+
+    assignsubmission_onlinetext {
+        bigint id PK
+        bigint assignment FK
+        bigint submission FK
+        longtext onlinetext
+        tinyint onlineformat
+    }
+
+    assignfeedback_comments {
+        bigint id PK
+        bigint assignment FK
+        bigint grade FK
+        longtext commenttext
+        tinyint commentformat
+    }
+
+    assignfeedback_file {
+        bigint id PK
+        bigint assignment FK
+        bigint grade FK
+        bigint numfiles
+    }
+
+    assignfeedback_editpdf_annot {
+        bigint id PK
+        bigint gradeid FK
+        bigint pageno
+        bigint x
+        bigint y
+        bigint endx
+        bigint endy
+        varchar path
+        varchar type
+        varchar colour
+        tinyint draft
+    }
+
+    assignfeedback_editpdf_cmnt {
+        bigint id PK
+        bigint gradeid FK
+        bigint x
+        bigint y
+        bigint width
+        bigint rawtext
+        bigint pageno
+        varchar colour
+        tinyint draft
+    }
+
+    %% Quiz Activity
+    quiz {
+        bigint id PK
+        bigint course FK
+        varchar name
+        longtext intro
+        tinyint introformat
+        bigint timeopen
+        bigint timeclose
+        bigint timelimit
+        varchar overduehandling
+        bigint graceperiod
+        varchar preferredbehaviour
+        tinyint canredoquestions
+        bigint attempts
+        bigint attemptonlast
+        bigint grademethod
+        decimal decimalpoints
+        bigint questiondecimalpoints
+        bigint reviewattempt
+        bigint reviewcorrectness
+        bigint reviewmarks
+        bigint reviewspecificfeedback
+        bigint reviewgeneralfeedback
+        bigint reviewrightanswer
+        bigint reviewoverallfeedback
+        bigint questionsperpage
+        varchar navmethod
+        tinyint shuffleanswers
+        decimal sumgrades
+        decimal grade
+        bigint timecreated
+        bigint timemodified
+        varchar password
+        varchar subnet
+        tinyint browsersecurity
+        bigint delay1
+        bigint delay2
+        tinyint showuserpicture
+        tinyint showblocks
+        tinyint completionattemptsexhausted
+        tinyint completionpass
+        tinyint allowofflineattempts
+    }
+
+    quiz_attempts {
+        bigint id PK
+        bigint quiz FK
+        bigint userid FK
+        bigint attempt
+        bigint uniqueid FK
+        varchar layout
+        bigint currentpage
+        bigint preview
+        varchar state
+        bigint timestart
+        bigint timefinish
+        bigint timemodified
+        bigint timemodifiedoffline
+        bigint timecheckstate
+        decimal sumgrades
+    }
+
+    quiz_grades {
+        bigint id PK
+        bigint quiz FK
+        bigint userid FK
+        decimal grade
+        bigint timemodified
+    }
+
+    quiz_slots {
+        bigint id PK
+        bigint slot
+        bigint quizid FK
+        bigint page
+        bigint requireprevious
+        bigint questionid FK
+        bigint questioncategoryid FK
+        decimal maxmark
+    }
+
+    quiz_sections {
+        bigint id PK
+        bigint quizid FK
+        bigint firstslot
+        varchar heading
+        tinyint shufflequestions
+    }
+
+    quiz_feedback {
+        bigint id PK
+        bigint quizid FK
+        longtext feedbacktext
+        tinyint feedbacktextformat
+        decimal mingrade
+        decimal maxgrade
+    }
+
+    quiz_overrides {
+        bigint id PK
+        bigint quiz FK
+        bigint groupid FK
+        bigint userid FK
+        bigint timeopen
+        bigint timeclose
+        bigint timelimit
+        bigint attempts
+        varchar password
+    }
+
+    %% Forum Activity
+    forum {
+        bigint id PK
+        bigint course FK
+        varchar type
+        varchar name
+        longtext intro
+        tinyint introformat
+        tinyint assessed
+        bigint assesstimestart
+        bigint assesstimefinish
+        bigint scale
+        bigint maxbytes
+        bigint maxattachments
+        tinyint forcesubscribe
+        tinyint trackingtype
+        bigint rsstype
+        bigint rssarticles
+        bigint timemodified
+        bigint warnafter
+        bigint blockafter
+        bigint blockperiod
+        bigint completiondiscussions
+        bigint completionreplies
+        bigint completionposts
+        tinyint displaywordcount
+        tinyint lockdiscussionafter
+    }
+
+    forum_discussions {
+        bigint id PK
+        varchar name
+        bigint forum FK
+        bigint course FK
+        longtext message
+        tinyint messageformat
+        tinyint messagetrust
+        bigint userid FK
+        bigint groupid FK
+        bigint assessed
+        bigint timemodified
+        bigint usermodified FK
+        bigint timestart
+        bigint timeend
+        tinyint pinned
+        bigint timelocked
+    }
+
+    forum_posts {
+        bigint id PK
+        bigint discussion FK
+        bigint parent FK
+        bigint userid FK
+        bigint created
+        bigint modified
+        tinyint mailed
+        varchar subject
+        longtext message
+        tinyint messageformat
+        tinyint messagetrust
+        varchar attachment
+        bigint totalscore
+        bigint mailnow
+        tinyint deleted
+        bigint privatereplyto FK
+    }
+
+    forum_subscriptions {
+        bigint id PK
+        bigint userid FK
+        bigint forum FK
+    }
+
+    forum_discussion_subs {
+        bigint id PK
+        bigint forum FK
+        bigint userid FK
+        bigint discussion FK
+        bigint preference
+    }
+
+    forum_digests {
+        bigint id PK
+        bigint userid FK
+        bigint forum FK
+        bigint maildigest
+    }
+
+    forum_read {
+        bigint id PK
+        bigint userid FK
+        bigint forumid FK
+        bigint discussionid FK
+        bigint postid FK
+        bigint firstread
+        bigint lastread
+    }
+
+    forum_track_prefs {
+        bigint id PK
+        bigint userid FK
+        bigint forumid FK
+    }
+
+    %% Wiki Activity
+    wiki {
+        bigint id PK
+        bigint course FK
+        varchar name
+        longtext intro
+        tinyint introformat
+        bigint timecreated
+        bigint timemodified
+        varchar firstpagetitle
+        varchar wikimode
+        varchar defaultformat
+        tinyint forceformat
+        bigint editbegin
+        bigint editend
+    }
+
+    wiki_subwikis {
+        bigint id PK
+        bigint wikiid FK
+        bigint groupid FK
+        bigint userid FK
+    }
+
+    wiki_pages {
+        bigint id PK
+        bigint subwikiid FK
+        varchar title
+        longtext cachedcontent
+        bigint timecreated
+        bigint timemodified
+        bigint timerendered
+        bigint userid FK
+        bigint pageviews
+        tinyint readonly
+    }
+
+    wiki_versions {
+        bigint id PK
+        bigint pageid FK
+        longtext content
+        varchar contentformat
+        bigint version
+        bigint timecreated
+        bigint userid FK
+    }
+
+    wiki_locks {
+        bigint id PK
+        bigint pageid FK
+        bigint userid FK
+        bigint sectionname
+        bigint lockedat
+    }
+
+    wiki_links {
+        bigint id PK
+        bigint subwikiid FK
+        bigint frompageid FK
+        bigint topageid FK
+        varchar tomissingpage
+    }
+
+    wiki_synonyms {
+        bigint id PK
+        bigint subwikiid FK
+        bigint pageid FK
+        varchar pagesynonym
+    }
+
+    %% Workshop Activity
+    workshop {
+        bigint id PK
+        bigint course FK
+        varchar name
+        longtext intro
+        tinyint introformat
+        longtext instructauthors
+        tinyint instructauthorsformat
+        longtext instructreviewers
+        tinyint instructreviewersformat
+        bigint timemodified
+        bigint phase
+        tinyint useexamples
+        tinyint usepeerassessment
+        tinyint useselfassessment
+        decimal grade
+        decimal gradinggrade
+        varchar strategy
+        varchar evaluation
+        bigint gradedecimals
+        bigint nattachments
+        tinyint submissionfiletypes
+        tinyint latesubmissions
+        bigint maxbytes
+        bigint examplesmode
+        bigint submissionstart
+        bigint submissionend
+        bigint assessmentstart
+        bigint assessmentend
+        tinyint phaseswitchassessment
+        longtext conclusion
+        tinyint conclusionformat
+        tinyint overallfeedbackmode
+        bigint overallfeedbackfiles
+        varchar overallfeedbackfiletypes
+        bigint overallfeedbackmaxbytes
+    }
+
+    workshop_submissions {
+        bigint id PK
+        bigint workshopid FK
+        tinyint example
+        bigint authorid FK
+        bigint timecreated
+        bigint timemodified
+        varchar title
+        longtext content
+        tinyint contentformat
+        varchar contentrust
+        varchar attachment
+        decimal grade
+        decimal gradeover
+        bigint gradeoverby FK
+        longtext feedbackauthor
+        tinyint feedbackauthorformat
+        bigint timegraded
+        tinyint published
+        tinyint late
+    }
+
+    workshop_assessments {
+        bigint id PK
+        bigint submissionid FK
+        bigint reviewerid FK
+        bigint weight
+        bigint timecreated
+        bigint timemodified
+        decimal grade
+        decimal gradinggrade
+        decimal gradinggradeover
+        bigint gradinggradeoverby FK
+        longtext feedbackauthor
+        tinyint feedbackauthorformat
+        longtext feedbackreviewer
+        tinyint feedbackreviewerformat
+    }
+
+    workshop_grades {
+        bigint id PK
+        bigint assessmentid FK
+        varchar strategy
+        bigint dimensionid FK
+        decimal grade
+        decimal peercomment
+        tinyint peercommentformat
+    }
+
+    workshop_aggregations {
+        bigint id PK
+        bigint workshopid FK
+        bigint userid FK
+        decimal gradinggrade
+        bigint timegraded
+    }
+
+    %% SCORM Activity
+    scorm {
+        bigint id PK
+        bigint course FK
+        varchar name
+        varchar scormtype
+        varchar reference
+        longtext intro
+        tinyint introformat
+        varchar version
+        decimal maxgrade
+        bigint grademethod
+        bigint whatgrade
+        bigint maxattempt
+        tinyint forcecompleted
+        tinyint forcenewattempt
+        tinyint lastattemptlock
+        tinyint displayattemptstatus
+        tinyint displaycoursestructure
+        varchar sha1hash
+        bigint md5hash
+        bigint revision
+        bigint launch
+        bigint skipview
+        tinyint hidebrowse
+        tinyint hidetoc
+        tinyint nav
+        bigint navpositionleft
+        bigint navpositiontop
+        tinyint auto
+        tinyint popup
+        varchar options
+        bigint width
+        bigint height
+        bigint timeopen
+        bigint timeclose
+        bigint timemodified
+        tinyint completionstatusrequired
+        tinyint completionscorerequired
+        tinyint completionstatusallscos
+        tinyint displayactivityname
+        tinyint autocommit
+        tinyint masteryoverride
+    }
+
+    scorm_scoes {
+        bigint id PK
+        bigint scorm FK
+        varchar manifest
+        varchar organization
+        varchar parent
+        varchar identifier
+        varchar launch
+        varchar scormtype
+        varchar title
+        bigint sortorder
+    }
+
+    scorm_scoes_track {
+        bigint id PK
+        bigint userid FK
+        bigint scormid FK
+        bigint scoid FK
+        bigint attempt
+        varchar element
+        longtext value
+        bigint timemodified
+    }
+
+    scorm_scoes_data {
+        bigint id PK
+        bigint scoid FK
+        varchar name
+        longtext value
+    }
+
+    scorm_seq_objective {
+        bigint id PK
+        bigint scoid FK
+        tinyint primaryobj
+        varchar objectiveid
+        tinyint satisfiedbumeasure
+        decimal minNormalizedMeasure
+        tinyint writenormalmeasure
+        tinyint writesatisfiedstatus
+        tinyint readnormalmeasure
+        tinyint readsatisfiedstatus
+    }
+
+    scorm_seq_mapinfo {
+        bigint id PK
+        bigint scoid FK
+        bigint objectiveid FK
+        bigint targetobjectiveid FK
+        tinyint readsatisfiedstatus
+        tinyint readnormalizedmeasure
+        tinyint writesatisfiedstatus
+        tinyint writenormalizedmeasure
+    }
+
+    scorm_aicc_session {
+        bigint id PK
+        bigint userid FK
+        bigint scormid FK
+        varchar hacpsession
+        bigint scoid FK
+        bigint scormmode
+        varchar scormstatus
+        bigint attempt
+        bigint lessonstatus
+        varchar sessiontime
+        bigint timecreated
+        bigint timemodified
+    }
+
+    %% Chat Activity
+    chat {
+        bigint id PK
+        bigint course FK
+        varchar name
+        longtext intro
+        tinyint introformat
+        bigint keepdays
+        tinyint studentlogs
+        bigint chattime
+        varchar schedule
+        bigint timemodified
+    }
+
+    chat_messages {
+        bigint id PK
+        bigint chatid FK
+        bigint userid FK
+        bigint groupid FK
+        tinyint system
+        longtext message
+        tinyint messageformat
+        bigint timestamp
+    }
+
+    chat_messages_current {
+        bigint id PK
+        bigint chatid FK
+        bigint userid FK
+        bigint groupid FK
+        tinyint system
+        longtext message
+        tinyint messageformat
+        bigint timestamp
+    }
+
+    chat_users {
+        bigint id PK
+        bigint chatid FK
+        bigint userid FK
+        bigint groupid FK
+        varchar version
+        varchar ip
+        varchar firstping
+        varchar lastping
+        varchar lastmessageping
+        varchar sid
+        bigint course FK
+        varchar lang
+    }
+
+    %% Other Activities
+    choice {
+        bigint id PK
+        bigint course FK
+        varchar name
+        longtext intro
+        tinyint introformat
+        tinyint publish
+        tinyint showresults
+        bigint display
+        tinyint allowupdate
+        tinyint allowmultiple
+        tinyint showunanswered
+        tinyint includeinactive
+        tinyint limitanswers
+        bigint timeopen
+        bigint timeclose
+        tinyint showpreview
+        bigint timemodified
+        bigint completionsubmit
+    }
+
+    choice_options {
+        bigint id PK
+        bigint choiceid FK
+        longtext text
+        bigint maxanswers
+        bigint timemodified
+    }
+
+    choice_answers {
+        bigint id PK
+        bigint choiceid FK
+        bigint userid FK
+        bigint optionid FK
+        bigint timemodified
+    }
+
+    data {
+        bigint id PK
+        bigint course FK
+        varchar name
+        longtext intro
+        tinyint introformat
+        bigint comments
+        bigint timeavailablefrom
+        bigint timeavailableto
+        bigint timeviewfrom
+        bigint timeviewto
+        bigint requiredentries
+        bigint requiredentriestoview
+        bigint maxentries
+        bigint rssarticles
+        longtext singletemplate
+        longtext listtemplate
+        longtext listtemplateheader
+        longtext listtemplatefooter
+        longtext addtemplate
+        longtext rsstemplate
+        longtext rsstitletemplate
+        longtext csstemplate
+        longtext jstemplate
+        longtext asearchtemplate
+        bigint approval
+        tinyint manageapproved
+        bigint scale
+        bigint assessed
+        bigint assesstimestart
+        bigint assesstimefinish
+        bigint defaultsort
+        bigint defaultsortdir
+        bigint editany
+        bigint notification
+        bigint timemodified
+    }
+
+    data_fields {
+        bigint id PK
+        bigint dataid FK
+        varchar type
+        varchar name
+        longtext description
+        tinyint required
+        longtext param1
+        longtext param2
+        longtext param3
+        longtext param4
+        longtext param5
+        longtext param6
+        longtext param7
+        longtext param8
+        longtext param9
+        longtext param10
+    }
+
+    data_records {
+        bigint id PK
+        bigint userid FK
+        bigint groupid FK
+        bigint dataid FK
+        bigint timecreated
+        bigint timemodified
+        bigint approved
+    }
+
+    data_content {
+        bigint id PK
+        bigint fieldid FK
+        bigint recordid FK
+        longtext content
+        longtext content1
+        longtext content2
+        longtext content3
+        longtext content4
+    }
+
+    feedback {
+        bigint id PK
+        bigint course FK
+        varchar name
+        longtext intro
+        tinyint introformat
+        tinyint anonymous
+        tinyint email_notification
+        tinyint multiple_submit
+        tinyint autonumbering
+        longtext site_after_submit
+        longtext page_after_submit
+        tinyint page_after_submitformat
+        tinyint publish_stats
+        bigint timeopen
+        bigint timeclose
+        bigint timemodified
+        bigint completionsubmit
+    }
+
+    feedback_item {
+        bigint id PK
+        bigint feedback FK
+        bigint template FK
+        varchar name
+        varchar label
+        longtext presentation
+        varchar typ
+        tinyint hasvalue
+        bigint position
+        tinyint required
+        bigint dependitem FK
+        varchar dependvalue
+        longtext options
+    }
+
+    feedback_value {
+        bigint id PK
+        bigint course_id FK
+        bigint item FK
+        bigint completed FK
+        bigint tmp_completed FK
+        longtext value
+    }
+
+    feedback_completed {
+        bigint id PK
+        bigint feedback FK
+        bigint userid FK
+        bigint timemodified
+        bigint random_response
+        tinyint anonymous_response
+        bigint courseid FK
+    }
+
+    glossary {
+        bigint id PK
+        bigint course FK
+        varchar name
+        longtext intro
+        tinyint introformat
+        tinyint allowduplicatedentries
+        varchar displayformat
+        bigint mainglossary
+        tinyint showspecial
+        tinyint showalphabet
+        tinyint showall
+        tinyint allowcomments
+        tinyint allowprintview
+        bigint usedynalink
+        tinyint defaultapproval
+        varchar approvaldisplayformat
+        tinyint globalglossary
+        bigint entbypage
+        tinyint editalways
+        bigint rsstype
+        bigint rssarticles
+        bigint assessed
+        bigint assesstimestart
+        bigint assesstimefinish
+        bigint scale
+        bigint timecreated
+        bigint timemodified
+        bigint completionentries
+    }
+
+    glossary_entries {
+        bigint id PK
+        bigint glossaryid FK
+        bigint userid FK
+        varchar concept
+        longtext definition
+        tinyint definitionformat
+        varchar definitiontrust
+        varchar attachment
+        bigint timecreated
+        bigint timemodified
+        bigint teacherentry
+        bigint sourceglossaryid FK
+        tinyint usedynalink
+        tinyint casesensitive
+        tinyint fullmatch
+        tinyint approved
+    }
+
+    glossary_categories {
+        bigint id PK
+        bigint glossaryid FK
+        varchar name
+        tinyint usedynalink
+    }
+
+    glossary_entries_categories {
+        bigint id PK
+        bigint categoryid FK
+        bigint entryid FK
+    }
+
+    lesson {
+        bigint id PK
+        bigint course FK
+        varchar name
+        longtext intro
+        tinyint introformat
+        tinyint practice
+        tinyint modattempts
+        tinyint usepassword
+        varchar password
+        bigint dependency FK
+        longtext conditions
+        bigint grade
+        tinyint custom
+        tinyint ongoing
+        tinyint usemaxgrade
+        bigint maxanswers
+        bigint maxattempts
+        tinyint review
+        bigint nextpagedefault
+        longtext feedback
+        tinyint minquestions
+        bigint maxpages
+        bigint timelimit
+        tinyint retake
+        longtext activitylink
+        varchar mediafile
+        bigint mediaheight
+        bigint mediawidth
+        tinyint mediaclose
+        tinyint slideshow
+        bigint width
+        bigint height
+        varchar bgcolor
+        tinyint displayleft
+        tinyint displayleftif
+        tinyint progressbar
+        bigint available
+        bigint deadline
+        bigint timemodified
+        bigint completionendreached
+        bigint completiontimespent
+        tinyint allowofflineattempts
+    }
+
+    lesson_pages {
+        bigint id PK
+        bigint lessonid FK
+        bigint prevpageid FK
+        bigint nextpageid FK
+        bigint qtype
+        bigint qoption
+        tinyint layout
+        bigint display
+        bigint timecreated
+        bigint timemodified
+        varchar title
+        longtext contents
+        tinyint contentsformat
+    }
+
+    lesson_answers {
+        bigint id PK
+        bigint lessonid FK
+        bigint pageid FK
+        bigint jumpto
+        bigint grade
+        bigint score
+        bigint flags
+        bigint timecreated
+        bigint timemodified
+        longtext answer
+        tinyint answerformat
+        longtext response
+        tinyint responseformat
+    }
+
+    lesson_attempts {
+        bigint id PK
+        bigint lessonid FK
+        bigint pageid FK
+        bigint userid FK
+        bigint answerid FK
+        bigint retry
+        tinyint correct
+        bigint useranswer
+        bigint timeseen
+    }
+
+    lesson_grades {
+        bigint id PK
+        bigint lessonid FK
+        bigint userid FK
+        decimal grade
+        bigint late
+        bigint completed
+    }
+
+    survey {
+        bigint id PK
+        bigint course FK
+        bigint template
+        bigint days
+        bigint timecreated
+        bigint timemodified
+        varchar name
+        longtext intro
+        tinyint introformat
+        longtext questions
+        tinyint completionsubmit
+    }
+
+    survey_questions {
+        bigint id PK
+        longtext text
+        varchar shorttext
+        varchar multi
+        varchar intro
+        bigint type
+        longtext options
+    }
+
+    survey_answers {
+        bigint id PK
+        bigint userid FK
+        bigint survey FK
+        bigint question FK
+        bigint time
+        longtext answer1
+        longtext answer2
+    }
+
+    survey_analysis {
+        bigint id PK
+        bigint survey FK
+        bigint userid FK
+        longtext notes
+    }
+
+    %% RESOURCES SECTION
+
+    %% File Resource
+    resource {
+        bigint id PK
+        bigint course FK
+        varchar name
+        longtext intro
+        tinyint introformat
+        bigint tobemigrated
+        tinyint legacyfiles
+        bigint legacyfileslast
+        tinyint display
+        varchar displayoptions
+        tinyint filterfiles
+        bigint revision
+        bigint timemodified
+    }
+
+    %% Folder Resource
+    folder {
+        bigint id PK
+        bigint course FK
+        varchar name
+        longtext intro
+        tinyint introformat
+        bigint revision
+        bigint timemodified
+        tinyint display
+        tinyint showexpanded
+        tinyint showdownloadfolder
+    }
+
+    %% Page Resource
+    page {
+        bigint id PK
+        bigint course FK
+        varchar name
+        longtext intro
+        tinyint introformat
+        longtext content
+        tinyint contentformat
+        tinyint legacyfiles
+        bigint legacyfileslast
+        tinyint display
+        varchar displayoptions
+        bigint revision
+        bigint timemodified
+    }
+
+    %% URL Resource
+    url {
+        bigint id PK
+        bigint course FK
+        varchar name
+        longtext intro
+        tinyint introformat
+        varchar externalurl
+        tinyint display
+        varchar displayoptions
+        longtext parameters
+        bigint timemodified
+    }
+
+    %% Book Resource
+    book {
+        bigint id PK
+        bigint course FK
+        varchar name
+        longtext intro
+        tinyint introformat
+        bigint numbering
+        bigint navstyle
+        bigint customtitles
+        bigint revision
+        bigint timecreated
+        bigint timemodified
+    }
+
+    book_chapters {
+        bigint id PK
+        bigint bookid FK
+        bigint pagenum
+        bigint subchapter
+        varchar title
+        longtext content
+        tinyint contentformat
+        tinyint hidden
+        bigint timecreated
+        bigint timemodified
+        varchar importsrc
+    }
+
+    %% Label Resource
+    label {
+        bigint id PK
+        bigint course FK
+        varchar name
+        longtext intro
+        tinyint introformat
+        bigint timemodified
+    }
+
+    %% Files System (Shared by all)
+    files {
+        bigint id PK
+        varchar contenthash
+        bigint pathnamehash
+        bigint contextid FK
+        varchar component
+        varchar filearea
+        bigint itemid
+        varchar filepath
+        varchar filename
+        bigint userid FK
+        bigint filesize
+        varchar mimetype
+        bigint status
+        varchar source
+        varchar author
+        varchar license
+        bigint timecreated
+        bigint timemodified
+        bigint sortorder
+        bigint referencefileid FK
+    }
+
+    files_reference {
+        bigint id PK
+        bigint repositoryid FK
+        bigint lastsync
+        varchar reference
+        varchar referencehash
+    }
+
+    %% RELATIONSHIPS
+
+    %% Assignment Relationships
+    assign ||--o{ assign_submission : "has"
+    assign ||--o{ assign_grades : "has"
+    assign ||--o{ assign_user_flags : "tracks"
+    assign ||--o{ assign_user_mapping : "maps"
+    assign ||--o{ assign_plugin_config : "configured_by"
+    assign ||--o{ assign_overrides : "has"
+    assign_submission ||--o{ assignsubmission_file : "contains"
+    assign_submission ||--o{ assignsubmission_onlinetext : "contains"
+    assign_grades ||--o{ assignfeedback_comments : "has"
+    assign_grades ||--o{ assignfeedback_file : "has"
+    assign_grades ||--o{ assignfeedback_editpdf_annot : "annotated_by"
+    assign_grades ||--o{ assignfeedback_editpdf_cmnt : "commented_by"
+
+    %% Quiz Relationships
+    quiz ||--o{ quiz_attempts : "has"
+    quiz ||--o{ quiz_grades : "records"
+    quiz ||--o{ quiz_slots : "contains"
+    quiz ||--o{ quiz_sections : "organized_by"
+    quiz ||--o{ quiz_feedback : "provides"
+    quiz ||--o{ quiz_overrides : "has"
+    quiz_sections ||--o{ quiz_slots : "contains"
+
+    %% Forum Relationships
+    forum ||--o{ forum_discussions : "contains"
+    forum ||--o{ forum_subscriptions : "has_subscribers"
+    forum ||--o{ forum_digests : "sends"
+    forum ||--o{ forum_track_prefs : "tracks"
+    forum_discussions ||--o{ forum_posts : "contains"
+    forum_discussions ||--o{ forum_discussion_subs : "has_subscribers"
+    forum_posts ||--o{ forum_posts : "replies_to"
+    forum_posts ||--o{ forum_read : "tracked_by"
+
+    %% Wiki Relationships
+    wiki ||--o{ wiki_subwikis : "has"
+    wiki_subwikis ||--o{ wiki_pages : "contains"
+    wiki_subwikis ||--o{ wiki_links : "has"
+    wiki_subwikis ||--o{ wiki_synonyms : "defines"
+    wiki_pages ||--o{ wiki_versions : "versioned_by"
+    wiki_pages ||--o{ wiki_locks : "locked_by"
+    wiki_pages ||--o{ wiki_links : "links_from"
+    wiki_pages ||--o{ wiki_links : "links_to"
+    wiki_pages ||--o{ wiki_synonyms : "aliased_by"
+
+    %% Workshop Relationships
+    workshop ||--o{ workshop_submissions : "receives"
+    workshop ||--o{ workshop_aggregations : "aggregates"
+    workshop_submissions ||--o{ workshop_assessments : "assessed_by"
+    workshop_assessments ||--o{ workshop_grades : "graded_by"
+
+    %% SCORM Relationships
+    scorm ||--o{ scorm_scoes : "contains"
+    scorm ||--o{ scorm_scoes_track : "tracks"
+    scorm ||--o{ scorm_aicc_session : "has_sessions"
+    scorm_scoes ||--o{ scorm_scoes_data : "stores"
+    scorm_scoes ||--o{ scorm_scoes_track : "tracked_by"
+    scorm_scoes ||--o{ scorm_seq_objective : "has_objectives"
+    scorm_scoes ||--o{ scorm_seq_mapinfo : "maps"
+    scorm_seq_objective ||--o{ scorm_seq_mapinfo : "mapped_by"
+
+    %% Chat Relationships
+    chat ||--o{ chat_messages : "contains"
+    chat ||--o{ chat_messages_current : "shows"
+    chat ||--o{ chat_users : "has_users"
+
+    %% Choice Relationships
+    choice ||--o{ choice_options : "offers"
+    choice ||--o{ choice_answers : "answered_by"
+    choice_options ||--o{ choice_answers : "selected_in"
+
+    %% Database Activity Relationships
+    data ||--o{ data_fields : "defines"
+    data ||--o{ data_records : "contains"
+    data_fields ||--o{ data_content : "stores"
+    data_records ||--o{ data_content : "has"
+
+    %% Feedback Relationships
+    feedback ||--o{ feedback_item : "contains"
+    feedback ||--o{ feedback_completed : "completed_by"
+    feedback_item ||--o{ feedback_value : "answered_by"
+    feedback_item ||--o{ feedback_item : "depends_on"
+    feedback_completed ||--o{ feedback_value : "includes"
+
+    %% Glossary Relationships
+    glossary ||--o{ glossary_entries : "contains"
+    glossary ||--o{ glossary_categories : "has"
+    glossary_entries ||--o{ glossary_entries : "sourced_from"
+    glossary_categories ||--o{ glossary_entries_categories : "categorizes"
+    glossary_entries ||--o{ glossary_entries_categories : "categorized_in"
+
+    %% Lesson Relationships
+    lesson ||--o{ lesson_pages : "contains"
+    lesson ||--o{ lesson_grades : "grades"
+    lesson ||--o{ lesson : "depends_on"
+    lesson_pages ||--o{ lesson_pages : "links_to_prev"
+    lesson_pages ||--o{ lesson_pages : "links_to_next"
+    lesson_pages ||--o{ lesson_answers : "has"
+    lesson_pages ||--o{ lesson_attempts : "attempted_by"
+    lesson_answers ||--o{ lesson_attempts : "selected_in"
+
+    %% Survey Relationships
+    survey ||--o{ survey_answers : "answered_by"
+    survey ||--o{ survey_analysis : "analyzed_by"
+    survey_questions ||--o{ survey_answers : "answered_in"
+
+    %% Resource Relationships
+    book ||--o{ book_chapters : "contains"
+
+    %% File System Relationships
+    files ||--o{ files_reference : "references"
+    files ||--o{ files : "references"

@@ -1,0 +1,408 @@
+erDiagram
+    %% Core File Management
+    files {
+        bigint id PK
+        varchar contenthash
+        bigint pathnamehash
+        bigint contextid FK
+        varchar component
+        varchar filearea
+        bigint itemid
+        varchar filepath
+        varchar filename
+        bigint userid FK
+        bigint filesize
+        varchar mimetype
+        bigint status
+        varchar source
+        varchar author
+        varchar license
+        bigint timecreated
+        bigint timemodified
+        bigint sortorder
+        bigint referencefileid FK
+    }
+
+    files_reference {
+        bigint id PK
+        bigint repositoryid FK
+        bigint lastsync
+        varchar reference
+        varchar referencehash
+    }
+
+    file_conversion {
+        bigint id PK
+        bigint usermodified FK
+        bigint timecreated
+        bigint timemodified
+        bigint sourcefileid FK
+        bigint targetformat
+        bigint status
+        longtext data
+        bigint id
+    }
+
+    %% Repository System
+    repository {
+        bigint id PK
+        varchar type
+        tinyint visible
+        bigint sortorder
+    }
+
+    repository_instances {
+        bigint id PK
+        varchar name
+        bigint typeid FK
+        bigint userid FK
+        bigint contextid FK
+        varchar username
+        varchar password
+        bigint timecreated
+        bigint timemodified
+        tinyint readonly
+    }
+
+    repository_instance_config {
+        bigint id PK
+        bigint instanceid FK
+        varchar name
+        longtext value
+    }
+
+    repository_onedrive_access {
+        bigint id PK
+        bigint permissionid
+        varchar itemid
+        bigint timemodified
+        bigint usermodified FK
+    }
+
+    %% Backup System
+    backup_controllers {
+        bigint id PK
+        varchar backupid
+        varchar operation
+        varchar type
+        bigint itemid
+        varchar format
+        tinyint interactive
+        bigint purpose
+        bigint userid FK
+        bigint status
+        bigint execution
+        bigint executiontime
+        varchar checksum
+        bigint timecreated
+        bigint timemodified
+        longtext progress
+        varchar controller
+    }
+
+    backup_courses {
+        bigint id PK
+        bigint courseid FK
+        bigint laststarttime
+        bigint lastendtime
+        varchar laststatus
+        bigint nextstarttime
+    }
+
+    backup_logs {
+        bigint id PK
+        bigint backupid FK
+        bigint loglevel
+        longtext message
+        bigint timecreated
+    }
+
+    %% Portfolio Export System
+    portfolio_instance {
+        bigint id PK
+        varchar plugin
+        varchar name
+        tinyint visible
+    }
+
+    portfolio_instance_config {
+        bigint id PK
+        bigint instance FK
+        varchar name
+        longtext value
+    }
+
+    portfolio_instance_user {
+        bigint id PK
+        bigint instance FK
+        bigint userid FK
+        varchar name
+        longtext value
+    }
+
+    portfolio_log {
+        bigint id PK
+        bigint userid FK
+        bigint time
+        bigint portfolio FK
+        varchar caller_class
+        varchar caller_file
+        varchar caller_component
+        varchar caller_sha1
+        bigint tempdataid
+        varchar returnurl
+        bigint continueurl
+    }
+
+    portfolio_tempdata {
+        bigint id PK
+        longtext data
+        bigint expirytime
+        bigint userid FK
+        bigint instance FK
+        bigint queued
+    }
+
+    portfolio_mahara_queue {
+        bigint id PK
+        bigint transferid FK
+        varchar token
+    }
+
+    %% Recycle Bin
+    tool_recyclebin_category {
+        bigint id PK
+        bigint categoryid FK
+        varchar fullname
+        varchar shortname
+        bigint timecreated
+    }
+
+    tool_recyclebin_course {
+        bigint id PK
+        bigint courseid FK
+        bigint section FK
+        bigint coursemoduleid FK
+        varchar name
+        bigint timecreated
+    }
+
+    %% Content Resources
+    resource {
+        bigint id PK
+        bigint course FK
+        varchar name
+        longtext intro
+        tinyint introformat
+        bigint tobemigrated
+        tinyint legacyfiles
+        bigint legacyfileslast
+        tinyint display
+        varchar displayoptions
+        tinyint filterfiles
+        bigint revision
+        bigint timemodified
+    }
+
+    resource_old {
+        bigint id PK
+        bigint course FK
+        varchar name
+        varchar type
+        varchar reference
+        longtext intro
+        tinyint introformat
+        longtext alltext
+        longtext popup
+        longtext options
+        bigint timemodified
+        bigint oldid
+        bigint cmid FK
+        varchar newmodule
+        bigint newid
+        bigint migrated
+    }
+
+    %% Media and H5P Content
+    h5p {
+        bigint id PK
+        bigint jsoncontent
+        bigint mainlibraryid FK
+        varchar displayoptions
+        bigint pathnamehash
+        varchar contenthash
+        varchar filtered
+        bigint timecreated
+        bigint timemodified
+    }
+
+    h5p_contents_libraries {
+        bigint id PK
+        bigint h5pid FK
+        bigint libraryid FK
+        varchar dependencytype
+        varchar dropcss
+        bigint weight
+    }
+
+    h5p_libraries {
+        bigint id PK
+        varchar machinename
+        varchar title
+        bigint majorversion
+        bigint minorversion
+        bigint patchversion
+        varchar runnable
+        varchar fullscreen
+        bigint embedtypes
+        varchar preloadedjs
+        varchar preloadedcss
+        varchar droplibrarycss
+        varchar semantics
+        varchar addto
+        bigint coremajor
+        bigint coreminor
+        bigint timecreated
+        bigint timemodified
+    }
+
+    h5p_library_dependencies {
+        bigint id PK
+        bigint libraryid FK
+        bigint requiredlibraryid FK
+        varchar dependencytype
+    }
+
+    %% Import/Export Tracking
+    data_content {
+        bigint id PK
+        bigint fieldid FK
+        bigint recordid FK
+        longtext content
+        longtext content1
+        longtext content2
+        longtext content3
+        longtext content4
+    }
+
+    grade_import_newitem {
+        bigint id PK
+        varchar itemname
+        bigint importcode
+        bigint importer FK
+    }
+
+    grade_import_values {
+        bigint id PK
+        bigint itemid FK
+        bigint newgradeitem FK
+        bigint userid FK
+        decimal finalgrade
+        longtext feedback
+        bigint importcode
+        bigint importer FK
+        tinyint importonlyfeedback
+    }
+
+    %% Related Core Tables
+    context {
+        bigint id PK
+        bigint contextlevel
+        bigint instanceid
+        varchar path
+        bigint depth
+    }
+
+    user {
+        bigint id PK
+        varchar username
+        varchar firstname
+        varchar lastname
+    }
+
+    course {
+        bigint id PK
+        varchar fullname
+        varchar shortname
+    }
+
+    course_categories {
+        bigint id PK
+        varchar name
+        bigint parent FK
+    }
+
+    course_modules {
+        bigint id PK
+        bigint course FK
+        bigint module FK
+        bigint instance
+    }
+
+    course_sections {
+        bigint id PK
+        bigint course FK
+        bigint section
+        varchar name
+    }
+
+    %% RELATIONSHIPS
+
+    %% File System Relationships
+    files }o--|| context : "stored_in"
+    files }o--|| user : "uploaded_by"
+    files ||--o{ files : "references"
+    files ||--o{ files_reference : "external_reference"
+    files_reference }o--|| repository_instances : "from_repository"
+    files ||--o{ file_conversion : "converted_from"
+    file_conversion }o--|| user : "requested_by"
+
+    %% Repository Relationships
+    repository ||--o{ repository_instances : "has_instances"
+    repository_instances }o--|| user : "owned_by"
+    repository_instances }o--|| context : "available_in"
+    repository_instances ||--o{ repository_instance_config : "configured_by"
+    repository_onedrive_access }o--|| user : "modified_by"
+
+    %% Backup Relationships
+    backup_controllers }o--|| user : "initiated_by"
+    backup_courses }o--|| course : "backs_up"
+    backup_controllers ||--o{ backup_logs : "logged_by"
+
+    %% Portfolio Relationships
+    portfolio_instance ||--o{ portfolio_instance_config : "configured_by"
+    portfolio_instance ||--o{ portfolio_instance_user : "user_settings"
+    portfolio_instance_user }o--|| user : "belongs_to"
+    portfolio_log }o--|| user : "exported_by"
+    portfolio_log }o--|| portfolio_instance : "exported_via"
+    portfolio_tempdata }o--|| user : "owned_by"
+    portfolio_tempdata }o--|| portfolio_instance : "for_instance"
+    portfolio_mahara_queue }o--|| portfolio_tempdata : "queues"
+
+    %% Recycle Bin Relationships
+    tool_recyclebin_category }o--|| course_categories : "deleted_from"
+    tool_recyclebin_course }o--|| course : "deleted_from"
+    tool_recyclebin_course }o--|| course_sections : "from_section"
+    tool_recyclebin_course }o--|| course_modules : "was_module"
+
+    %% Resource Relationships
+    resource }o--|| course : "in_course"
+    resource_old }o--|| course : "was_in_course"
+    resource_old }o--|| course_modules : "was_module"
+
+    %% H5P Content Relationships
+    h5p }o--|| h5p_libraries : "uses_library"
+    h5p ||--o{ h5p_contents_libraries : "includes"
+    h5p_libraries ||--o{ h5p_contents_libraries : "used_by"
+    h5p_libraries ||--o{ h5p_library_dependencies : "depends_on"
+    h5p_libraries ||--o{ h5p_library_dependencies : "required_by"
+
+    %% Import/Export Relationships
+    grade_import_newitem }o--|| user : "imported_by"
+    grade_import_values }o--|| grade_import_newitem : "for_item"
+    grade_import_values }o--|| user : "for_user"
+    grade_import_values }o--|| user : "imported_by"
+
+    %% Content Storage in Activities
+    files ||--o{ resource : "stores_content_for"
+    files ||--o{ h5p : "stores_h5p_content"
