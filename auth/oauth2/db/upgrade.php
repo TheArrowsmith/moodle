@@ -81,5 +81,82 @@ function xmldb_auth_oauth2_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2018051401, 'auth', 'oauth2');
     }
 
+    // Add GitHub OAuth2 issuer
+    if ($oldversion < 2024121802) {
+        // Check if GitHub issuer already exists
+        if (!$DB->record_exists('oauth2_issuer', ['name' => 'GitHub'])) {
+            
+            // Create GitHub issuer
+            $issuer = new stdClass();
+            $issuer->name = 'GitHub';
+            $issuer->image = 'https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png';
+            $issuer->baseurl = 'https://github.com';
+            $issuer->clientid = '';  // To be filled by admin
+            $issuer->clientsecret = '';  // To be filled by admin
+            $issuer->loginscopes = 'user:email';
+            $issuer->loginscopesoffline = 'user:email';
+            $issuer->loginparams = '';  // No additional params needed
+            $issuer->loginparamsoffline = '';  // No additional params needed
+            $issuer->alloweddomains = '';  // No domain restrictions
+            $issuer->scopessupported = '';  // Will be populated by GitHub
+            $issuer->showonloginpage = 1;
+            $issuer->enabled = 0;  // Disabled until configured
+            $issuer->basicauth = 0;  // Use header auth, not basic auth
+            $issuer->sortorder = 0;
+            $issuer->timecreated = time();
+            $issuer->timemodified = time();
+            $issuer->usermodified = 0; // System created
+            
+            $issuerid = $DB->insert_record('oauth2_issuer', $issuer);
+            
+            // Create endpoints
+            $endpoints = [
+                [
+                    'issuerid' => $issuerid,
+                    'name' => 'authorization_endpoint',
+                    'url' => 'https://github.com/login/oauth/authorize',
+                ],
+                [
+                    'issuerid' => $issuerid,
+                    'name' => 'token_endpoint',
+                    'url' => 'https://github.com/login/oauth/access_token',
+                ],
+                [
+                    'issuerid' => $issuerid,
+                    'name' => 'userinfo_endpoint',
+                    'url' => 'https://api.github.com/user',
+                ],
+            ];
+            
+            foreach ($endpoints as $endpoint) {
+                $endpoint['timecreated'] = time();
+                $endpoint['timemodified'] = time();
+                $endpoint['usermodified'] = 0; // System created
+                $DB->insert_record('oauth2_endpoint', $endpoint);
+            }
+            
+            // Create field mappings
+            $mappings = [
+                ['externalfield' => 'login', 'internalfield' => 'username'],
+                ['externalfield' => 'email', 'internalfield' => 'email'],
+                ['externalfield' => 'name', 'internalfield' => 'firstname'],
+                ['externalfield' => 'avatar_url', 'internalfield' => 'picture'],
+                ['externalfield' => 'bio', 'internalfield' => 'description'],
+                ['externalfield' => 'location', 'internalfield' => 'city'],
+                ['externalfield' => 'html_url', 'internalfield' => 'url'],
+            ];
+            
+            foreach ($mappings as $mapping) {
+                $mapping['issuerid'] = $issuerid;
+                $mapping['timecreated'] = time();
+                $mapping['timemodified'] = time();
+                $mapping['usermodified'] = 0; // System created
+                $DB->insert_record('oauth2_user_field_mapping', $mapping);
+            }
+        }
+        
+        upgrade_plugin_savepoint(true, 2024121802, 'auth', 'oauth2');
+    }
+
     return true;
 }

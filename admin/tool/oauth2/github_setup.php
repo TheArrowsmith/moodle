@@ -32,7 +32,7 @@ require_capability('moodle/site:config', context_system::instance());
  * Setup GitHub OAuth2 issuer
  */
 function setup_github_oauth2_issuer() {
-    global $DB;
+    global $DB, $USER, $CFG;
     
     // Check if GitHub issuer already exists
     if ($DB->record_exists('oauth2_issuer', ['name' => 'GitHub'])) {
@@ -113,7 +113,7 @@ function setup_github_oauth2_issuer() {
 }
 
 // Run the setup
-admin_externalpage_setup('oauth2services');
+admin_externalpage_setup('oauth2');
 
 echo $OUTPUT->header();
 echo $OUTPUT->heading('GitHub OAuth2 Setup');
