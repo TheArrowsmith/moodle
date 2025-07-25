@@ -2432,8 +2432,17 @@ class grade_tree extends grade_structure {
         if ($element['type'] === 'category') {
             $object = $element['object'];
             $category = grade_category::fetch(array('id' => $object->id));
+            // Check if category was found before accessing it.
+            if ($category === false) {
+                return false;
+            }
+            // Get the grade item and check if it exists.
+            $gradeitem = $category->get_grade_item();
+            if ($gradeitem === false) {
+                return false;
+            }
             // Category has total, we can output this.
-            if ($category->get_grade_item()->gradetype != GRADE_TYPE_NONE) {
+            if ($gradeitem->gradetype != GRADE_TYPE_NONE) {
                 return true;
             }
 
