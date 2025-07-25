@@ -23,17 +23,10 @@ function render_react_component($component, $elementid, $props = [], $options = 
     
     // Load React bundle - inject directly since $PAGE->requires happens after header
     $scriptTags = '';
-    if (!empty($CFG->debug) && $CFG->debug >= DEBUG_DEVELOPER) {
-        // Development mode - use Vite dev server
-        $scriptTags = '
-        <script type="module" src="http://localhost:5173/@vite/client"></script>
-        <script type="module" src="http://localhost:5173/src/main.jsx"></script>';
-    } else {
-        // Production mode - use built bundle
-        $scriptTags = '
-        <link rel="stylesheet" href="/react-dist/style.css">
-        <script src="/react-dist/moodle-react.iife.js"></script>';
-    }
+    // Always use production bundle for now (Vite dev server not always running)
+    $scriptTags = '
+    <link rel="stylesheet" href="' . $CFG->wwwroot . '/react-dist/style.css">
+    <script src="' . $CFG->wwwroot . '/react-dist/moodle-react.iife.js"></script>';
     
     // Prepare props as JSON
     $propsjson = json_encode($props, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP);

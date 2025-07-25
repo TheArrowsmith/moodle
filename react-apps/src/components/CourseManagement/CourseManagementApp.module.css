@@ -1,9 +1,7 @@
 .container {
+  height: 100vh;
   display: flex;
   flex-direction: column;
-  height: 100%;
-  min-height: 600px;
-  background-color: var(--moodle-background-primary, #fff);
 }
 
 .header {
@@ -11,14 +9,13 @@
   justify-content: space-between;
   align-items: center;
   padding: 1rem;
-  border-bottom: 1px solid var(--moodle-border-color, #dee2e6);
-  background-color: var(--moodle-background-secondary, #f8f9fa);
+  background: #f5f5f5;
+  border-bottom: 1px solid #ddd;
 }
 
 .header h2 {
   margin: 0;
   font-size: 1.5rem;
-  color: var(--moodle-text-primary, #1a1a1a);
 }
 
 .viewModeSelector {
@@ -27,32 +24,25 @@
   gap: 0.5rem;
 }
 
-.viewModeSelector label {
-  font-weight: 500;
-}
-
 .viewModeSelector select {
   padding: 0.25rem 0.5rem;
-  border: 1px solid var(--moodle-border-color, #dee2e6);
+  border: 1px solid #ccc;
   border-radius: 4px;
-  background-color: white;
-  cursor: pointer;
 }
 
 .panels {
-  display: flex;
   flex: 1;
+  display: flex;
   overflow: hidden;
-  position: relative;
 }
 
 /* Layout variations */
 .twoColumn .panels {
-  grid-template-columns: 1fr 2fr;
+  grid-template-columns: 300px 1fr;
 }
 
 .threeColumn .panels {
-  grid-template-columns: 1fr 2fr 1fr;
+  grid-template-columns: 300px 1fr 400px;
 }
 
 .categoriesOnly .panels {
@@ -63,56 +53,40 @@
   grid-template-columns: 1fr;
 }
 
-/* Panel styling */
+/* Panel styles */
 .categoryPanel,
 .coursePanel,
 .detailPanel {
-  height: 100%;
+  border-right: 1px solid #ddd;
   overflow-y: auto;
-  border-right: 1px solid var(--moodle-border-color, #dee2e6);
-  background-color: var(--moodle-background-primary, #fff);
+  background: white;
 }
 
 .categoryPanel {
   flex: 0 0 300px;
-  min-width: 250px;
 }
 
 .coursePanel {
   flex: 1;
-  min-width: 400px;
+  min-width: 0;
 }
 
 .detailPanel {
-  flex: 0 0 350px;
-  min-width: 300px;
-  border-right: none;
+  flex: 0 0 400px;
 }
 
-.detailPanel:last-child {
-  border-right: none;
-}
-
-/* Search section */
-.searchSection {
-  border-top: 1px solid var(--moodle-border-color, #dee2e6);
-  background-color: var(--moodle-background-secondary, #f8f9fa);
-}
-
-/* Responsive adjustments */
+/* Responsive */
 @media (max-width: 1200px) {
   .threeColumn .panels {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 250px 1fr 350px;
   }
   
-  .threeColumn .detailPanel {
-    position: absolute;
-    right: 0;
-    top: 0;
-    bottom: 0;
-    width: 400px;
-    box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
-    z-index: 10;
+  .categoryPanel {
+    flex: 0 0 250px;
+  }
+  
+  .detailPanel {
+    flex: 0 0 350px;
   }
 }
 
@@ -126,12 +100,6 @@
   .detailPanel {
     flex: 1;
     border-right: none;
-    border-bottom: 1px solid var(--moodle-border-color, #dee2e6);
-  }
-  
-  .header {
-    flex-direction: column;
-    gap: 1rem;
-    align-items: flex-start;
+    border-bottom: 1px solid #ddd;
   }
 }

@@ -137,15 +137,56 @@ try {
     
     switch ($method) {
         case 'GET':
-            if (preg_match('/^course\/(\d+)\/management_data$/', $path, $matches)) {
+            // Category endpoints
+            if ($path === 'category/tree') {
+                // GET /category/tree
+                $parent = isset($_GET['parent']) ? (int)$_GET['parent'] : 0;
+                $includeHidden = isset($_GET['includeHidden']) ? filter_var($_GET['includeHidden'], FILTER_VALIDATE_BOOLEAN) : false;
+                
+                $result = external::get_category_tree($parent, $includeHidden);
+                send_response($result);
+                
+            } else if (preg_match('/^category\/(\d+)\/courses$/', $path, $matches)) {
+                // GET /category/{id}/courses
+                $categoryid = (int)$matches[1];
+                $page = isset($_GET['page']) ? (int)$_GET['page'] : 0;
+                $perpage = isset($_GET['perpage']) ? (int)$_GET['perpage'] : 20;
+                $sort = isset($_GET['sort']) ? $_GET['sort'] : 'fullname';
+                $direction = isset($_GET['direction']) ? $_GET['direction'] : 'asc';
+                $search = isset($_GET['search']) ? $_GET['search'] : '';
+                
+                $result = external::get_category_courses($categoryid, $page, $perpage, $sort, $direction, $search);
+                send_response($result);
+                
+            } else if (preg_match('/^category\/(\d+)$/', $path, $matches)) {
+                // GET /category/{id}
+                $categoryid = (int)$matches[1];
+                $result = external::get_category($categoryid);
+                send_response($result);
+                
+            // Course endpoints
+            } else if ($path === 'course/list') {
+                // GET /course/list
+                $category = isset($_GET['category']) ? (int)$_GET['category'] : 0;
+                $search = isset($_GET['search']) ? $_GET['search'] : '';
+                $page = isset($_GET['page']) ? (int)$_GET['page'] : 0;
+                $perpage = isset($_GET['perpage']) ? (int)$_GET['perpage'] : 20;
+                $sort = isset($_GET['sort']) ? $_GET['sort'] : 'fullname';
+                $direction = isset($_GET['direction']) ? $_GET['direction'] : 'asc';
+                
+                $result = external::get_course_list($category, $search, $page, $perpage, $sort, $direction);
+                send_response($result);
+                
+            } else if (preg_match('/^course\/(\d+)\/teachers$/', $path, $matches)) {
+                // GET /course/{id}/teachers
+                $courseid = (int)$matches[1];
+                $result = external::get_course_teachers($courseid);
+                send_response($result);
+                
+            } else if (preg_match('/^course\/(\d+)\/management_data$/', $path, $matches)) {
                 // GET /course/{courseId}/management_data
                 $courseid = (int)$matches[1];
                 $result = external::get_course_management_data($courseid);
-                send_response($result);
-                
-            } else if ($path === 'user/me') {
-                // GET /user/me
-                $result = external::get_user_info();
                 send_response($result);
                 
             } else if (preg_match('/^course\/(\d+)$/', $path, $matches)) {
@@ -159,13 +200,56 @@ try {
                 $result = external::get_course_details($courseid, $include, $userinfo);
                 send_response($result);
                 
+            // Activity endpoints
+            } else if ($path === 'activity/list') {
+                // GET /activity/list
+                $courseid = isset($_GET['courseid']) ? (int)$_GET['courseid'] : 0;
+                if (!$courseid) {
+                    send_error('Missing courseid parameter', 422);
+                }
+                
+                $result = external::get_activity_list($courseid);
+                send_response($result);
+                
+            // User endpoints
+            } else if ($path === 'user/me') {
+                // GET /user/me
+                $result = external::get_user_info();
+                send_response($result);
+                
             } else {
                 send_error('Endpoint not found', 404);
             }
             break;
             
         case 'PUT':
-            if (preg_match('/^activity\/(\d+)$/', $path, $matches)) {
+            // Category endpoints
+            if (preg_match('/^category\/(\d+)$/', $path, $matches)) {
+                // PUT /category/{id}
+                $categoryid = (int)$matches[1];
+                $name = $input['name'] ?? null;
+                $description = $input['description'] ?? null;
+                $visible = isset($input['visible']) ? (bool)$input['visible'] : null;
+                
+                $result = external::update_category($categoryid, $name, $description, $visible);
+                send_response($result);
+                
+            // Course endpoints
+            } else if (preg_match('/^course\/(\d+)$/', $path, $matches)) {
+                // PUT /course/{id}
+                $courseid = (int)$matches[1];
+                $fullname = $input['fullname'] ?? null;
+                $shortname = $input['shortname'] ?? null;
+                $summary = $input['summary'] ?? null;
+                $visible = isset($input['visible']) ? (bool)$input['visible'] : null;
+                $startdate = $input['startdate'] ?? null;
+                $enddate = $input['enddate'] ?? null;
+                
+                $result = external::update_course($courseid, $fullname, $shortname, $summary, $visible, $startdate, $enddate);
+                send_response($result);
+                
+            // Activity endpoints
+            } else if (preg_match('/^activity\/(\d+)$/', $path, $matches)) {
                 // PUT /activity/{activityId}
                 $activityid = (int)$matches[1];
                 $name = $input['name'] ?? null;
@@ -174,6 +258,7 @@ try {
                 $result = external::update_activity($activityid, $name, $visible);
                 send_response($result);
                 
+            // Section endpoints
             } else if (preg_match('/^section\/(\d+)$/', $path, $matches)) {
                 // PUT /section/{sectionId}
                 $sectionid = (int)$matches[1];
@@ -190,7 +275,129 @@ try {
             break;
             
         case 'POST':
-            if (preg_match('/^section\/(\d+)\/reorder_activities$/', $path, $matches)) {
+            // Category endpoints
+            if ($path === 'category') {
+                // POST /category
+                $name = $input['name'] ?? null;
+                $parent = $input['parent'] ?? 0;
+                $description = $input['description'] ?? '';
+                $visible = $input['visible'] ?? true;
+                
+                if (!$name) {
+                    send_error('Missing required field: name', 422);
+                }
+                
+                $result = external::create_category($name, $parent, $description, $visible);
+                send_response($result, 201);
+                
+            } else if (preg_match('/^category\/(\d+)\/move$/', $path, $matches)) {
+                // POST /category/{id}/move
+                $categoryid = (int)$matches[1];
+                $direction = $input['direction'] ?? null;
+                
+                if (!$direction) {
+                    send_error('Missing direction parameter', 422);
+                }
+                
+                $result = external::move_category($categoryid, $direction);
+                send_response($result);
+                
+            } else if (preg_match('/^category\/(\d+)\/visibility$/', $path, $matches)) {
+                // POST /category/{id}/visibility
+                $categoryid = (int)$matches[1];
+                $result = external::toggle_category_visibility($categoryid);
+                send_response($result);
+                
+            // Course endpoints
+            } else if ($path === 'course') {
+                // POST /course
+                $fullname = $input['fullname'] ?? null;
+                $shortname = $input['shortname'] ?? null;
+                $category = $input['category'] ?? null;
+                $summary = $input['summary'] ?? '';
+                $format = $input['format'] ?? 'topics';
+                $numsections = $input['numsections'] ?? 10;
+                $startdate = $input['startdate'] ?? time();
+                $enddate = $input['enddate'] ?? 0;
+                $visible = $input['visible'] ?? true;
+                $options = $input['options'] ?? [];
+                
+                if (!$fullname || !$shortname || !$category) {
+                    send_error('Missing required field: ' . (!$fullname ? 'fullname' : (!$shortname ? 'shortname' : 'category')), 422);
+                }
+                
+                $result = external::create_course($fullname, $shortname, $category, $summary, $format, $numsections, $startdate, $enddate, $visible, $options);
+                send_response($result, 201);
+                
+            } else if (preg_match('/^course\/(\d+)\/visibility$/', $path, $matches)) {
+                // POST /course/{id}/visibility
+                $courseid = (int)$matches[1];
+                $result = external::toggle_course_visibility($courseid);
+                send_response($result);
+                
+            } else if (preg_match('/^course\/(\d+)\/move$/', $path, $matches)) {
+                // POST /course/{id}/move
+                $courseid = (int)$matches[1];
+                $categoryid = $input['categoryid'] ?? null;
+                
+                if (!$categoryid) {
+                    send_error('Missing categoryid', 422);
+                }
+                
+                $result = external::move_course_to_category($courseid, $categoryid);
+                send_response($result);
+                
+            // Activity endpoints
+            } else if ($path === 'activity') {
+                // POST /activity
+                $courseid = $input['courseid'] ?? null;
+                $sectionid = $input['sectionid'] ?? null;
+                $modname = $input['modname'] ?? null;
+                $name = $input['name'] ?? null;
+                $intro = $input['intro'] ?? '';
+                $visible = $input['visible'] ?? true;
+                
+                if (!$courseid || !$sectionid || !$modname || !$name) {
+                    send_error('Missing required fields', 422);
+                }
+                
+                $result = external::create_activity($courseid, $sectionid, $modname, $name, $intro, $visible);
+                send_response($result);
+                
+            } else if (preg_match('/^activity\/(\d+)\/visibility$/', $path, $matches)) {
+                // POST /activity/{id}/visibility
+                $activityid = (int)$matches[1];
+                $result = external::toggle_activity_visibility($activityid);
+                send_response($result);
+                
+            } else if (preg_match('/^activity\/(\d+)\/duplicate$/', $path, $matches)) {
+                // POST /activity/{id}/duplicate
+                $activityid = (int)$matches[1];
+                $result = external::duplicate_activity($activityid);
+                send_response($result, 201);
+                
+            // Section endpoints
+            } else if ($path === 'section') {
+                // POST /section
+                $courseid = $input['courseid'] ?? null;
+                $name = $input['name'] ?? '';
+                $summary = $input['summary'] ?? '';
+                $visible = $input['visible'] ?? true;
+                
+                if (!$courseid) {
+                    send_error('Missing required field: courseid', 422);
+                }
+                
+                $result = external::create_section($courseid, $name, $summary, $visible);
+                send_response($result, 201);
+                
+            } else if (preg_match('/^section\/(\d+)\/visibility$/', $path, $matches)) {
+                // POST /section/{id}/visibility
+                $sectionid = (int)$matches[1];
+                $result = external::toggle_section_visibility($sectionid);
+                send_response($result);
+                
+            } else if (preg_match('/^section\/(\d+)\/reorder_activities$/', $path, $matches)) {
                 // POST /section/{sectionId}/reorder_activities
                 $sectionid = (int)$matches[1];
                 $activity_ids = $input['activity_ids'] ?? [];
@@ -215,22 +422,7 @@ try {
                 $result = external::move_activity_to_section($sectionid, $activityid, $position);
                 send_response($result);
                 
-            } else if ($path === 'activity') {
-                // POST /activity
-                $courseid = $input['courseid'] ?? null;
-                $sectionid = $input['sectionid'] ?? null;
-                $modname = $input['modname'] ?? null;
-                $name = $input['name'] ?? null;
-                $intro = $input['intro'] ?? '';
-                $visible = $input['visible'] ?? true;
-                
-                if (!$courseid || !$sectionid || !$modname || !$name) {
-                    send_error('Missing required fields', 422);
-                }
-                
-                $result = external::create_activity($courseid, $sectionid, $modname, $name, $intro, $visible);
-                send_response($result);
-                
+            // Authentication endpoints
             } else if ($path === 'auth/token') {
                 // POST /auth/token
                 
@@ -248,39 +440,22 @@ try {
                     send_error('Invalid username or password', 401);
                 }
                 
-            } else if ($path === 'course') {
-                // POST /course
-                $fullname = $input['fullname'] ?? null;
-                $shortname = $input['shortname'] ?? null;
-                $category = $input['category'] ?? null;
-                $summary = $input['summary'] ?? '';
-                $format = $input['format'] ?? 'topics';
-                $numsections = $input['numsections'] ?? 10;
-                $startdate = $input['startdate'] ?? time();
-                $enddate = $input['enddate'] ?? 0;
-                $visible = $input['visible'] ?? true;
-                $options = $input['options'] ?? [];
-                
-                if (!$fullname || !$shortname || !$category) {
-                    send_error('Missing required field: ' . (!$fullname ? 'fullname' : (!$shortname ? 'shortname' : 'category')), 422);
-                }
-                
-                $result = external::create_course($fullname, $shortname, $category, $summary, $format, $numsections, $startdate, $enddate, $visible, $options);
-                send_response($result, 201);
-                
             } else {
                 send_error('Endpoint not found', 404);
             }
             break;
             
         case 'DELETE':
-            if (preg_match('/^activity\/(\d+)$/', $path, $matches)) {
-                // DELETE /activity/{activityId}
-                $activityid = (int)$matches[1];
+            // Category endpoints
+            if (preg_match('/^category\/(\d+)$/', $path, $matches)) {
+                // DELETE /category/{id}
+                $categoryid = (int)$matches[1];
+                $recursive = isset($_GET['recursive']) ? filter_var($_GET['recursive'], FILTER_VALIDATE_BOOLEAN) : false;
                 
-                external::delete_activity($activityid);
+                external::delete_category($categoryid, $recursive);
                 send_response(null, 204);
                 
+            // Course endpoints
             } else if (preg_match('/^course\/(\d+)$/', $path, $matches)) {
                 // DELETE /course/{id}
                 $courseid = (int)$matches[1];
@@ -290,6 +465,22 @@ try {
                 $confirm = isset($_GET['confirm']) ? filter_var($_GET['confirm'], FILTER_VALIDATE_BOOLEAN) : false;
                 
                 external::delete_course($courseid, $async, $confirm);
+                send_response(null, 204);
+                
+            // Activity endpoints
+            } else if (preg_match('/^activity\/(\d+)$/', $path, $matches)) {
+                // DELETE /activity/{activityId}
+                $activityid = (int)$matches[1];
+                
+                external::delete_activity($activityid);
+                send_response(null, 204);
+                
+            // Section endpoints
+            } else if (preg_match('/^section\/(\d+)$/', $path, $matches)) {
+                // DELETE /section/{id}
+                $sectionid = (int)$matches[1];
+                
+                external::delete_section($sectionid);
                 send_response(null, 204);
                 
             } else {

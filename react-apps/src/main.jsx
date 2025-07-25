@@ -3,7 +3,8 @@ import ReactDOM from 'react-dom/client'
 import HelloMoodle from './HelloMoodle'
 import CategoryManagementPanel from './components/CourseManagement/CategoryManagementPanel'
 import CourseManagementPanel from './components/CourseManagement/CourseManagementPanel'
-// import CourseDetailPanel from './components/CourseManagement/CourseDetailPanel'
+import CourseDetailPanel from './components/CourseManagement/CourseDetailPanel'
+import CourseManagementApp from './components/CourseManagement/CourseManagementApp'
 
 // Create global MoodleReact API
 window.MoodleReact = {
@@ -11,7 +12,8 @@ window.MoodleReact = {
     HelloMoodle,
     CategoryManagementPanel,
     CourseManagementPanel,
-    // CourseDetailPanel  // Temporarily disabled - uses web services
+    CourseDetailPanel,
+    CourseManagementApp
   },
   
   /**

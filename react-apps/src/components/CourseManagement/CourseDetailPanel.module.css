@@ -1,9 +1,7 @@
 .panel {
   height: 100%;
-  background: white;
   display: flex;
   flex-direction: column;
-  border-left: 1px solid var(--moodle-border-color, #dee2e6);
 }
 
 .header {
@@ -11,35 +9,32 @@
   justify-content: space-between;
   align-items: center;
   padding: 1rem;
-  border-bottom: 1px solid var(--moodle-border-color, #dee2e6);
-  background-color: var(--moodle-background-secondary, #f8f9fa);
+  border-bottom: 1px solid #ddd;
 }
 
 .header h3 {
   margin: 0;
-  font-size: 1.1rem;
-  font-weight: 600;
+  font-size: 1.25rem;
 }
 
 .closeBtn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #666;
+  padding: 0;
+  width: 30px;
+  height: 30px;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
-  padding: 0;
-  border: none;
-  background: none;
-  cursor: pointer;
-  font-size: 1.2rem;
-  color: var(--moodle-text-secondary, #6c757d);
-  border-radius: 4px;
-  transition: all 0.2s;
 }
 
 .closeBtn:hover {
-  background-color: var(--moodle-background-hover, #f0f0f0);
-  color: var(--moodle-text-primary, #1a1a1a);
+  color: #333;
+  background: #f0f0f0;
+  border-radius: 4px;
 }
 
 .content {
@@ -48,61 +43,56 @@
   padding: 1rem;
 }
 
+.loading,
+.error {
+  padding: 2rem;
+  text-align: center;
+  color: #666;
+}
+
+.error {
+  color: #d32f2f;
+}
+
 .section {
   margin-bottom: 2rem;
 }
 
 .section h4 {
   margin: 0 0 1rem 0;
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--moodle-text-primary, #1a1a1a);
-  border-bottom: 1px solid var(--moodle-border-color, #dee2e6);
-  padding-bottom: 0.5rem;
-}
-
-.section h5 {
-  margin: 1rem 0 0.5rem 0;
-  font-size: 0.9rem;
-  font-weight: 500;
-  color: var(--moodle-text-secondary, #6c757d);
+  font-size: 1.1rem;
+  color: #333;
 }
 
 .infoGrid {
   display: grid;
-  gap: 0.75rem;
+  grid-template-columns: 1fr;
+  gap: 0.5rem;
 }
 
 .infoItem {
-  display: grid;
-  grid-template-columns: 1fr 2fr;
+  display: flex;
   gap: 0.5rem;
-  align-items: start;
 }
 
 .infoItem label {
   font-weight: 500;
-  color: var(--moodle-text-secondary, #6c757d);
-  font-size: 0.9rem;
+  min-width: 120px;
+  color: #666;
 }
 
 .infoItem span {
-  font-size: 0.9rem;
-  color: var(--moodle-text-primary, #1a1a1a);
-}
-
-.visible {
-  color: var(--moodle-success, #28a745);
-  font-weight: 500;
-}
-
-.hidden {
-  color: var(--moodle-warning, #ffc107);
-  font-weight: 500;
+  color: #333;
 }
 
 .moduleTypes {
   margin-top: 1rem;
+}
+
+.moduleTypes h5 {
+  margin: 0 0 0.5rem 0;
+  font-size: 0.95rem;
+  color: #666;
 }
 
 .moduleList {
@@ -112,57 +102,88 @@
 }
 
 .moduleTag {
-  display: inline-block;
-  padding: 0.25rem 0.5rem;
-  background-color: var(--moodle-primary-light, #e3f2fd);
-  color: var(--moodle-primary, #0f6fc5);
-  border-radius: 12px;
-  font-size: 0.75rem;
-  font-weight: 500;
+  background: #e3f2fd;
+  color: #1976d2;
+  padding: 0.25rem 0.75rem;
+  border-radius: 16px;
+  font-size: 0.875rem;
+}
+
+.sectionItem {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: #f9f9f9;
+  border-radius: 4px;
+}
+
+.sectionItem h5 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1rem;
+  color: #333;
+}
+
+.sectionSummary {
+  margin-bottom: 0.5rem;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.activities {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.activity {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  background: white;
+  border-radius: 4px;
+  border: 1px solid #e0e0e0;
+}
+
+.activityIcon {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+.activityName {
+  flex: 1;
+  color: #333;
+}
+
+.visibility {
+  color: #666;
+  font-size: 0.875rem;
+}
+
+.visibility.hidden {
+  color: #f44336;
 }
 
 .actionButtons {
-  display: grid;
+  display: flex;
+  flex-wrap: wrap;
   gap: 0.5rem;
 }
 
 .actionLink {
   display: inline-block;
   padding: 0.5rem 1rem;
-  background-color: var(--moodle-primary, #0f6fc5);
+  background: #1976d2;
   color: white;
   text-decoration: none;
   border-radius: 4px;
   font-size: 0.875rem;
-  text-align: center;
-  transition: background-color 0.2s;
+  transition: background 0.2s;
 }
 
 .actionLink:hover {
-  background-color: var(--moodle-primary-dark, #0d5aa7);
+  background: #1565c0;
   text-decoration: none;
   color: white;
-}
-
-.loading,
-.error {
-  padding: 2rem;
-  text-align: center;
-  color: var(--moodle-text-secondary, #6c757d);
-}
-
-.error {
-  color: var(--moodle-danger, #dc3545);
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .infoItem {
-    grid-template-columns: 1fr;
-    gap: 0.25rem;
-  }
-  
-  .infoItem label {
-    font-weight: 600;
-  }
 }

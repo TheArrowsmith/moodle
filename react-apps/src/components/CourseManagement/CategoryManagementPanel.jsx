@@ -38,37 +38,33 @@ const CategoryManagementPanel = ({
     try {
       setLoading(true);
       setError(null);
-      console.log('Loading categories - using mock data for now');
+      console.log('Loading categories from API');
       
-      // The Course API doesn't have category endpoints, so we'll use mock data for now
-      // In a real implementation, you'd need to add category endpoints to the API
-      const mockCategories = [
-        {
-          id: 1,
-          name: 'Miscellaneous',
-          parent: 0,
-          visible: true,
-          coursecount: 2,
-          childrencount: 0,
-          description: 'Default category for courses',
-          path: '/1'
-        },
-        {
-          id: 2,
-          name: 'Programming Courses',
-          parent: 0,
-          visible: true,
-          coursecount: 5,
-          childrencount: 2,
-          description: 'Courses related to programming',
-          path: '/2'
+      if (!token) {
+        throw new Error('No authentication token provided');
+      }
+      
+      // Get the base URL from Moodle's configuration
+      const baseUrl = window.M?.cfg?.wwwroot || '';
+      
+      const response = await fetch(`${baseUrl}/local/courseapi/api/index.php/category/tree`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
         }
-      ];
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('API Response:', response.status, errorText);
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log('Categories loaded:', result);
       
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      setCategories(mockCategories);
+      setCategories(result.categories || []);
       
     } catch (err) {
       console.error('Failed to load categories:', err);
@@ -85,26 +81,39 @@ const CategoryManagementPanel = ({
     }
   };
 
+  const handleCreateCategory = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log('Create category clicked, current selected:', selectedCategory);
+    
+    // Use the currently selected category as parent, or default to 1 if none selected
+    const parentId = selectedCategory || 1;
+    
+    // Redirect to Moodle's category creation page with parent parameter
+    const baseUrl = window.M?.cfg?.wwwroot || '';
+    const url = `${baseUrl}/course/editcategory.php?parent=${parentId}`;
+    console.log('Redirecting to:', url);
+    window.location.href = url;
+  };
+
   const toggleExpanded = async (categoryId) => {
     const newExpanded = new Set(expandedCategories);
     if (newExpanded.has(categoryId)) {
       newExpanded.delete(categoryId);
     } else {
       newExpanded.add(categoryId);
-      // Load children if not already loaded
-      await loadCategories(categoryId);
     }
     setExpandedCategories(newExpanded);
   };
 
   const CategoryNode = ({ category, level = 0, isSelected, onClick }) => {
     const isExpanded = expandedCategories.has(category.id);
-    const hasChildren = category.coursecount > 0 || category.childrencount > 0;
+    const hasChildren = category.children && category.children.length > 0;
 
     return (
       <li className={styles.categoryNode} style={{ marginLeft: `${level * 20}px` }}>
         <div 
-          className={`${styles.categoryItem} ${isSelected ? styles.selected : ''}`}
+          className={`${styles.categoryItem} ${isSelected ? styles.selected : ''} ${!category.visible ? styles.hidden : ''}`}
           onClick={onClick}
         >
           {hasChildren && (
@@ -127,11 +136,34 @@ const CategoryManagementPanel = ({
               <span className={styles.courseCount}>({category.coursecount})</span>
             )}
           </span>
+          
+          {capabilities['moodle/category:manage'] && category.id !== 0 && (
+            <div className={styles.categoryActions}>
+              <button 
+                className={styles.actionBtn} 
+                title={category.visible ? 'Hide category' : 'Show category'}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  // TODO: Implement visibility toggle
+                }}
+              >
+                {category.visible ? '👁' : '👁‍🗨'}
+              </button>
+            </div>
+          )}
         </div>
         
-        {isExpanded && (
+        {isExpanded && hasChildren && (
           <ul className={styles.subcategories}>
-            {/* TODO: Load and render subcategories */}
+            {category.children.map(child => (
+              <CategoryNode 
+                key={child.id}
+                category={child}
+                level={level + 1}
+                isSelected={selectedCategory === child.id}
+                onClick={() => handleCategoryClick(child)}
+              />
+            ))}
           </ul>
         )}
       </li>
@@ -152,7 +184,9 @@ const CategoryManagementPanel = ({
       
       {capabilities['moodle/category:manage'] && (
         <div className={styles.actions}>
-          <button className={styles.createBtn}>Create category</button>
+          <button className={styles.createBtn} onClick={handleCreateCategory}>
+            Create category
+          </button>
         </div>
       )}
       

@@ -35,6 +35,7 @@ use external_function_parameters;
 use external_value;
 use external_single_structure;
 use external_multiple_structure;
+use context_system;
 use context_course;
 use context_module;
 use context_coursecat;
@@ -1279,6 +1280,1639 @@ class external extends external_api {
                 'user_completed' => new external_value(PARAM_INT, 'Criteria completed by user', VALUE_OPTIONAL),
                 'user_completion_percentage' => new external_value(PARAM_INT, 'User completion percentage', VALUE_OPTIONAL)
             ], 'Completion info', VALUE_OPTIONAL)
+        ]);
+    }
+    
+    /**
+     * Returns description of get_category_tree parameters
+     *
+     * @return external_function_parameters
+     */
+    public static function get_category_tree_parameters() {
+        return new external_function_parameters([
+            'parent' => new external_value(PARAM_INT, 'Parent category ID (0 for top level)', VALUE_DEFAULT, 0),
+            'includeHidden' => new external_value(PARAM_BOOL, 'Include hidden categories', VALUE_DEFAULT, false)
+        ]);
+    }
+    
+    /**
+     * Get full category hierarchy
+     *
+     * @param int $parent Parent category ID
+     * @param bool $includeHidden Include hidden categories
+     * @return array
+     */
+    public static function get_category_tree($parent = 0, $includeHidden = false) {
+        global $DB;
+        
+        // Parameter validation
+        $params = self::validate_parameters(self::get_category_tree_parameters(), [
+            'parent' => $parent,
+            'includeHidden' => $includeHidden
+        ]);
+        
+        // Context checks
+        $context = context_system::instance();
+        self::validate_context($context);
+        
+        // Get categories recursively
+        $categories = self::get_categories_recursive($params['parent'], $params['includeHidden']);
+        
+        return ['categories' => $categories];
+    }
+    
+    /**
+     * Helper function to get categories recursively
+     *
+     * @param int $parent Parent category ID
+     * @param bool $includeHidden Include hidden categories
+     * @return array
+     */
+    private static function get_categories_recursive($parent, $includeHidden) {
+        global $DB;
+        
+        $conditions = ['parent' => $parent];
+        if (!$includeHidden) {
+            $conditions['visible'] = 1;
+        }
+        
+        $categories = $DB->get_records('course_categories', $conditions, 'sortorder ASC');
+        $result = [];
+        
+        foreach ($categories as $category) {
+            $context = context_coursecat::instance($category->id);
+            
+            // Count courses in category
+            $coursecount = $DB->count_records_select('course', 
+                'category = ? AND id != ?', [$category->id, SITEID]);
+            
+            $categorydata = [
+                'id' => (int)$category->id,
+                'name' => $category->name,
+                'parent' => (int)$category->parent,
+                'visible' => (bool)$category->visible,
+                'coursecount' => $coursecount,
+                'depth' => (int)$category->depth,
+                'path' => $category->path,
+                'children' => self::get_categories_recursive($category->id, $includeHidden),
+                'can_edit' => has_capability('moodle/category:manage', $context),
+                'can_delete' => has_capability('moodle/category:manage', $context) && $coursecount == 0,
+                'can_move' => has_capability('moodle/category:manage', $context),
+                'can_create_course' => has_capability('moodle/course:create', $context)
+            ];
+            
+            $result[] = $categorydata;
+        }
+        
+        return $result;
+    }
+    
+    /**
+     * Returns description of get_category_tree return value
+     *
+     * @return external_single_structure
+     */
+    public static function get_category_tree_returns() {
+        return new external_single_structure([
+            'categories' => new external_multiple_structure(
+                self::get_category_structure()
+            )
+        ]);
+    }
+    
+    /**
+     * Get category structure for returns
+     *
+     * @return external_single_structure
+     */
+    private static function get_category_structure() {
+        return new external_single_structure([
+            'id' => new external_value(PARAM_INT, 'Category ID'),
+            'name' => new external_value(PARAM_TEXT, 'Category name'),
+            'parent' => new external_value(PARAM_INT, 'Parent category ID'),
+            'visible' => new external_value(PARAM_BOOL, 'Category visibility'),
+            'coursecount' => new external_value(PARAM_INT, 'Number of courses'),
+            'depth' => new external_value(PARAM_INT, 'Category depth'),
+            'path' => new external_value(PARAM_TEXT, 'Category path'),
+            'children' => new external_multiple_structure(
+                new external_single_structure([
+                    'id' => new external_value(PARAM_INT, 'Category ID'),
+                    'name' => new external_value(PARAM_TEXT, 'Category name'),
+                    'parent' => new external_value(PARAM_INT, 'Parent category ID'),
+                    'visible' => new external_value(PARAM_BOOL, 'Category visibility'),
+                    'coursecount' => new external_value(PARAM_INT, 'Number of courses'),
+                    'depth' => new external_value(PARAM_INT, 'Category depth'),
+                    'path' => new external_value(PARAM_TEXT, 'Category path'),
+                    'children' => new external_multiple_structure(
+                        new external_value(PARAM_RAW, 'Nested children')
+                    , 'Child categories', VALUE_OPTIONAL),
+                    'can_edit' => new external_value(PARAM_BOOL, 'User can edit category'),
+                    'can_delete' => new external_value(PARAM_BOOL, 'User can delete category'),
+                    'can_move' => new external_value(PARAM_BOOL, 'User can move category'),
+                    'can_create_course' => new external_value(PARAM_BOOL, 'User can create courses in category')
+                ]), 'Child categories', VALUE_OPTIONAL
+            ),
+            'can_edit' => new external_value(PARAM_BOOL, 'User can edit category'),
+            'can_delete' => new external_value(PARAM_BOOL, 'User can delete category'),
+            'can_move' => new external_value(PARAM_BOOL, 'User can move category'),
+            'can_create_course' => new external_value(PARAM_BOOL, 'User can create courses in category')
+        ]);
+    }
+    
+    /**
+     * Returns description of get_category parameters
+     *
+     * @return external_function_parameters
+     */
+    public static function get_category_parameters() {
+        return new external_function_parameters([
+            'categoryid' => new external_value(PARAM_INT, 'Category ID')
+        ]);
+    }
+    
+    /**
+     * Get single category details
+     *
+     * @param int $categoryid Category ID
+     * @return array
+     */
+    public static function get_category($categoryid) {
+        global $DB;
+        
+        // Parameter validation
+        $params = self::validate_parameters(self::get_category_parameters(), [
+            'categoryid' => $categoryid
+        ]);
+        
+        // Get category
+        $category = $DB->get_record('course_categories', ['id' => $params['categoryid']], '*', MUST_EXIST);
+        
+        // Context checks
+        $context = context_coursecat::instance($category->id);
+        self::validate_context($context);
+        
+        // Count courses
+        $coursecount = $DB->count_records_select('course', 
+            'category = ? AND id != ?', [$category->id, SITEID]);
+        
+        return [
+            'id' => (int)$category->id,
+            'name' => $category->name,
+            'parent' => (int)$category->parent,
+            'description' => format_text($category->description, $category->descriptionformat, ['context' => $context]),
+            'descriptionformat' => (int)$category->descriptionformat,
+            'visible' => (bool)$category->visible,
+            'coursecount' => $coursecount,
+            'depth' => (int)$category->depth,
+            'path' => $category->path,
+            'sortorder' => (int)$category->sortorder,
+            'timemodified' => (int)$category->timemodified,
+            'can_edit' => has_capability('moodle/category:manage', $context),
+            'can_delete' => has_capability('moodle/category:manage', $context) && $coursecount == 0,
+            'can_move' => has_capability('moodle/category:manage', $context),
+            'can_create_course' => has_capability('moodle/course:create', $context)
+        ];
+    }
+    
+    /**
+     * Returns description of get_category return value
+     *
+     * @return external_single_structure
+     */
+    public static function get_category_returns() {
+        return new external_single_structure([
+            'id' => new external_value(PARAM_INT, 'Category ID'),
+            'name' => new external_value(PARAM_TEXT, 'Category name'),
+            'parent' => new external_value(PARAM_INT, 'Parent category ID'),
+            'description' => new external_value(PARAM_RAW, 'Category description'),
+            'descriptionformat' => new external_value(PARAM_INT, 'Description format'),
+            'visible' => new external_value(PARAM_BOOL, 'Category visibility'),
+            'coursecount' => new external_value(PARAM_INT, 'Number of courses'),
+            'depth' => new external_value(PARAM_INT, 'Category depth'),
+            'path' => new external_value(PARAM_TEXT, 'Category path'),
+            'sortorder' => new external_value(PARAM_INT, 'Sort order'),
+            'timemodified' => new external_value(PARAM_INT, 'Time modified'),
+            'can_edit' => new external_value(PARAM_BOOL, 'User can edit category'),
+            'can_delete' => new external_value(PARAM_BOOL, 'User can delete category'),
+            'can_move' => new external_value(PARAM_BOOL, 'User can move category'),
+            'can_create_course' => new external_value(PARAM_BOOL, 'User can create courses in category')
+        ]);
+    }
+    
+    /**
+     * Returns description of get_category_courses parameters
+     *
+     * @return external_function_parameters
+     */
+    public static function get_category_courses_parameters() {
+        return new external_function_parameters([
+            'categoryid' => new external_value(PARAM_INT, 'Category ID'),
+            'page' => new external_value(PARAM_INT, 'Page number', VALUE_DEFAULT, 0),
+            'perpage' => new external_value(PARAM_INT, 'Items per page', VALUE_DEFAULT, 20),
+            'sort' => new external_value(PARAM_TEXT, 'Sort field', VALUE_DEFAULT, 'fullname'),
+            'direction' => new external_value(PARAM_ALPHA, 'Sort direction (asc/desc)', VALUE_DEFAULT, 'asc'),
+            'search' => new external_value(PARAM_TEXT, 'Search query', VALUE_DEFAULT, '')
+        ]);
+    }
+    
+    /**
+     * Get courses in category with pagination
+     *
+     * @param int $categoryid Category ID
+     * @param int $page Page number
+     * @param int $perpage Items per page
+     * @param string $sort Sort field
+     * @param string $direction Sort direction
+     * @param string $search Search query
+     * @return array
+     */
+    public static function get_category_courses($categoryid, $page = 0, $perpage = 20, 
+                                               $sort = 'fullname', $direction = 'asc', $search = '') {
+        global $DB;
+        
+        // Parameter validation
+        $params = self::validate_parameters(self::get_category_courses_parameters(), [
+            'categoryid' => $categoryid,
+            'page' => $page,
+            'perpage' => $perpage,
+            'sort' => $sort,
+            'direction' => $direction,
+            'search' => $search
+        ]);
+        
+        // Get category
+        $category = $DB->get_record('course_categories', ['id' => $params['categoryid']], '*', MUST_EXIST);
+        
+        // Context checks
+        $context = context_coursecat::instance($category->id);
+        self::validate_context($context);
+        
+        // Build query
+        $where = 'category = ? AND id != ?';
+        $sqlparams = [$category->id, SITEID];
+        
+        if (!empty($params['search'])) {
+            $searchsql = $DB->sql_like('fullname', '?', false, false);
+            $searchsql .= ' OR ' . $DB->sql_like('shortname', '?', false, false);
+            $searchsql .= ' OR ' . $DB->sql_like('idnumber', '?', false, false);
+            $where .= ' AND (' . $searchsql . ')';
+            $searchparam = '%' . $params['search'] . '%';
+            $sqlparams[] = $searchparam;
+            $sqlparams[] = $searchparam;
+            $sqlparams[] = $searchparam;
+        }
+        
+        // Validate sort field
+        $validfields = ['fullname', 'shortname', 'idnumber', 'timecreated', 'timemodified', 'sortorder'];
+        if (!in_array($params['sort'], $validfields)) {
+            $params['sort'] = 'fullname';
+        }
+        
+        $order = $params['sort'] . ' ' . ($params['direction'] === 'desc' ? 'DESC' : 'ASC');
+        
+        // Get total count
+        $totalcount = $DB->count_records_select('course', $where, $sqlparams);
+        
+        // Get courses
+        $courses = $DB->get_records_select('course', $where, $sqlparams, $order, '*', 
+            $params['page'] * $params['perpage'], $params['perpage']);
+        
+        $result = [];
+        foreach ($courses as $course) {
+            $coursecontext = context_course::instance($course->id);
+            
+            // Get enrolled users count
+            $enrolledcount = count_enrolled_users($coursecontext);
+            
+            // Get teachers
+            $teachers = [];
+            $role = $DB->get_record('role', ['shortname' => 'editingteacher']);
+            if ($role) {
+                $users = get_role_users($role->id, $coursecontext);
+                foreach ($users as $user) {
+                    $teachers[] = fullname($user);
+                }
+            }
+            
+            $result[] = [
+                'id' => (int)$course->id,
+                'fullname' => $course->fullname,
+                'shortname' => $course->shortname,
+                'idnumber' => $course->idnumber,
+                'summary' => format_text($course->summary, $course->summaryformat, ['context' => $coursecontext]),
+                'visible' => (bool)$course->visible,
+                'categoryid' => (int)$course->category,
+                'sortorder' => (int)$course->sortorder,
+                'enrolledcount' => $enrolledcount,
+                'teachers' => $teachers,
+                'format' => $course->format,
+                'startdate' => (int)$course->startdate,
+                'enddate' => (int)$course->enddate,
+                'can_edit' => has_capability('moodle/course:update', $coursecontext),
+                'can_delete' => has_capability('moodle/course:delete', $coursecontext),
+                'can_backup' => has_capability('moodle/backup:backupcourse', $coursecontext),
+                'can_visibility' => has_capability('moodle/course:visibility', $coursecontext)
+            ];
+        }
+        
+        return [
+            'courses' => $result,
+            'total' => $totalcount,
+            'page' => (int)$params['page'],
+            'perpage' => (int)$params['perpage']
+        ];
+    }
+    
+    /**
+     * Returns description of get_category_courses return value
+     *
+     * @return external_single_structure
+     */
+    public static function get_category_courses_returns() {
+        return new external_single_structure([
+            'courses' => new external_multiple_structure(
+                new external_single_structure([
+                    'id' => new external_value(PARAM_INT, 'Course ID'),
+                    'fullname' => new external_value(PARAM_TEXT, 'Course full name'),
+                    'shortname' => new external_value(PARAM_TEXT, 'Course short name'),
+                    'idnumber' => new external_value(PARAM_TEXT, 'Course ID number'),
+                    'summary' => new external_value(PARAM_RAW, 'Course summary'),
+                    'visible' => new external_value(PARAM_BOOL, 'Course visibility'),
+                    'categoryid' => new external_value(PARAM_INT, 'Category ID'),
+                    'sortorder' => new external_value(PARAM_INT, 'Sort order'),
+                    'enrolledcount' => new external_value(PARAM_INT, 'Number of enrolled users'),
+                    'teachers' => new external_multiple_structure(
+                        new external_value(PARAM_TEXT, 'Teacher name')
+                    ),
+                    'format' => new external_value(PARAM_TEXT, 'Course format'),
+                    'startdate' => new external_value(PARAM_INT, 'Course start date'),
+                    'enddate' => new external_value(PARAM_INT, 'Course end date'),
+                    'can_edit' => new external_value(PARAM_BOOL, 'User can edit course'),
+                    'can_delete' => new external_value(PARAM_BOOL, 'User can delete course'),
+                    'can_backup' => new external_value(PARAM_BOOL, 'User can backup course'),
+                    'can_visibility' => new external_value(PARAM_BOOL, 'User can change visibility')
+                ])
+            ),
+            'total' => new external_value(PARAM_INT, 'Total number of courses'),
+            'page' => new external_value(PARAM_INT, 'Current page'),
+            'perpage' => new external_value(PARAM_INT, 'Items per page')
+        ]);
+    }
+    
+    /**
+     * Returns description of create_category parameters
+     *
+     * @return external_function_parameters
+     */
+    public static function create_category_parameters() {
+        return new external_function_parameters([
+            'name' => new external_value(PARAM_TEXT, 'Category name'),
+            'parent' => new external_value(PARAM_INT, 'Parent category ID', VALUE_DEFAULT, 0),
+            'description' => new external_value(PARAM_RAW, 'Category description', VALUE_DEFAULT, ''),
+            'visible' => new external_value(PARAM_BOOL, 'Category visibility', VALUE_DEFAULT, true)
+        ]);
+    }
+    
+    /**
+     * Create a new category
+     *
+     * @param string $name Category name
+     * @param int $parent Parent category ID
+     * @param string $description Category description
+     * @param bool $visible Category visibility
+     * @return array
+     */
+    public static function create_category($name, $parent = 0, $description = '', $visible = true) {
+        global $DB, $CFG;
+        require_once($CFG->dirroot . '/course/lib.php');
+        
+        // Parameter validation
+        $params = self::validate_parameters(self::create_category_parameters(), [
+            'name' => $name,
+            'parent' => $parent,
+            'description' => $description,
+            'visible' => $visible
+        ]);
+        
+        // Context and capability checks
+        if ($params['parent']) {
+            $parentcat = $DB->get_record('course_categories', ['id' => $params['parent']], '*', MUST_EXIST);
+            $context = context_coursecat::instance($parentcat->id);
+        } else {
+            $context = context_system::instance();
+        }
+        self::validate_context($context);
+        require_capability('moodle/category:manage', $context);
+        
+        // Create category data
+        $data = new stdClass();
+        $data->name = $params['name'];
+        $data->parent = $params['parent'];
+        $data->description = $params['description'];
+        $data->descriptionformat = FORMAT_HTML;
+        $data->visible = $params['visible'] ? 1 : 0;
+        
+        // Create the category
+        $category = core_course_category::create($data);
+        
+        return [
+            'id' => (int)$category->id,
+            'name' => $category->name,
+            'parent' => (int)$category->parent,
+            'visible' => (bool)$category->visible,
+            'path' => $category->path
+        ];
+    }
+    
+    /**
+     * Returns description of create_category return value
+     *
+     * @return external_single_structure
+     */
+    public static function create_category_returns() {
+        return new external_single_structure([
+            'id' => new external_value(PARAM_INT, 'Category ID'),
+            'name' => new external_value(PARAM_TEXT, 'Category name'),
+            'parent' => new external_value(PARAM_INT, 'Parent category ID'),
+            'visible' => new external_value(PARAM_BOOL, 'Category visibility'),
+            'path' => new external_value(PARAM_TEXT, 'Category path')
+        ]);
+    }
+    
+    /**
+     * Returns description of update_category parameters
+     *
+     * @return external_function_parameters
+     */
+    public static function update_category_parameters() {
+        return new external_function_parameters([
+            'categoryid' => new external_value(PARAM_INT, 'Category ID'),
+            'name' => new external_value(PARAM_TEXT, 'Category name', VALUE_OPTIONAL),
+            'description' => new external_value(PARAM_RAW, 'Category description', VALUE_OPTIONAL),
+            'visible' => new external_value(PARAM_BOOL, 'Category visibility', VALUE_OPTIONAL)
+        ]);
+    }
+    
+    /**
+     * Update a category
+     *
+     * @param int $categoryid Category ID
+     * @param string $name Category name
+     * @param string $description Category description
+     * @param bool $visible Category visibility
+     * @return array
+     */
+    public static function update_category($categoryid, $name = null, $description = null, $visible = null) {
+        global $DB, $CFG;
+        require_once($CFG->dirroot . '/course/lib.php');
+        
+        // Parameter validation
+        $params = self::validate_parameters(self::update_category_parameters(), [
+            'categoryid' => $categoryid,
+            'name' => $name,
+            'description' => $description,
+            'visible' => $visible
+        ]);
+        
+        // Get category
+        $category = core_course_category::get($params['categoryid']);
+        
+        // Context and capability checks
+        $context = context_coursecat::instance($category->id);
+        self::validate_context($context);
+        require_capability('moodle/category:manage', $context);
+        
+        // Prepare update data
+        $data = new stdClass();
+        $data->id = $category->id;
+        
+        if ($params['name'] !== null) {
+            $data->name = $params['name'];
+        }
+        if ($params['description'] !== null) {
+            $data->description = $params['description'];
+            $data->descriptionformat = FORMAT_HTML;
+        }
+        if ($params['visible'] !== null) {
+            $data->visible = $params['visible'] ? 1 : 0;
+        }
+        
+        // Update the category
+        $category->update($data);
+        
+        // Get updated category
+        $category = core_course_category::get($params['categoryid']);
+        
+        return [
+            'id' => (int)$category->id,
+            'name' => $category->name,
+            'visible' => (bool)$category->visible
+        ];
+    }
+    
+    /**
+     * Returns description of update_category return value
+     *
+     * @return external_single_structure
+     */
+    public static function update_category_returns() {
+        return new external_single_structure([
+            'id' => new external_value(PARAM_INT, 'Category ID'),
+            'name' => new external_value(PARAM_TEXT, 'Category name'),
+            'visible' => new external_value(PARAM_BOOL, 'Category visibility')
+        ]);
+    }
+    
+    /**
+     * Returns description of delete_category parameters
+     *
+     * @return external_function_parameters
+     */
+    public static function delete_category_parameters() {
+        return new external_function_parameters([
+            'categoryid' => new external_value(PARAM_INT, 'Category ID'),
+            'recursive' => new external_value(PARAM_BOOL, 'Delete subcategories', VALUE_DEFAULT, false)
+        ]);
+    }
+    
+    /**
+     * Delete a category
+     *
+     * @param int $categoryid Category ID
+     * @param bool $recursive Delete subcategories
+     * @return array
+     */
+    public static function delete_category($categoryid, $recursive = false) {
+        global $CFG;
+        require_once($CFG->dirroot . '/course/lib.php');
+        
+        // Parameter validation
+        $params = self::validate_parameters(self::delete_category_parameters(), [
+            'categoryid' => $categoryid,
+            'recursive' => $recursive
+        ]);
+        
+        // Get category
+        $category = core_course_category::get($params['categoryid']);
+        
+        // Context and capability checks
+        $context = context_coursecat::instance($category->id);
+        self::validate_context($context);
+        require_capability('moodle/category:manage', $context);
+        
+        // Check if category can be deleted
+        if ($category->has_courses()) {
+            throw new moodle_exception('categoryhascoures', 'error');
+        }
+        
+        if (!$params['recursive'] && $category->has_children()) {
+            throw new moodle_exception('categoryhaschildren', 'error');
+        }
+        
+        // Delete the category
+        $category->delete_full($params['recursive']);
+        
+        return [];
+    }
+    
+    /**
+     * Returns description of delete_category return value
+     *
+     * @return null
+     */
+    public static function delete_category_returns() {
+        return null;
+    }
+    
+    /**
+     * Returns description of toggle_category_visibility parameters
+     *
+     * @return external_function_parameters
+     */
+    public static function toggle_category_visibility_parameters() {
+        return new external_function_parameters([
+            'categoryid' => new external_value(PARAM_INT, 'Category ID')
+        ]);
+    }
+    
+    /**
+     * Toggle category visibility
+     *
+     * @param int $categoryid Category ID
+     * @return array
+     */
+    public static function toggle_category_visibility($categoryid) {
+        global $CFG;
+        require_once($CFG->dirroot . '/course/lib.php');
+        
+        // Parameter validation
+        $params = self::validate_parameters(self::toggle_category_visibility_parameters(), [
+            'categoryid' => $categoryid
+        ]);
+        
+        // Get category
+        $category = core_course_category::get($params['categoryid']);
+        
+        // Context and capability checks
+        $context = context_coursecat::instance($category->id);
+        self::validate_context($context);
+        require_capability('moodle/category:manage', $context);
+        
+        // Toggle visibility
+        $data = new stdClass();
+        $data->id = $category->id;
+        $data->visible = $category->visible ? 0 : 1;
+        $category->update($data);
+        
+        return [
+            'id' => (int)$category->id,
+            'visible' => (bool)$data->visible
+        ];
+    }
+    
+    /**
+     * Returns description of toggle_category_visibility return value
+     *
+     * @return external_single_structure
+     */
+    public static function toggle_category_visibility_returns() {
+        return new external_single_structure([
+            'id' => new external_value(PARAM_INT, 'Category ID'),
+            'visible' => new external_value(PARAM_BOOL, 'New visibility status')
+        ]);
+    }
+    
+    /**
+     * Returns description of move_category parameters
+     *
+     * @return external_function_parameters
+     */
+    public static function move_category_parameters() {
+        return new external_function_parameters([
+            'categoryid' => new external_value(PARAM_INT, 'Category ID'),
+            'direction' => new external_value(PARAM_ALPHA, 'Direction (up/down)')
+        ]);
+    }
+    
+    /**
+     * Move category up or down
+     *
+     * @param int $categoryid Category ID
+     * @param string $direction Direction (up/down)
+     * @return array
+     */
+    public static function move_category($categoryid, $direction) {
+        global $CFG;
+        require_once($CFG->dirroot . '/course/lib.php');
+        
+        // Parameter validation
+        $params = self::validate_parameters(self::move_category_parameters(), [
+            'categoryid' => $categoryid,
+            'direction' => $direction
+        ]);
+        
+        // Validate direction
+        if (!in_array($params['direction'], ['up', 'down'])) {
+            throw new moodle_exception('invaliddirection', 'error');
+        }
+        
+        // Get category
+        $category = core_course_category::get($params['categoryid']);
+        
+        // Context and capability checks
+        $context = context_coursecat::instance($category->id);
+        self::validate_context($context);
+        require_capability('moodle/category:manage', $context);
+        
+        // Move the category
+        if ($params['direction'] === 'up') {
+            $category->change_sortorder_by_one(true);
+        } else {
+            $category->change_sortorder_by_one(false);
+        }
+        
+        return [
+            'id' => (int)$category->id,
+            'sortorder' => (int)$category->sortorder
+        ];
+    }
+    
+    /**
+     * Returns description of move_category return value
+     *
+     * @return external_single_structure
+     */
+    public static function move_category_returns() {
+        return new external_single_structure([
+            'id' => new external_value(PARAM_INT, 'Category ID'),
+            'sortorder' => new external_value(PARAM_INT, 'New sort order')
+        ]);
+    }
+    
+    /**
+     * Returns description of get_course_list parameters
+     *
+     * @return external_function_parameters
+     */
+    public static function get_course_list_parameters() {
+        return new external_function_parameters([
+            'category' => new external_value(PARAM_INT, 'Category ID (0 for all)', VALUE_DEFAULT, 0),
+            'search' => new external_value(PARAM_TEXT, 'Search query', VALUE_DEFAULT, ''),
+            'page' => new external_value(PARAM_INT, 'Page number', VALUE_DEFAULT, 0),
+            'perpage' => new external_value(PARAM_INT, 'Items per page', VALUE_DEFAULT, 20),
+            'sort' => new external_value(PARAM_TEXT, 'Sort field', VALUE_DEFAULT, 'fullname'),
+            'direction' => new external_value(PARAM_ALPHA, 'Sort direction', VALUE_DEFAULT, 'asc')
+        ]);
+    }
+    
+    /**
+     * Get list of courses with filters
+     *
+     * @param int $category Category ID
+     * @param string $search Search query
+     * @param int $page Page number
+     * @param int $perpage Items per page
+     * @param string $sort Sort field
+     * @param string $direction Sort direction
+     * @return array
+     */
+    public static function get_course_list($category = 0, $search = '', $page = 0, 
+                                         $perpage = 20, $sort = 'fullname', $direction = 'asc') {
+        global $DB;
+        
+        // Parameter validation
+        $params = self::validate_parameters(self::get_course_list_parameters(), [
+            'category' => $category,
+            'search' => $search,
+            'page' => $page,
+            'perpage' => $perpage,
+            'sort' => $sort,
+            'direction' => $direction
+        ]);
+        
+        // Context checks
+        $context = context_system::instance();
+        self::validate_context($context);
+        
+        // Build query
+        $where = 'id != ?';
+        $sqlparams = [SITEID];
+        
+        if ($params['category']) {
+            $where .= ' AND category = ?';
+            $sqlparams[] = $params['category'];
+        }
+        
+        if (!empty($params['search'])) {
+            $searchsql = $DB->sql_like('fullname', '?', false, false);
+            $searchsql .= ' OR ' . $DB->sql_like('shortname', '?', false, false);
+            $searchsql .= ' OR ' . $DB->sql_like('idnumber', '?', false, false);
+            $where .= ' AND (' . $searchsql . ')';
+            $searchparam = '%' . $params['search'] . '%';
+            $sqlparams[] = $searchparam;
+            $sqlparams[] = $searchparam;
+            $sqlparams[] = $searchparam;
+        }
+        
+        // Validate sort field
+        $validfields = ['fullname', 'shortname', 'idnumber', 'timecreated', 'timemodified', 'sortorder'];
+        if (!in_array($params['sort'], $validfields)) {
+            $params['sort'] = 'fullname';
+        }
+        
+        $order = $params['sort'] . ' ' . ($params['direction'] === 'desc' ? 'DESC' : 'ASC');
+        
+        // Get total count
+        $totalcount = $DB->count_records_select('course', $where, $sqlparams);
+        
+        // Get courses
+        $courses = $DB->get_records_select('course', $where, $sqlparams, $order, '*', 
+            $params['page'] * $params['perpage'], $params['perpage']);
+        
+        $result = [];
+        foreach ($courses as $course) {
+            $coursecontext = context_course::instance($course->id);
+            
+            // Skip courses user cannot see
+            if (!can_access_course($course) && !has_capability('moodle/course:viewhiddencourses', $coursecontext)) {
+                continue;
+            }
+            
+            // Get enrolled users count
+            $enrolledcount = count_enrolled_users($coursecontext);
+            
+            // Get teachers
+            $teachers = [];
+            $role = $DB->get_record('role', ['shortname' => 'editingteacher']);
+            if ($role) {
+                $users = get_role_users($role->id, $coursecontext);
+                foreach ($users as $user) {
+                    $teachers[] = fullname($user);
+                }
+            }
+            
+            $result[] = [
+                'id' => (int)$course->id,
+                'fullname' => $course->fullname,
+                'shortname' => $course->shortname,
+                'idnumber' => $course->idnumber,
+                'summary' => format_text($course->summary, $course->summaryformat, ['context' => $coursecontext]),
+                'visible' => (bool)$course->visible,
+                'categoryid' => (int)$course->category,
+                'sortorder' => (int)$course->sortorder,
+                'enrolledcount' => $enrolledcount,
+                'teachers' => $teachers,
+                'format' => $course->format,
+                'startdate' => (int)$course->startdate,
+                'enddate' => (int)$course->enddate,
+                'can_edit' => has_capability('moodle/course:update', $coursecontext),
+                'can_delete' => has_capability('moodle/course:delete', $coursecontext),
+                'can_backup' => has_capability('moodle/backup:backupcourse', $coursecontext),
+                'can_visibility' => has_capability('moodle/course:visibility', $coursecontext)
+            ];
+        }
+        
+        return [
+            'courses' => $result,
+            'total' => $totalcount,
+            'page' => (int)$params['page'],
+            'perpage' => (int)$params['perpage']
+        ];
+    }
+    
+    /**
+     * Returns description of get_course_list return value
+     *
+     * @return external_single_structure
+     */
+    public static function get_course_list_returns() {
+        return new external_single_structure([
+            'courses' => new external_multiple_structure(
+                new external_single_structure([
+                    'id' => new external_value(PARAM_INT, 'Course ID'),
+                    'fullname' => new external_value(PARAM_TEXT, 'Course full name'),
+                    'shortname' => new external_value(PARAM_TEXT, 'Course short name'),
+                    'idnumber' => new external_value(PARAM_TEXT, 'Course ID number'),
+                    'summary' => new external_value(PARAM_RAW, 'Course summary'),
+                    'visible' => new external_value(PARAM_BOOL, 'Course visibility'),
+                    'categoryid' => new external_value(PARAM_INT, 'Category ID'),
+                    'sortorder' => new external_value(PARAM_INT, 'Sort order'),
+                    'enrolledcount' => new external_value(PARAM_INT, 'Number of enrolled users'),
+                    'teachers' => new external_multiple_structure(
+                        new external_value(PARAM_TEXT, 'Teacher name')
+                    ),
+                    'format' => new external_value(PARAM_TEXT, 'Course format'),
+                    'startdate' => new external_value(PARAM_INT, 'Course start date'),
+                    'enddate' => new external_value(PARAM_INT, 'Course end date'),
+                    'can_edit' => new external_value(PARAM_BOOL, 'User can edit course'),
+                    'can_delete' => new external_value(PARAM_BOOL, 'User can delete course'),
+                    'can_backup' => new external_value(PARAM_BOOL, 'User can backup course'),
+                    'can_visibility' => new external_value(PARAM_BOOL, 'User can change visibility')
+                ])
+            ),
+            'total' => new external_value(PARAM_INT, 'Total number of courses'),
+            'page' => new external_value(PARAM_INT, 'Current page'),
+            'perpage' => new external_value(PARAM_INT, 'Items per page')
+        ]);
+    }
+    
+    /**
+     * Returns description of update_course parameters
+     *
+     * @return external_function_parameters
+     */
+    public static function update_course_parameters() {
+        return new external_function_parameters([
+            'courseid' => new external_value(PARAM_INT, 'Course ID'),
+            'fullname' => new external_value(PARAM_TEXT, 'Course full name', VALUE_OPTIONAL),
+            'shortname' => new external_value(PARAM_TEXT, 'Course short name', VALUE_OPTIONAL),
+            'summary' => new external_value(PARAM_RAW, 'Course summary', VALUE_OPTIONAL),
+            'visible' => new external_value(PARAM_BOOL, 'Course visibility', VALUE_OPTIONAL),
+            'startdate' => new external_value(PARAM_INT, 'Course start date', VALUE_OPTIONAL),
+            'enddate' => new external_value(PARAM_INT, 'Course end date', VALUE_OPTIONAL)
+        ]);
+    }
+    
+    /**
+     * Update course settings
+     *
+     * @param int $courseid Course ID
+     * @param string $fullname Course full name
+     * @param string $shortname Course short name
+     * @param string $summary Course summary
+     * @param bool $visible Course visibility
+     * @param int $startdate Course start date
+     * @param int $enddate Course end date
+     * @return array
+     */
+    public static function update_course($courseid, $fullname = null, $shortname = null, 
+                                       $summary = null, $visible = null, $startdate = null, $enddate = null) {
+        global $DB, $CFG;
+        require_once($CFG->dirroot . '/course/lib.php');
+        
+        // Parameter validation
+        $params = self::validate_parameters(self::update_course_parameters(), [
+            'courseid' => $courseid,
+            'fullname' => $fullname,
+            'shortname' => $shortname,
+            'summary' => $summary,
+            'visible' => $visible,
+            'startdate' => $startdate,
+            'enddate' => $enddate
+        ]);
+        
+        // Get course
+        $course = $DB->get_record('course', ['id' => $params['courseid']], '*', MUST_EXIST);
+        
+        // Context and capability checks
+        $context = context_course::instance($course->id);
+        self::validate_context($context);
+        require_capability('moodle/course:update', $context);
+        
+        // Prepare update data
+        $data = (array)$course;
+        
+        if ($params['fullname'] !== null) {
+            $data['fullname'] = $params['fullname'];
+        }
+        if ($params['shortname'] !== null) {
+            // Check if shortname is unique
+            if ($DB->record_exists_select('course', 'shortname = ? AND id != ?', 
+                [$params['shortname'], $course->id])) {
+                throw new moodle_exception('shortnametaken', 'error');
+            }
+            $data['shortname'] = $params['shortname'];
+        }
+        if ($params['summary'] !== null) {
+            $data['summary'] = $params['summary'];
+            $data['summaryformat'] = FORMAT_HTML;
+        }
+        if ($params['visible'] !== null) {
+            $data['visible'] = $params['visible'] ? 1 : 0;
+        }
+        if ($params['startdate'] !== null) {
+            $data['startdate'] = $params['startdate'];
+        }
+        if ($params['enddate'] !== null) {
+            $data['enddate'] = $params['enddate'];
+        }
+        
+        // Update the course
+        update_course((object)$data);
+        
+        // Get updated course
+        $course = $DB->get_record('course', ['id' => $params['courseid']], '*', MUST_EXIST);
+        
+        return [
+            'id' => (int)$course->id,
+            'fullname' => $course->fullname,
+            'shortname' => $course->shortname,
+            'visible' => (bool)$course->visible
+        ];
+    }
+    
+    /**
+     * Returns description of update_course return value
+     *
+     * @return external_single_structure
+     */
+    public static function update_course_returns() {
+        return new external_single_structure([
+            'id' => new external_value(PARAM_INT, 'Course ID'),
+            'fullname' => new external_value(PARAM_TEXT, 'Course full name'),
+            'shortname' => new external_value(PARAM_TEXT, 'Course short name'),
+            'visible' => new external_value(PARAM_BOOL, 'Course visibility')
+        ]);
+    }
+    
+    /**
+     * Returns description of toggle_course_visibility parameters
+     *
+     * @return external_function_parameters
+     */
+    public static function toggle_course_visibility_parameters() {
+        return new external_function_parameters([
+            'courseid' => new external_value(PARAM_INT, 'Course ID')
+        ]);
+    }
+    
+    /**
+     * Toggle course visibility
+     *
+     * @param int $courseid Course ID
+     * @return array
+     */
+    public static function toggle_course_visibility($courseid) {
+        global $DB, $CFG;
+        require_once($CFG->dirroot . '/course/lib.php');
+        
+        // Parameter validation
+        $params = self::validate_parameters(self::toggle_course_visibility_parameters(), [
+            'courseid' => $courseid
+        ]);
+        
+        // Get course
+        $course = $DB->get_record('course', ['id' => $params['courseid']], '*', MUST_EXIST);
+        
+        // Context and capability checks
+        $context = context_course::instance($course->id);
+        self::validate_context($context);
+        require_capability('moodle/course:visibility', $context);
+        
+        // Toggle visibility
+        $course->visible = $course->visible ? 0 : 1;
+        update_course($course);
+        
+        return [
+            'id' => (int)$course->id,
+            'visible' => (bool)$course->visible
+        ];
+    }
+    
+    /**
+     * Returns description of toggle_course_visibility return value
+     *
+     * @return external_single_structure
+     */
+    public static function toggle_course_visibility_returns() {
+        return new external_single_structure([
+            'id' => new external_value(PARAM_INT, 'Course ID'),
+            'visible' => new external_value(PARAM_BOOL, 'New visibility status')
+        ]);
+    }
+    
+    /**
+     * Returns description of move_course_to_category parameters
+     *
+     * @return external_function_parameters
+     */
+    public static function move_course_to_category_parameters() {
+        return new external_function_parameters([
+            'courseid' => new external_value(PARAM_INT, 'Course ID'),
+            'categoryid' => new external_value(PARAM_INT, 'Target category ID')
+        ]);
+    }
+    
+    /**
+     * Move course to different category
+     *
+     * @param int $courseid Course ID
+     * @param int $categoryid Target category ID
+     * @return array
+     */
+    public static function move_course_to_category($courseid, $categoryid) {
+        global $DB, $CFG;
+        require_once($CFG->dirroot . '/course/lib.php');
+        
+        // Parameter validation
+        $params = self::validate_parameters(self::move_course_to_category_parameters(), [
+            'courseid' => $courseid,
+            'categoryid' => $categoryid
+        ]);
+        
+        // Get course
+        $course = $DB->get_record('course', ['id' => $params['courseid']], '*', MUST_EXIST);
+        
+        // Get target category
+        $category = $DB->get_record('course_categories', ['id' => $params['categoryid']], '*', MUST_EXIST);
+        
+        // Context and capability checks
+        $coursecontext = context_course::instance($course->id);
+        $categorycontext = context_coursecat::instance($category->id);
+        self::validate_context($coursecontext);
+        require_capability('moodle/course:update', $coursecontext);
+        require_capability('moodle/course:create', $categorycontext);
+        
+        // Move the course
+        move_courses([$course->id], $category->id);
+        
+        return [
+            'id' => (int)$course->id,
+            'categoryid' => (int)$category->id
+        ];
+    }
+    
+    /**
+     * Returns description of move_course_to_category return value
+     *
+     * @return external_single_structure
+     */
+    public static function move_course_to_category_returns() {
+        return new external_single_structure([
+            'id' => new external_value(PARAM_INT, 'Course ID'),
+            'categoryid' => new external_value(PARAM_INT, 'New category ID')
+        ]);
+    }
+    
+    /**
+     * Returns description of get_course_teachers parameters
+     *
+     * @return external_function_parameters
+     */
+    public static function get_course_teachers_parameters() {
+        return new external_function_parameters([
+            'courseid' => new external_value(PARAM_INT, 'Course ID')
+        ]);
+    }
+    
+    /**
+     * Get course teachers and enrollments
+     *
+     * @param int $courseid Course ID
+     * @return array
+     */
+    public static function get_course_teachers($courseid) {
+        global $DB;
+        
+        // Parameter validation
+        $params = self::validate_parameters(self::get_course_teachers_parameters(), [
+            'courseid' => $courseid
+        ]);
+        
+        // Get course
+        $course = $DB->get_record('course', ['id' => $params['courseid']], '*', MUST_EXIST);
+        
+        // Context checks
+        $context = context_course::instance($course->id);
+        self::validate_context($context);
+        
+        // Get teacher roles
+        $teacherRoles = ['editingteacher', 'teacher'];
+        $teachers = [];
+        
+        foreach ($teacherRoles as $rolename) {
+            $role = $DB->get_record('role', ['shortname' => $rolename]);
+            if ($role) {
+                $users = get_role_users($role->id, $context, true);
+                foreach ($users as $user) {
+                    $teachers[] = [
+                        'id' => (int)$user->id,
+                        'fullname' => fullname($user),
+                        'email' => $user->email,
+                        'role' => $rolename,
+                        'picture' => ''  // User picture URL generation requires page context
+                    ];
+                }
+            }
+        }
+        
+        // Get enrollment count by method
+        $enrollments = [];
+        $instances = enrol_get_instances($course->id, true);
+        foreach ($instances as $instance) {
+            $plugin = enrol_get_plugin($instance->enrol);
+            $count = $DB->count_records('user_enrolments', ['enrolid' => $instance->id]);
+            $enrollments[] = [
+                'method' => $instance->enrol,
+                'name' => $plugin->get_instance_name($instance),
+                'count' => $count,
+                'enabled' => (bool)($instance->status == ENROL_INSTANCE_ENABLED)
+            ];
+        }
+        
+        return [
+            'teachers' => $teachers,
+            'enrollments' => $enrollments,
+            'total_enrolled' => count_enrolled_users($context)
+        ];
+    }
+    
+    /**
+     * Returns description of get_course_teachers return value
+     *
+     * @return external_single_structure
+     */
+    public static function get_course_teachers_returns() {
+        return new external_single_structure([
+            'teachers' => new external_multiple_structure(
+                new external_single_structure([
+                    'id' => new external_value(PARAM_INT, 'User ID'),
+                    'fullname' => new external_value(PARAM_TEXT, 'User full name'),
+                    'email' => new external_value(PARAM_EMAIL, 'User email'),
+                    'role' => new external_value(PARAM_TEXT, 'Teacher role'),
+                    'picture' => new external_value(PARAM_URL, 'User picture URL')
+                ])
+            ),
+            'enrollments' => new external_multiple_structure(
+                new external_single_structure([
+                    'method' => new external_value(PARAM_TEXT, 'Enrollment method'),
+                    'name' => new external_value(PARAM_TEXT, 'Method display name'),
+                    'count' => new external_value(PARAM_INT, 'Number of enrolled users'),
+                    'enabled' => new external_value(PARAM_BOOL, 'Method is enabled')
+                ])
+            ),
+            'total_enrolled' => new external_value(PARAM_INT, 'Total enrolled users')
+        ]);
+    }
+    
+    /**
+     * Returns description of get_activity_list parameters
+     *
+     * @return external_function_parameters
+     */
+    public static function get_activity_list_parameters() {
+        return new external_function_parameters([
+            'courseid' => new external_value(PARAM_INT, 'Course ID')
+        ]);
+    }
+    
+    /**
+     * List all activities for a course
+     *
+     * @param int $courseid Course ID
+     * @return array
+     */
+    public static function get_activity_list($courseid) {
+        global $DB;
+        
+        // Parameter validation
+        $params = self::validate_parameters(self::get_activity_list_parameters(), [
+            'courseid' => $courseid
+        ]);
+        
+        // Get course
+        $course = $DB->get_record('course', ['id' => $params['courseid']], '*', MUST_EXIST);
+        
+        // Context checks
+        $context = context_course::instance($course->id);
+        self::validate_context($context);
+        require_capability('moodle/course:view', $context);
+        
+        // Get all activities
+        $modinfo = get_fast_modinfo($course);
+        $activities = [];
+        
+        foreach ($modinfo->get_cms() as $cm) {
+            if (!$cm->uservisible) {
+                continue;
+            }
+            
+            $activities[] = [
+                'id' => (int)$cm->id,
+                'name' => $cm->name,
+                'modname' => $cm->modname,
+                'modicon' => $cm->get_icon_url()->out(false),
+                'visible' => (bool)$cm->visible,
+                'sectionid' => (int)$cm->section,
+                'indent' => (int)$cm->indent,
+                'completion' => $cm->completion,
+                'url' => $cm->url ? $cm->url->out(false) : ''
+            ];
+        }
+        
+        return ['activities' => $activities];
+    }
+    
+    /**
+     * Returns description of get_activity_list return value
+     *
+     * @return external_single_structure
+     */
+    public static function get_activity_list_returns() {
+        return new external_single_structure([
+            'activities' => new external_multiple_structure(
+                new external_single_structure([
+                    'id' => new external_value(PARAM_INT, 'Activity ID'),
+                    'name' => new external_value(PARAM_TEXT, 'Activity name'),
+                    'modname' => new external_value(PARAM_TEXT, 'Module name'),
+                    'modicon' => new external_value(PARAM_URL, 'Module icon URL'),
+                    'visible' => new external_value(PARAM_BOOL, 'Activity visibility'),
+                    'sectionid' => new external_value(PARAM_INT, 'Section ID'),
+                    'indent' => new external_value(PARAM_INT, 'Indentation level'),
+                    'completion' => new external_value(PARAM_INT, 'Completion tracking'),
+                    'url' => new external_value(PARAM_URL, 'Activity URL')
+                ])
+            )
+        ]);
+    }
+    
+    /**
+     * Returns description of toggle_activity_visibility parameters
+     *
+     * @return external_function_parameters
+     */
+    public static function toggle_activity_visibility_parameters() {
+        return new external_function_parameters([
+            'activityid' => new external_value(PARAM_INT, 'Activity ID')
+        ]);
+    }
+    
+    /**
+     * Quick visibility toggle for activity
+     *
+     * @param int $activityid Activity ID
+     * @return array
+     */
+    public static function toggle_activity_visibility($activityid) {
+        global $DB;
+        
+        // Parameter validation
+        $params = self::validate_parameters(self::toggle_activity_visibility_parameters(), [
+            'activityid' => $activityid
+        ]);
+        
+        // Get course module
+        $cm = get_coursemodule_from_id('', $params['activityid'], 0, false, MUST_EXIST);
+        
+        // Context and capability checks
+        $context = context_module::instance($cm->id);
+        self::validate_context($context);
+        require_capability('moodle/course:manageactivities', $context);
+        
+        // Toggle visibility
+        set_coursemodule_visible($cm->id, !$cm->visible);
+        
+        // Get updated state
+        $cm = get_coursemodule_from_id('', $params['activityid'], 0, false, MUST_EXIST);
+        
+        return [
+            'id' => (int)$cm->id,
+            'visible' => (bool)$cm->visible
+        ];
+    }
+    
+    /**
+     * Returns description of toggle_activity_visibility return value
+     *
+     * @return external_single_structure
+     */
+    public static function toggle_activity_visibility_returns() {
+        return new external_single_structure([
+            'id' => new external_value(PARAM_INT, 'Activity ID'),
+            'visible' => new external_value(PARAM_BOOL, 'New visibility status')
+        ]);
+    }
+    
+    /**
+     * Returns description of duplicate_activity parameters
+     *
+     * @return external_function_parameters
+     */
+    public static function duplicate_activity_parameters() {
+        return new external_function_parameters([
+            'activityid' => new external_value(PARAM_INT, 'Activity ID to duplicate')
+        ]);
+    }
+    
+    /**
+     * Duplicate an activity
+     *
+     * @param int $activityid Activity ID
+     * @return array
+     */
+    public static function duplicate_activity($activityid) {
+        global $CFG, $DB;
+        require_once($CFG->dirroot . '/course/lib.php');
+        require_once($CFG->libdir . '/filelib.php');
+        
+        // Parameter validation
+        $params = self::validate_parameters(self::duplicate_activity_parameters(), [
+            'activityid' => $activityid
+        ]);
+        
+        // Get course module
+        $cm = get_coursemodule_from_id('', $params['activityid'], 0, false, MUST_EXIST);
+        $course = $DB->get_record('course', ['id' => $cm->course], '*', MUST_EXIST);
+        
+        // Context and capability checks
+        $context = context_module::instance($cm->id);
+        self::validate_context($context);
+        require_capability('moodle/course:manageactivities', $context);
+        require_capability('moodle/backup:backupactivity', $context);
+        require_capability('moodle/restore:restoreactivity', $context);
+        
+        // Duplicate the activity
+        $newcm = duplicate_module($course, $cm);
+        
+        if (!$newcm) {
+            throw new moodle_exception('duplicatefailed', 'error');
+        }
+        
+        return [
+            'id' => (int)$newcm->id,
+            'name' => $newcm->name,
+            'modname' => $newcm->modname,
+            'visible' => (bool)$newcm->visible,
+            'sectionid' => (int)$newcm->section
+        ];
+    }
+    
+    /**
+     * Returns description of duplicate_activity return value
+     *
+     * @return external_single_structure
+     */
+    public static function duplicate_activity_returns() {
+        return new external_single_structure([
+            'id' => new external_value(PARAM_INT, 'New activity ID'),
+            'name' => new external_value(PARAM_TEXT, 'Activity name'),
+            'modname' => new external_value(PARAM_TEXT, 'Module name'),
+            'visible' => new external_value(PARAM_BOOL, 'Activity visibility'),
+            'sectionid' => new external_value(PARAM_INT, 'Section ID')
+        ]);
+    }
+    
+    /**
+     * Returns description of create_section parameters
+     *
+     * @return external_function_parameters
+     */
+    public static function create_section_parameters() {
+        return new external_function_parameters([
+            'courseid' => new external_value(PARAM_INT, 'Course ID'),
+            'name' => new external_value(PARAM_TEXT, 'Section name', VALUE_DEFAULT, ''),
+            'summary' => new external_value(PARAM_RAW, 'Section summary', VALUE_DEFAULT, ''),
+            'visible' => new external_value(PARAM_BOOL, 'Section visibility', VALUE_DEFAULT, true)
+        ]);
+    }
+    
+    /**
+     * Create new section
+     *
+     * @param int $courseid Course ID
+     * @param string $name Section name
+     * @param string $summary Section summary
+     * @param bool $visible Section visibility
+     * @return array
+     */
+    public static function create_section($courseid, $name = '', $summary = '', $visible = true) {
+        global $DB, $CFG;
+        require_once($CFG->dirroot . '/course/lib.php');
+        
+        // Parameter validation
+        $params = self::validate_parameters(self::create_section_parameters(), [
+            'courseid' => $courseid,
+            'name' => $name,
+            'summary' => $summary,
+            'visible' => $visible
+        ]);
+        
+        // Get course
+        $course = $DB->get_record('course', ['id' => $params['courseid']], '*', MUST_EXIST);
+        
+        // Context and capability checks
+        $context = context_course::instance($course->id);
+        self::validate_context($context);
+        require_capability('moodle/course:update', $context);
+        
+        // Get current number of sections
+        $lastsection = $DB->get_field_sql('SELECT MAX(section) FROM {course_sections} WHERE course = ?', [$course->id]);
+        $newsection = $lastsection + 1;
+        
+        // Create new section
+        $section = new stdClass();
+        $section->course = $course->id;
+        $section->section = $newsection;
+        $section->name = $params['name'];
+        $section->summary = $params['summary'];
+        $section->summaryformat = FORMAT_HTML;
+        $section->visible = $params['visible'] ? 1 : 0;
+        $section->availability = null;
+        $section->timemodified = time();
+        
+        $section->id = $DB->insert_record('course_sections', $section);
+        
+        // Update course format options
+        rebuild_course_cache($course->id, true);
+        
+        return [
+            'id' => (int)$section->id,
+            'name' => $section->name ?: get_string('section') . ' ' . $section->section,
+            'visible' => (bool)$section->visible,
+            'section' => (int)$section->section
+        ];
+    }
+    
+    /**
+     * Returns description of create_section return value
+     *
+     * @return external_single_structure
+     */
+    public static function create_section_returns() {
+        return new external_single_structure([
+            'id' => new external_value(PARAM_INT, 'Section ID'),
+            'name' => new external_value(PARAM_TEXT, 'Section name'),
+            'visible' => new external_value(PARAM_BOOL, 'Section visibility'),
+            'section' => new external_value(PARAM_INT, 'Section number')
+        ]);
+    }
+    
+    /**
+     * Returns description of delete_section parameters
+     *
+     * @return external_function_parameters
+     */
+    public static function delete_section_parameters() {
+        return new external_function_parameters([
+            'sectionid' => new external_value(PARAM_INT, 'Section ID')
+        ]);
+    }
+    
+    /**
+     * Delete section
+     *
+     * @param int $sectionid Section ID
+     * @return array
+     */
+    public static function delete_section($sectionid) {
+        global $DB, $CFG;
+        require_once($CFG->dirroot . '/course/lib.php');
+        
+        // Parameter validation
+        $params = self::validate_parameters(self::delete_section_parameters(), [
+            'sectionid' => $sectionid
+        ]);
+        
+        // Get section
+        $section = $DB->get_record('course_sections', ['id' => $params['sectionid']], '*', MUST_EXIST);
+        $course = $DB->get_record('course', ['id' => $section->course], '*', MUST_EXIST);
+        
+        // Context and capability checks
+        $context = context_course::instance($course->id);
+        self::validate_context($context);
+        require_capability('moodle/course:update', $context);
+        
+        // Cannot delete section 0
+        if ($section->section == 0) {
+            throw new moodle_exception('cannotdeletesection0', 'error');
+        }
+        
+        // Check if section has activities
+        if (!empty($section->sequence)) {
+            throw new moodle_exception('sectionnotempty', 'error');
+        }
+        
+        // Delete the section
+        course_delete_section($course, $section, true);
+        
+        return [];
+    }
+    
+    /**
+     * Returns description of delete_section return value
+     *
+     * @return null
+     */
+    public static function delete_section_returns() {
+        return null;
+    }
+    
+    /**
+     * Returns description of toggle_section_visibility parameters
+     *
+     * @return external_function_parameters
+     */
+    public static function toggle_section_visibility_parameters() {
+        return new external_function_parameters([
+            'sectionid' => new external_value(PARAM_INT, 'Section ID')
+        ]);
+    }
+    
+    /**
+     * Toggle section visibility
+     *
+     * @param int $sectionid Section ID
+     * @return array
+     */
+    public static function toggle_section_visibility($sectionid) {
+        global $DB, $CFG;
+        require_once($CFG->dirroot . '/course/lib.php');
+        
+        // Parameter validation
+        $params = self::validate_parameters(self::toggle_section_visibility_parameters(), [
+            'sectionid' => $sectionid
+        ]);
+        
+        // Get section
+        $section = $DB->get_record('course_sections', ['id' => $params['sectionid']], '*', MUST_EXIST);
+        
+        // Context and capability checks
+        $context = context_course::instance($section->course);
+        self::validate_context($context);
+        require_capability('moodle/course:sectionvisibility', $context);
+        
+        // Toggle visibility
+        $section->visible = $section->visible ? 0 : 1;
+        $DB->update_record('course_sections', $section);
+        
+        // Clear cache
+        rebuild_course_cache($section->course, true);
+        
+        return [
+            'id' => (int)$section->id,
+            'visible' => (bool)$section->visible
+        ];
+    }
+    
+    /**
+     * Returns description of toggle_section_visibility return value
+     *
+     * @return external_single_structure
+     */
+    public static function toggle_section_visibility_returns() {
+        return new external_single_structure([
+            'id' => new external_value(PARAM_INT, 'Section ID'),
+            'visible' => new external_value(PARAM_BOOL, 'New visibility status')
         ]);
     }
 }

@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useMoodleAjax } from '../../hooks/useMoodleAjax';
 import styles from './CourseDetailPanel.module.css';
 
 /**
@@ -7,13 +6,14 @@ import styles from './CourseDetailPanel.module.css';
  * This component will be mounted when a course is selected
  */
 const CourseDetailPanel = ({ 
+  token,
   courseId,
   onClose,
   capabilities = {}
 }) => {
-  const { data: courseDetails, loading, error, callService } = useMoodleAjax();
-  const [course, setCourse] = useState(null);
-  const [sections, setSections] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [courseData, setCourseData] = useState(null);
 
   useEffect(() => {
     if (courseId) {
@@ -23,25 +23,33 @@ const CourseDetailPanel = ({
 
   const loadCourseDetails = async () => {
     try {
-      // Load course info and contents in parallel
-      const [courseInfo, courseContents] = await Promise.all([
-        callService('core_course_get_courses', { 
-          options: { ids: [courseId] } 
-        }),
-        callService('core_course_get_contents', { 
-          courseid: courseId 
-        })
-      ]);
-
-      if (courseInfo && courseInfo.length > 0) {
-        setCourse(courseInfo[0]);
+      setLoading(true);
+      setError(null);
+      
+      if (!token) {
+        throw new Error('No authentication token provided');
       }
       
-      if (courseContents) {
-        setSections(courseContents);
+      const baseUrl = window.M?.cfg?.wwwroot || '';
+      const response = await fetch(`${baseUrl}/local/courseapi/api/index.php/course/${courseId}/management_data`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
+
+      const data = await response.json();
+      setCourseData(data);
     } catch (err) {
       console.error('Failed to load course details:', err);
+      setError(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -54,14 +62,16 @@ const CourseDetailPanel = ({
     let total = 0;
     const moduleTypes = {};
     
-    sections.forEach(section => {
-      if (section.modules) {
-        section.modules.forEach(module => {
-          total++;
-          moduleTypes[module.modname] = (moduleTypes[module.modname] || 0) + 1;
-        });
-      }
-    });
+    if (courseData?.sections) {
+      courseData.sections.forEach(section => {
+        if (section.activities) {
+          section.activities.forEach(activity => {
+            total++;
+            moduleTypes[activity.modname] = (moduleTypes[activity.modname] || 0) + 1;
+          });
+        }
+      });
+    }
     
     return { total, types: moduleTypes };
   };
@@ -74,7 +84,7 @@ const CourseDetailPanel = ({
     );
   }
 
-  if (error || !course) {
+  if (error || !courseData) {
     return (
       <div className={styles.panel}>
         <div className={styles.error}>
@@ -103,51 +113,12 @@ const CourseDetailPanel = ({
           <h4>Basic Information</h4>
           <div className={styles.infoGrid}>
             <div className={styles.infoItem}>
-              <label>Full name:</label>
-              <span>{course.fullname}</span>
+              <label>Course name:</label>
+              <span>{courseData.course_name}</span>
             </div>
             <div className={styles.infoItem}>
-              <label>Short name:</label>
-              <span>{course.shortname}</span>
-            </div>
-            {course.idnumber && (
-              <div className={styles.infoItem}>
-                <label>ID number:</label>
-                <span>{course.idnumber}</span>
-              </div>
-            )}
-            <div className={styles.infoItem}>
-              <label>Category:</label>
-              <span>{course.categoryname || 'Unknown'}</span>
-            </div>
-            <div className={styles.infoItem}>
-              <label>Visible:</label>
-              <span className={course.visible ? styles.visible : styles.hidden}>
-                {course.visible ? 'Yes' : 'No'}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Course Dates */}
-        <div className={styles.section}>
-          <h4>Course Dates</h4>
-          <div className={styles.infoGrid}>
-            <div className={styles.infoItem}>
-              <label>Start date:</label>
-              <span>{formatDate(course.startdate)}</span>
-            </div>
-            <div className={styles.infoItem}>
-              <label>End date:</label>
-              <span>{formatDate(course.enddate)}</span>
-            </div>
-            <div className={styles.infoItem}>
-              <label>Created:</label>
-              <span>{formatDate(course.timecreated)}</span>
-            </div>
-            <div className={styles.infoItem}>
-              <label>Modified:</label>
-              <span>{formatDate(course.timemodified)}</span>
+              <label>Course ID:</label>
+              <span>{courseId}</span>
             </div>
           </div>
         </div>
@@ -158,15 +129,11 @@ const CourseDetailPanel = ({
           <div className={styles.infoGrid}>
             <div className={styles.infoItem}>
               <label>Sections:</label>
-              <span>{sections.length}</span>
+              <span>{courseData.sections?.length || 0}</span>
             </div>
             <div className={styles.infoItem}>
               <label>Activities:</label>
               <span>{moduleStats.total}</span>
-            </div>
-            <div className={styles.infoItem}>
-              <label>Format:</label>
-              <span>{course.format || 'topics'}</span>
             </div>
           </div>
           
@@ -184,26 +151,30 @@ const CourseDetailPanel = ({
           )}
         </div>
 
-        {/* Course Settings */}
+        {/* Sections and Activities */}
         <div className={styles.section}>
-          <h4>Settings</h4>
-          <div className={styles.infoGrid}>
-            <div className={styles.infoItem}>
-              <label>Group mode:</label>
-              <span>
-                {course.groupmode === 0 ? 'No groups' :
-                 course.groupmode === 1 ? 'Separate groups' : 'Visible groups'}
-              </span>
+          <h4>Sections</h4>
+          {courseData.sections?.map((section, index) => (
+            <div key={section.id} className={styles.sectionItem}>
+              <h5>{section.name || `Section ${index + 1}`}</h5>
+              {section.summary && (
+                <div className={styles.sectionSummary} dangerouslySetInnerHTML={{ __html: section.summary }} />
+              )}
+              {section.activities && section.activities.length > 0 && (
+                <div className={styles.activities}>
+                  {section.activities.map(activity => (
+                    <div key={activity.id} className={styles.activity}>
+                      <img src={activity.modicon} alt={activity.modname} className={styles.activityIcon} />
+                      <span className={styles.activityName}>{activity.name}</span>
+                      <span className={`${styles.visibility} ${activity.visible ? '' : styles.hidden}`}>
+                        {activity.visible ? '' : '(hidden)'}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
-            <div className={styles.infoItem}>
-              <label>Completion:</label>
-              <span>{course.enablecompletion ? 'Enabled' : 'Disabled'}</span>
-            </div>
-            <div className={styles.infoItem}>
-              <label>Show grades:</label>
-              <span>{course.showgrades ? 'Yes' : 'No'}</span>
-            </div>
-          </div>
+          ))}
         </div>
 
         {/* Quick Actions */}

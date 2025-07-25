@@ -1,77 +1,59 @@
 import React, { useState, useEffect } from 'react';
-import { useCategoryStore } from '../../stores/categoryStore';
-import { useCourseStore } from '../../stores/courseStore';
-import { useUIStore } from '../../stores/uiStore';
-import CategoryPanel from './CategoryPanel/CategoryPanel';
-import CourseListPanel from './CourseListPanel/CourseListPanel';
-import CourseDetailPanel from './CourseDetailPanel/CourseDetailPanel';
-import SearchPanel from './SearchPanel/SearchPanel';
+import CategoryManagementPanel from './CategoryManagementPanel';
+import CourseManagementPanel from './CourseManagementPanel';
+import CourseDetailPanel from './CourseDetailPanel';
 import styles from './CourseManagementApp.module.css';
 
 const CourseManagementApp = ({
-  userId,
+  token,
   initialCategoryId = 0,
   initialCourseId = null,
   viewMode: initialViewMode = 'default',
-  searchParams = null,
+  page = 0,
+  perPage = 20,
+  search = '',
   capabilities = {}
 }) => {
-  const { selectedCategory, setSelectedCategory } = useCategoryStore();
-  const { selectedCourse, setSelectedCourse } = useCourseStore();
-  const { viewMode, setViewMode, searchActive, setSearchActive } = useUIStore();
-  
-  const [searchResults, setSearchResults] = useState(null);
+  const [selectedCategoryId, setSelectedCategoryId] = useState(initialCategoryId);
+  const [selectedCourseId, setSelectedCourseId] = useState(initialCourseId);
+  const [currentViewMode, setCurrentViewMode] = useState(initialViewMode);
 
+  // Sync URL params
   useEffect(() => {
-    // Initialize with provided values
-    setViewMode(initialViewMode);
-    if (initialCategoryId) {
-      setSelectedCategory(initialCategoryId);
+    if (window.history.replaceState) {
+      const url = new URL(window.location);
+      url.searchParams.set('categoryid', selectedCategoryId);
+      if (selectedCourseId) {
+        url.searchParams.set('courseid', selectedCourseId);
+      } else {
+        url.searchParams.delete('courseid');
+      }
+      window.history.replaceState({}, '', url);
     }
-    if (initialCourseId) {
-      setSelectedCourse(initialCourseId);
-    }
-    if (searchParams) {
-      setSearchActive(true);
-      // TODO: Trigger initial search
-    }
-  }, []);
+  }, [selectedCategoryId, selectedCourseId]);
 
-  const handleCategorySelect = (categoryId) => {
-    setSelectedCategory(categoryId);
-    setSelectedCourse(null);
-    setSearchActive(false);
-    setSearchResults(null);
+  const handleCategorySelect = (category) => {
+    setSelectedCategoryId(category.id);
+    setSelectedCourseId(null); // Clear course selection when category changes
   };
 
-  const handleCourseSelect = (courseId) => {
-    setSelectedCourse(courseId);
-  };
-
-  const handleSearch = (params) => {
-    setSearchActive(true);
-    // TODO: Implement search
-    console.log('Search params:', params);
-  };
-
-  const handleClearSearch = () => {
-    setSearchActive(false);
-    setSearchResults(null);
+  const handleCourseSelect = (course) => {
+    setSelectedCourseId(course.id);
   };
 
   // Determine layout based on view mode
   const getLayoutClass = () => {
-    if (viewMode === 'categories') return styles.categoriesOnly;
-    if (viewMode === 'courses') return styles.coursesOnly;
-    if (selectedCourse && (viewMode === 'default' || viewMode === 'combined')) {
+    if (currentViewMode === 'categories') return styles.categoriesOnly;
+    if (currentViewMode === 'courses') return styles.coursesOnly;
+    if (selectedCourseId && (currentViewMode === 'default' || currentViewMode === 'combined')) {
       return styles.threeColumn;
     }
     return styles.twoColumn;
   };
 
-  const showCategories = viewMode === 'default' || viewMode === 'combined' || viewMode === 'categories';
-  const showCourses = viewMode === 'default' || viewMode === 'combined' || viewMode === 'courses';
-  const showDetails = selectedCourse && (viewMode === 'default' || viewMode === 'courses');
+  const showCategories = currentViewMode === 'default' || currentViewMode === 'combined' || currentViewMode === 'categories';
+  const showCourses = currentViewMode === 'default' || currentViewMode === 'combined' || currentViewMode === 'courses';
+  const showDetails = selectedCourseId && (currentViewMode === 'default' || currentViewMode === 'courses');
 
   return (
     <div className={`${styles.container} ${getLayoutClass()}`}>
@@ -82,8 +64,8 @@ const CourseManagementApp = ({
           <label htmlFor="viewmode">View:</label>
           <select 
             id="viewmode" 
-            value={viewMode} 
-            onChange={(e) => setViewMode(e.target.value)}
+            value={currentViewMode} 
+            onChange={(e) => setCurrentViewMode(e.target.value)}
           >
             <option value="default">Default</option>
             <option value="combined">Combined</option>
@@ -96,8 +78,9 @@ const CourseManagementApp = ({
       <div className={styles.panels}>
         {showCategories && (
           <div className={styles.categoryPanel}>
-            <CategoryPanel
-              selectedCategoryId={selectedCategory?.id}
+            <CategoryManagementPanel
+              token={token}
+              selectedCategoryId={selectedCategoryId}
               onCategorySelect={handleCategorySelect}
               capabilities={capabilities}
             />
@@ -106,12 +89,14 @@ const CourseManagementApp = ({
         
         {showCourses && (
           <div className={styles.coursePanel}>
-            <CourseListPanel
-              categoryId={selectedCategory?.id || initialCategoryId}
-              selectedCourseId={selectedCourse?.id}
+            <CourseManagementPanel
+              token={token}
+              categoryId={selectedCategoryId}
+              selectedCourseId={selectedCourseId}
               onCourseSelect={handleCourseSelect}
-              viewMode={viewMode}
-              searchResults={searchResults}
+              viewMode={currentViewMode}
+              page={page}
+              perPage={perPage}
               capabilities={capabilities}
             />
           </div>
@@ -120,20 +105,13 @@ const CourseManagementApp = ({
         {showDetails && (
           <div className={styles.detailPanel}>
             <CourseDetailPanel
-              courseId={selectedCourse?.id}
-              onClose={() => setSelectedCourse(null)}
+              token={token}
+              courseId={selectedCourseId}
+              onClose={() => setSelectedCourseId(null)}
               capabilities={capabilities}
             />
           </div>
         )}
-      </div>
-
-      <div className={styles.searchSection}>
-        <SearchPanel
-          onSearch={handleSearch}
-          onClear={handleClearSearch}
-          isActive={searchActive}
-        />
       </div>
     </div>
   );

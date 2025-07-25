@@ -21,10 +21,35 @@ const CourseManagementPanel = ({
   const [selectedCourse, setSelectedCourse] = useState(selectedCourseId);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [categoryName, setCategoryName] = useState('Loading...');
 
   useEffect(() => {
     loadCourses();
+    loadCategoryName();
   }, [categoryId, currentPage]);
+
+  const loadCategoryName = async () => {
+    if (!categoryId || !token) return;
+    
+    try {
+      const baseUrl = window.M?.cfg?.wwwroot || '';
+      const response = await fetch(`${baseUrl}/local/courseapi/api/index.php/category/${categoryId}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        }
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        setCategoryName(result.name || 'Unknown Category');
+      }
+    } catch (err) {
+      console.error('Failed to load category name:', err);
+      setCategoryName('Category ' + categoryId);
+    }
+  };
 
   useEffect(() => {
     if (selectedCourseId !== undefined) {
@@ -44,8 +69,15 @@ const CourseManagementPanel = ({
       
       // Get the base URL from Moodle's configuration
       const baseUrl = window.M?.cfg?.wwwroot || '';
-      const courseId = 2; // TODO: Get this dynamically
-      const response = await fetch(`${baseUrl}/local/courseapi/api/index.php/course/${courseId}/management_data`, {
+      
+      // Build query parameters
+      const params = new URLSearchParams({
+        category: categoryId,
+        page: currentPage,
+        perpage: perPage
+      });
+      
+      const response = await fetch(`${baseUrl}/local/courseapi/api/index.php/course/list?${params}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -60,31 +92,10 @@ const CourseManagementPanel = ({
       }
 
       const result = await response.json();
-      console.log('Course management data loaded:', result);
+      console.log('Courses loaded:', result);
       
-      // Transform the data to match our component's expected format
-      const allCourses = [];
-      if (result.sections) {
-        // For now, just display section info as "courses" to test
-        result.sections.forEach(section => {
-          if (section.activities) {
-            section.activities.forEach(activity => {
-              allCourses.push({
-                id: activity.id,
-                fullname: activity.name,
-                shortname: activity.modname,
-                visible: activity.visible ? 1 : 0,
-                summary: `Activity in ${section.name}`,
-                idnumber: '',
-                categoryid: categoryId
-              });
-            });
-          }
-        });
-      }
-      
-      setCourses(allCourses);
-      setTotalCount(allCourses.length);
+      setCourses(result.courses || []);
+      setTotalCount(result.total || 0);
       
     } catch (err) {
       console.error('Failed to load courses:', err);
@@ -101,11 +112,46 @@ const CourseManagementPanel = ({
     }
   };
 
-  const handleVisibilityToggle = async (courseId, visible) => {
-    // TODO: Implement visibility toggle using custom AJAX endpoint
-    console.log('Visibility toggle not yet implemented', { courseId, visible });
-    // For now, just reload to show the functionality works
-    await loadCourses();
+  const handleVisibilityToggle = async (courseId, currentlyHidden) => {
+    try {
+      if (!token) {
+        throw new Error('No authentication token provided');
+      }
+      
+      const baseUrl = window.M?.cfg?.wwwroot || '';
+      const response = await fetch(`${baseUrl}/local/courseapi/api/index.php/course/${courseId}/visibility`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          visible: currentlyHidden ? 1 : 0
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to toggle visibility: ${response.status}`);
+      }
+
+      // Reload courses to show updated state
+      await loadCourses();
+    } catch (err) {
+      console.error('Failed to toggle course visibility:', err);
+      setError('Error toggling visibility: ' + err.message);
+    }
+  };
+
+  const handleCreateCourse = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log('Create course clicked for category:', categoryId);
+    
+    // Redirect to Moodle's course creation page with the current category pre-selected
+    const baseUrl = window.M?.cfg?.wwwroot || '';
+    const url = `${baseUrl}/course/edit.php?category=${categoryId}`;
+    console.log('Redirecting to:', url);
+    window.location.href = url;
   };
 
   const CourseCard = ({ course }) => {
@@ -119,18 +165,26 @@ const CourseManagementPanel = ({
       >
         <div className={styles.courseInfo}>
           <h4 className={styles.courseName}>
-            {course.displayname || course.fullname}
+            {course.fullname}
           </h4>
           <div className={styles.courseDetails}>
             <span className={styles.shortname}>{course.shortname}</span>
             {course.idnumber && (
               <span className={styles.idnumber}>ID: {course.idnumber}</span>
             )}
+            {course.enrolledcount !== undefined && (
+              <span className={styles.enrolled}>{course.enrolledcount} enrolled</span>
+            )}
           </div>
           {course.summary && (
-            <p className={styles.summary}>
-              {course.summary.replace(/<[^>]*>/g, '').substring(0, 100)}...
-            </p>
+            <p className={styles.summary} dangerouslySetInnerHTML={{
+              __html: course.summary.substring(0, 150) + (course.summary.length > 150 ? '...' : '')
+            }} />
+          )}
+          {course.teachers && course.teachers.length > 0 && (
+            <div className={styles.teachers}>
+              Teachers: {course.teachers.join(', ')}
+            </div>
           )}
         </div>
         
@@ -163,10 +217,12 @@ const CourseManagementPanel = ({
   return (
     <div className={styles.panel}>
       <div className={styles.header}>
-        <h3>Courses in this category</h3>
+        <h3>Courses in {categoryName}</h3>
         <div className={styles.headerActions}>
           {capabilities['moodle/course:create'] && (
-            <button className={styles.createBtn}>Create course</button>
+            <button className={styles.createBtn} onClick={handleCreateCourse}>
+              Create course
+            </button>
           )}
           <span className={styles.courseCount}>
             {totalCount} course{totalCount !== 1 ? 's' : ''}
