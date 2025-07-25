@@ -107,12 +107,6 @@ try {
     debugging('Error loading grades: ' . $e->getMessage(), DEBUG_DEVELOPER);
 }
 
-// Include JavaScript module with pre-loaded data
-$PAGE->requires->js_call_amd('report_codeprogress/dashboard', 'init', array(
-    $courseid,
-    $datajson
-));
-
 // Include custom CSS
 $PAGE->requires->css('/report/codeprogress/styles.css');
 
@@ -136,21 +130,56 @@ echo html_writer::div(
     'mb-3'
 );
 
-// Render template with placeholder
-$templatecontext = array(
-    'courseid' => $courseid
-);
-echo $OUTPUT->render_from_template('report_codeprogress/dashboard', $templatecontext);
+// Process data server-side
+$students = array();
+$activities = array();
 
-// Add a noscript fallback
-echo '<noscript>';
-echo '<div class="alert alert-warning">';
-echo '<h4>JavaScript Required</h4>';
-echo '<p>This report requires JavaScript to display charts and interactive features.</p>';
-if (!empty($data)) {
-    echo '<p>Basic data: ' . count($data) . ' grade records found.</p>';
+foreach ($data as $record) {
+    if (!isset($students[$record->userid])) {
+        $students[$record->userid] = (object)array(
+            'id' => $record->userid,
+            'name' => $record->fullname,
+            'grades' => array()
+        );
+    }
+    
+    if (!isset($activities[$record->activityid])) {
+        $activities[$record->activityid] = (object)array(
+            'id' => $record->activityid,
+            'name' => $record->activityname
+        );
+    }
+    
+    $students[$record->userid]->grades[$record->activityid] = (object)array(
+        'grade' => $record->grade,
+        'status' => $record->submissionstatus
+    );
 }
-echo '</div>';
-echo '</noscript>';
+
+// Calculate statistics
+$totalStudents = count($students);
+$totalActivities = count($activities);
+$allScores = array();
+$submittedCount = 0;
+$totalPossible = $totalStudents * $totalActivities;
+
+foreach ($students as $student) {
+    foreach ($activities as $activity) {
+        if (isset($student->grades[$activity->id])) {
+            if ($student->grades[$activity->id]->status === 'submitted') {
+                $submittedCount++;
+                if ($student->grades[$activity->id]->grade !== null) {
+                    $allScores[] = floatval($student->grades[$activity->id]->grade);
+                }
+            }
+        }
+    }
+}
+
+$overallAverage = count($allScores) > 0 ? round(array_sum($allScores) / count($allScores), 1) : 0;
+$completionRate = $totalPossible > 0 ? round(($submittedCount / $totalPossible) * 100, 1) : 0;
+
+// Render server-side with inline JavaScript
+include(__DIR__ . '/index_inline.php');
 
 echo $OUTPUT->footer();

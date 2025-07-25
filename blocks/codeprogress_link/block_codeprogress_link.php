@@ -57,12 +57,25 @@ class block_codeprogress_link extends block_base {
             // Use standalone version - no Moodle theme or JavaScript
             $url = new moodle_url('/report/codeprogress/standalone.php', array('course' => $COURSE->id));
             
+            // Create URL for integrated version
+            $integratedurl = new moodle_url('/report/codeprogress/index.php', array('course' => $COURSE->id));
+            
             $this->content->text = '<div class="codeprogress-block">';
             $this->content->text .= '<p>' . get_string('blockdescription', 'block_codeprogress_link') . '</p>';
-            $this->content->text .= '<div class="text-center">';
+            
+            // Standalone version button
+            $this->content->text .= '<div class="text-center mb-2">';
             $this->content->text .= '<a href="' . $url . '" class="btn btn-primary btn-block">';
             $this->content->text .= '<i class="fa fa-bar-chart"></i> ';
-            $this->content->text .= get_string('viewreport', 'block_codeprogress_link');
+            $this->content->text .= get_string('viewreport', 'block_codeprogress_link') . ' (Standalone)';
+            $this->content->text .= '</a>';
+            $this->content->text .= '</div>';
+            
+            // Integrated version button
+            $this->content->text .= '<div class="text-center mb-2">';
+            $this->content->text .= '<a href="' . $integratedurl . '" class="btn btn-info btn-block">';
+            $this->content->text .= '<i class="fa fa-bar-chart"></i> ';
+            $this->content->text .= get_string('viewreport', 'block_codeprogress_link') . ' (Integrated)';
             $this->content->text .= '</a>';
             $this->content->text .= '</div>';
             
