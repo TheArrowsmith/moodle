@@ -330,21 +330,4 @@ if ($editing && has_capability('moodle/course:create', context_system::instance(
     echo $courserenderer->add_new_course_button();
 }
 
-// React component test integration
-require_once($CFG->libdir . '/react_helper.php');
-
-// Prepare props with real Moodle data
-$props = [
-    'userName' => fullname($USER),
-    'courseName' => get_string('sitehome')
-];
-
-// Render the React component
-echo '<div class="container-fluid mt-3">';
-echo '<h2>React Integration Test</h2>';
-render_react_component('HelloMoodle', 'react-hello-moodle', $props, [
-    'class' => 'react-test-component'
-]);
-echo '</div>';
-
 echo $OUTPUT->footer();
