@@ -2190,6 +2190,9 @@ class grade_category extends grade_object {
     private static function _get_children_recursion($category) {
 
         $children_array = array();
+        if (!isset($category->children) || !is_array($category->children)) {
+            return $children_array;
+        }
         foreach ($category->children as $sortorder=>$child) {
 
             if (is_array($child) && array_key_exists('itemtype', $child)) {
