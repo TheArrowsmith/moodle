@@ -37,6 +37,12 @@ function setup_github_oauth2_issuer() {
     // Check if GitHub issuer already exists
     if ($DB->record_exists('oauth2_issuer', ['name' => 'GitHub'])) {
         echo "GitHub OAuth2 issuer already exists.\n";
+        echo "\nSetup instructions:\n";
+        echo "1. Create a GitHub OAuth App at https://github.com/settings/developers\n";
+        echo "2. Set the Authorization callback URL to: " . $CFG->wwwroot . "/auth/oauth2/callback.php\n";
+        echo "3. Go to Site administration > Server > OAuth 2 services\n";
+        echo "4. Edit the GitHub issuer and enter your Client ID and Client Secret\n";
+        echo "5. Enable the GitHub issuer\n";
         return;
     }
     

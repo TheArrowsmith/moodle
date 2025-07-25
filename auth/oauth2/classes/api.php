@@ -312,8 +312,8 @@ class api {
         $user->secret = random_string(15);
 
         $user->password = '';
-        // This user is not confirmed.
-        $user->confirmed = 0;
+        // Auto-confirm OAuth2 users since they've already verified via OAuth provider.
+        $user->confirmed = 1;
 
         $user->id = user_create_user($user, false, true);
 

@@ -26,8 +26,12 @@ require_once('../../config.php');
 
 $issuerid = required_param('id', PARAM_INT);
 $wantsurl = new moodle_url(optional_param('wantsurl', '', PARAM_URL));
+$oauth2code = optional_param('oauth2code', '', PARAM_RAW);
 
-require_sesskey();
+// Only require sesskey on initial request, not on OAuth callback
+if (empty($oauth2code)) {
+    require_sesskey();
+}
 
 if (!\auth_oauth2\api::is_enabled()) {
     throw new \moodle_exception('notenabled', 'auth_oauth2');

@@ -908,3 +908,37 @@ Remember: **Claude Flow coordinates, Claude Code creates!** Start with `mcp__cla
 ## Task Master AI Instructions
 **Import Task Master's development workflow commands and guidelines, treat as if import is in the main CLAUDE.md file.**
 @./.taskmaster/CLAUDE.md
+
+## Moodle Database Configuration (MAMP)
+
+### MySQL Connection Details
+- **Host**: localhost
+- **Port**: 8889 (MAMP's MySQL port)
+- **Username**: root
+- **Password**: root
+- **Database**: moodle
+- **Table Prefix**: mdl_
+
+### Connecting to MySQL via CLI
+```bash
+# Use the MAMP MySQL binary with correct port
+mysql -h localhost -P 8889 -u root -proot moodle
+
+# Alternative using socket (if available)
+mysql --socket=/Applications/MAMP/tmp/mysql/mysql.sock -u root -proot moodle
+```
+
+### PHP Database Configuration
+Located in `/config.php`:
+```php
+$CFG->dbtype    = 'mysqli';
+$CFG->dbhost    = 'localhost';
+$CFG->dbname    = 'moodle';
+$CFG->dbuser    = 'root';
+$CFG->dbpass    = 'root';
+$CFG->dboptions = array(
+    'dbpersist' => 0,
+    'dbport' => '8889',
+    'dbsocket' => '',
+);
+```

@@ -332,7 +332,12 @@ class api {
      * @return \core\oauth2\client
      */
     public static function get_user_oauth_client(issuer $issuer, moodle_url $currenturl, $additionalscopes = '') {
-        $client = new \core\oauth2\client($issuer, $currenturl, $additionalscopes);
+        // Use custom client for GitHub
+        if (strtolower($issuer->get('name')) === 'github') {
+            $client = new \core\oauth2\client\github($issuer, $currenturl, $additionalscopes);
+        } else {
+            $client = new \core\oauth2\client($issuer, $currenturl, $additionalscopes);
+        }
 
         return $client;
     }

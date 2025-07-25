@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * GitHub OAuth2 client implementation
+ * Github OAuth2 client implementation.
  *
  * @package    core
  * @copyright  2024 Your Name
@@ -24,75 +24,146 @@
 
 namespace core\oauth2\client;
 
+use core\oauth2\client;
+use core\oauth2\user_field_mapping;
+use curl;
+use stdClass;
+
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * GitHub OAuth2 client implementation
+ * Github OAuth2 client implementation.
+ *
+ * @copyright  2024 Your Name
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class github extends \core\oauth2\client {
-    
+class github extends client {
+
     /**
-     * GitHub requires Accept header for JSON responses
-     * 
-     * @param string $url
-     * @param array $options
-     * @param mixed $acceptheader
-     * @return string
+     * Fetch the user info from the userinfo endpoint.
+     *
+     * @return array|false
      */
-    protected function request($url, $options = array(), $acceptheader = 'application/json') {
-        // GitHub requires specific Accept header
-        if (!isset($options['CURLOPT_HTTPHEADER'])) {
-            $options['CURLOPT_HTTPHEADER'] = array();
+    public function get_userinfo() {
+        $url = $this->get_issuer()->get_endpoint_url('userinfo');
+        if (empty($url)) {
+            return false;
         }
-        $options['CURLOPT_HTTPHEADER'][] = 'Accept: application/json';
+
+        // GitHub requires specific headers
+        $response = $this->get($url, [], [
+            'CURLOPT_HTTPHEADER' => [
+                'Authorization: Bearer ' . $this->get_accesstoken()->token,
+                'Accept: application/json',
+                'User-Agent: Moodle OAuth2'
+            ]
+        ]);
+
+        if (!$response) {
+            return false;
+        }
+
+        $userinfo = json_decode($response);
+        if (!$userinfo) {
+            return false;
+        }
+
+        // GitHub might not return email in the main user endpoint
+        // We need to fetch it separately if it's not there
+        if (empty($userinfo->email)) {
+            $emailresponse = $this->get('https://api.github.com/user/emails', [], [
+                'CURLOPT_HTTPHEADER' => [
+                    'Authorization: Bearer ' . $this->get_accesstoken()->token,
+                    'Accept: application/json',
+                    'User-Agent: Moodle OAuth2'
+                ]
+            ]);
+            
+            if ($emailresponse) {
+                $emails = json_decode($emailresponse);
+                if (is_array($emails)) {
+                    // Find primary email
+                    foreach ($emails as $email) {
+                        if (!empty($email->primary) && !empty($email->verified)) {
+                            $userinfo->email = $email->email;
+                            break;
+                        }
+                    }
+                    // If no primary, use first verified email
+                    if (empty($userinfo->email)) {
+                        foreach ($emails as $email) {
+                            if (!empty($email->verified)) {
+                                $userinfo->email = $email->email;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Use the parent's mapping logic to properly map fields
+        $map = $this->get_userinfo_mapping();
         
-        return parent::request($url, $options, $acceptheader);
+        $user = new stdClass();
+        foreach ($map as $openidproperty => $moodleproperty) {
+            // We support nested objects via a-b-c syntax.
+            $getfunc = function($obj, $prop) use (&$getfunc) {
+                $proplist = explode('-', $prop, 2);
+                if (empty($proplist[0]) || empty($obj->{$proplist[0]})) {
+                    return false;
+                }
+                $obj = $obj->{$proplist[0]};
+
+                if (count($proplist) > 1) {
+                    return $getfunc($obj, $proplist[1]);
+                }
+                return $obj;
+            };
+            
+            $resolved = $getfunc($userinfo, $openidproperty);
+            if (!empty($resolved)) {
+                $user->$moodleproperty = $resolved;
+            }
+        }
+
+        // Handle the name field - GitHub returns full name, we need to split it
+        if (!empty($userinfo->name) && empty($user->lastname)) {
+            $names = explode(' ', $userinfo->name, 2);
+            if (!empty($names[0]) && empty($user->firstname)) {
+                $user->firstname = $names[0];
+            }
+            if (!empty($names[1]) && empty($user->lastname)) {
+                $user->lastname = $names[1];
+            }
+        }
+        
+        // Fallback if no firstname
+        if (empty($user->firstname)) {
+            if (!empty($user->username)) {
+                $user->firstname = $user->username;
+            } else if (!empty($userinfo->login)) {
+                $user->firstname = $userinfo->login;
+            }
+        }
+        
+        // Ensure we have lastname
+        if (empty($user->lastname)) {
+            $user->lastname = '';
+        }
+
+        return (array)$user;
     }
-    
+
     /**
-     * Map GitHub user info to Moodle user fields
-     * 
-     * @param \stdClass $userinfo
-     * @return array
+     * Override parent to handle GitHub's token endpoint response.
+     *
+     * @param string $code
+     * @return bool
      */
-    protected function map_userinfo_to_fields($userinfo) {
-        $fields = parent::map_userinfo_to_fields($userinfo);
-        
-        // GitHub returns 'login' as username
-        if (!empty($userinfo->login) && empty($fields['username'])) {
-            $fields['username'] = $userinfo->login;
-        }
-        
-        // Split full name into first/last if available
-        if (!empty($userinfo->name)) {
-            $parts = explode(' ', $userinfo->name, 2);
-            if (empty($fields['firstname'])) {
-                $fields['firstname'] = $parts[0];
-            }
-            if (empty($fields['lastname']) && isset($parts[1])) {
-                $fields['lastname'] = $parts[1];
-            }
-        }
-        
-        // Use login as firstname if name not provided
-        if (empty($fields['firstname']) && !empty($userinfo->login)) {
-            $fields['firstname'] = $userinfo->login;
-            $fields['lastname'] = 'User';
-        }
-        
-        // Map additional GitHub fields
-        if (!empty($userinfo->bio) && empty($fields['description'])) {
-            $fields['description'] = $userinfo->bio;
-        }
-        
-        if (!empty($userinfo->location) && empty($fields['city'])) {
-            $fields['city'] = $userinfo->location;
-        }
-        
-        if (!empty($userinfo->html_url) && empty($fields['url'])) {
-            $fields['url'] = $userinfo->html_url;
-        }
-        
-        return $fields;
+    public function upgrade_token($code) {
+        // GitHub requires Accept header for JSON response
+        $this->setHeader('Accept: application/json');
+        return parent::upgrade_token($code);
     }
 }
