@@ -21,7 +21,6 @@ The Live Code Sandbox brings interactive programming directly into Moodle course
 - **Real-Time Output**: See both standard output and error messages
 - **Persistent Code**: Student work is automatically saved and restored
 - **Starter Code**: Instructors can provide template code to get students started
-- **Unit Test Grading**: Extended version supports automatic grading against test suites
 
 ### Key Benefits:
 
@@ -163,14 +162,6 @@ Verify:
 - [ ] Resource limits work (timeout, memory)
 - [ ] Code persists when leaving and returning
 
-### Testing Unit Test Grading (Extended Feature)
-
-The Code Sandbox also supports automatic grading:
-
-1. When creating the activity, upload a Python unittest file
-2. Enable grading and set maximum grade
-3. Student code is tested against the unittest when submitted
-4. Results automatically sync to gradebook
 
 ### Common Issues
 

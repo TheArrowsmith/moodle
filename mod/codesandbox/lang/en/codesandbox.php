@@ -28,7 +28,6 @@ $string['modulename_help'] = 'The Code Sandbox activity allows students to write
 $string['codesandbox:addinstance'] = 'Add a new Code Sandbox';
 $string['codesandbox:view'] = 'View Code Sandbox';
 $string['codesandbox:submit'] = 'Submit code to Code Sandbox';
-$string['codesandbox:grade'] = 'Grade Code Sandbox submissions';
 $string['pluginadministration'] = 'Code Sandbox administration';
 $string['pluginname'] = 'Code Sandbox';
 
@@ -44,11 +43,6 @@ $string['language_ruby'] = 'Ruby';
 $string['language_elixir'] = 'Elixir';
 $string['startercode'] = 'Starter code';
 $string['startercode_help'] = 'Initial code that will be displayed in the editor when students first open the activity.';
-$string['gradingsettings'] = 'Grading settings';
-$string['enablegrading'] = 'Enable automatic grading';
-$string['testsuite'] = 'Test suite file';
-$string['testsuite_help'] = 'Upload a Python unittest file to automatically grade student submissions.';
-$string['maximumgrade'] = 'Maximum grade';
 
 // View page strings
 $string['codeeditor'] = 'Code Editor';

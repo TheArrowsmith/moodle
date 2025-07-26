@@ -40,8 +40,7 @@
          # Your code here
          pass
      ```
-7. Leave grading disabled for now
-8. Save and return to course
+7. Save and return to course
 
 ### Expected Results:
 - [ ] Code Sandbox appears in the activity chooser
