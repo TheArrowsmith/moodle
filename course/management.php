@@ -473,6 +473,15 @@ if (!$issearching) {
     echo $renderer->management_heading(new lang_string('searchresults'));
 }
 
+// Add link to improved UI
+$improvedui_url = new moodle_url('/course/management_react.php', array(
+    'categoryid' => $categoryid,
+    'courseid' => $courseid,
+    'view' => $viewmode
+));
+echo html_writer::tag('p', html_writer::link($improvedui_url, 'Use improved UI', 
+    array('class' => 'btn btn-primary')));
+
 if (count($notificationspass) > 0) {
     echo $renderer->notification(join('<br />', $notificationspass), 'notifysuccess');
 }
