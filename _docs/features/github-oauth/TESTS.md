@@ -1,6 +1,7 @@
 # GitHub OAuth2 Authentication - Acceptance Tests
 
 ## Prerequisites
+
 - Administrator access to Moodle
 - GitHub account for testing
 - Ability to create GitHub OAuth applications
@@ -15,6 +16,7 @@
 3. Check if GitHub appears in the list of issuers
 
 ### Expected Results:
+
 - [ ] OAuth 2 services page loads without errors
 - [ ] Page shows existing OAuth2 issuers (if any)
 - [ ] No PHP errors in error log
@@ -27,6 +29,7 @@
 3. Note the callback URL shown for GitHub configuration
 
 ### Expected Results:
+
 - [ ] Setup page loads successfully
 - [ ] Instructions are clear and complete
 - [ ] Callback URL is displayed as: `https://yourmoodle.com/auth/oauth2/callback.php`
@@ -39,14 +42,15 @@
 1. Go to https://github.com/settings/developers
 2. Click "New OAuth App"
 3. Fill in the form:
-   - Application name: "Moodle Test"
-   - Homepage URL: Your Moodle URL
-   - Authorization callback URL: Copy from setup page
+    - Application name: "Moodle Test"
+    - Homepage URL: Your Moodle URL
+    - Authorization callback URL: Copy from setup page
 4. Click "Register application"
 5. Copy the Client ID
 6. Generate and copy a Client Secret
 
 ### Expected Results:
+
 - [ ] GitHub accepts the application registration
 - [ ] Client ID is provided
 - [ ] Client Secret can be generated
@@ -65,6 +69,7 @@
 8. Save changes
 
 ### Expected Results:
+
 - [ ] GitHub issuer appears in the list
 - [ ] Can enter Client ID and Secret
 - [ ] Settings save without errors
@@ -76,11 +81,12 @@
 ### Steps:
 1. In the OAuth 2 services list, click "Configure endpoints" for GitHub
 2. Verify the following endpoints exist:
-   - authorization_endpoint: `https://github.com/login/oauth/authorize`
-   - token_endpoint: `https://github.com/login/oauth/access_token`
-   - userinfo_endpoint: `https://api.github.com/user`
+    - authorization_endpoint: `https://github.com/login/oauth/authorize`
+    - token_endpoint: `https://github.com/login/oauth/access_token`
+    - userinfo_endpoint: `https://api.github.com/user`
 
 ### Expected Results:
+
 - [ ] All three endpoints are listed
 - [ ] URLs match exactly as shown above
 - [ ] No duplicate endpoints
@@ -94,6 +100,7 @@
 3. Look for GitHub login option
 
 ### Expected Results:
+
 - [ ] "Login with GitHub" button appears
 - [ ] GitHub logo/icon is visible
 - [ ] Button is positioned appropriately
@@ -109,10 +116,11 @@
 5. Wait for redirect back to Moodle
 
 ### Expected Results:
+
 - [ ] Redirects to GitHub authorization page
 - [ ] Shows Moodle app requesting access to:
-   - Email addresses (read-only)
-   - Profile information
+    - Email addresses (read-only)
+    - Profile information
 - [ ] After authorization, redirects back to Moodle
 - [ ] Automatically logged into Moodle
 - [ ] New user account created
@@ -127,6 +135,7 @@
 4. Check the authentication method
 
 ### Expected Results:
+
 - [ ] User appears in user list
 - [ ] Username matches GitHub login
 - [ ] Email matches GitHub primary email
@@ -142,6 +151,7 @@
 3. If still authorized on GitHub, should auto-redirect
 
 ### Expected Results:
+
 - [ ] Faster login process
 - [ ] No re-authorization needed (unless revoked)
 - [ ] Logs into existing account
@@ -158,6 +168,7 @@
 6. Return to Moodle
 
 ### Expected Results:
+
 - [ ] Linked logins page shows available providers
 - [ ] Can link GitHub to existing account
 - [ ] After linking, shows as "Linked"
@@ -172,6 +183,7 @@
 3. Confirm the action
 
 ### Expected Results:
+
 - [ ] Unlink option available
 - [ ] Confirmation requested
 - [ ] Successfully unlinks
@@ -186,11 +198,12 @@
 3. Try to login with GitHub
 
 ### Expected Results:
+
 - [ ] System detects email match
 - [ ] Either:
-   - Prompts to link accounts, or
-   - Automatically links based on email, or
-   - Shows appropriate error message
+    - Prompts to link accounts, or
+    - Automatically links based on email, or
+    - Shows appropriate error message
 - [ ] No duplicate accounts created
 
 ## Test 13: Private Email Handling
@@ -200,6 +213,7 @@
 2. Try to create new account via GitHub login
 
 ### Expected Results:
+
 - [ ] Login process handles private email
 - [ ] Either uses GitHub-provided private email
 - [ ] Or prompts for email address
@@ -210,13 +224,14 @@
 ### Steps:
 1. Login via GitHub
 2. Check Moodle profile for:
-   - Name
-   - Profile picture
-   - Location (city)
-   - Description (bio)
-   - Website URL
+    - Name
+    - Profile picture
+    - Location (city)
+    - Description (bio)
+    - Website URL
 
 ### Expected Results:
+
 - [ ] GitHub data populates Moodle profile
 - [ ] Profile picture downloads from GitHub
 - [ ] Bio becomes description
@@ -232,6 +247,7 @@
 4. Try to login to Moodle with GitHub
 
 ### Expected Results:
+
 - [ ] GitHub shows access revoked
 - [ ] Moodle login redirects to GitHub
 - [ ] Must re-authorize the application
@@ -246,6 +262,7 @@
 3. Try to login with GitHub
 
 ### Expected Results:
+
 - [ ] Login fails gracefully
 - [ ] Error message displayed to user
 - [ ] Not stuck on blank page
@@ -261,6 +278,7 @@
 4. Logout from one browser
 
 ### Expected Results:
+
 - [ ] Multiple sessions supported
 - [ ] Each session independent
 - [ ] Logout affects only one session
@@ -275,6 +293,7 @@
 4. Monitor server resources
 
 ### Expected Results:
+
 - [ ] GitHub login within 2-5 seconds
 - [ ] No significant server load
 - [ ] Acceptable user experience
@@ -289,6 +308,7 @@
 4. Verify mobile experience
 
 ### Expected Results:
+
 - [ ] GitHub button visible on mobile
 - [ ] OAuth flow works on mobile
 - [ ] Proper redirects on small screens
@@ -303,6 +323,7 @@
 4. Check login page again
 
 ### Expected Results:
+
 - [ ] Disabled: GitHub button disappears
 - [ ] Disabled: Existing sessions remain active
 - [ ] Enabled: GitHub button reappears

@@ -6,7 +6,7 @@ This guide explains how to set up and run the Docker-based code execution servic
 
 - Docker installed on your system
 - Docker Compose installed
-- Port 8000 available on your machine
+- Port 8080 available on your machine (maps to container port 8000)
 
 ## Directory Structure
 
@@ -57,7 +57,7 @@ docker ps | grep codesandbox
 
 You should see output like:
 ```
-8fdd7301f68e   codesandbox-api-codesandbox-api   "uvicorn main:app --…"   Up 7 seconds   0.0.0.0:8000->8000/tcp
+8fdd7301f68e   codesandbox-api-codesandbox-api   "uvicorn main:app --…"   Up 7 seconds   0.0.0.0:8080->8000/tcp
 ```
 
 ### 5. Test the Service
@@ -65,7 +65,7 @@ You should see output like:
 Test the health endpoint:
 
 ```bash
-curl http://localhost:8000/
+curl http://localhost:8080/
 ```
 
 Expected response:
@@ -121,7 +121,7 @@ Once running, the service provides:
 ### Example: Testing Code Execution
 
 ```bash
-curl -X POST http://localhost:8000/execute \
+curl -X POST http://localhost:8080/execute \
   -H "Content-Type: application/json" \
   -d '{"code": "print(\"Hello from Docker!\")"}'
 ```
@@ -130,17 +130,17 @@ curl -X POST http://localhost:8000/execute \
 
 ### Port Already in Use
 
-If port 8000 is already taken:
+If port 8080 is already taken:
 
 1. Find what's using it:
    ```bash
-   lsof -i :8000
+   lsof -i :8080
    ```
 
 2. Either stop that service or change the port in `docker-compose.yml`:
    ```yaml
    ports:
-     - "8001:8000"  # Use port 8001 instead
+     - "8081:8000"  # Use port 8081 instead
    ```
 
 ### Permission Denied Errors
@@ -189,8 +189,8 @@ The service runs code in isolated Docker containers with:
 
 Once the service is running, configure Moodle:
 
-1. Ensure Moodle can reach `http://localhost:8000`
-2. If Moodle runs in Docker, use `http://host.docker.internal:8000` (Mac/Windows) or the host IP
+1. Ensure Moodle can reach `http://localhost:8080`
+2. If Moodle runs in Docker, use `http://host.docker.internal:8080` (Mac/Windows) or the host IP
 3. For production, configure proper domain and SSL
 
 ## Production Considerations

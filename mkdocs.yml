@@ -13,9 +13,10 @@ nav:
     - schema.sql: schema.md
   - Dir structure: directory_structure.md
   - Features:
+    - 1. GitHub OAuth: features/github-oauth/README.md
+    - 2. API: features/api/README.md
+    - 3. Code sandbox: features/code-sandbox/README.md
+    - Syntax highlighting: markdown-syntax-highlighting.md
     - Automated grading: automated-unit-test-grading.md
     - Coding progress test: coding-progress-test.md
     - Instructor dashboard: instructor-progress-dashboard.md
-    - Syntax highlighting: markdown-syntax-highlighting.md
-    - Code sandbox: live-code-sandbox.md
-    - API: api.md

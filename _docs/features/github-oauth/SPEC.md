@@ -81,6 +81,7 @@ This feature adds GitHub OAuth 2.0 authentication to Moodle 3.5, allowing users 
 ## Implementation Approach
 
 Since Moodle 3.5 already has a robust OAuth2 system, we'll configure GitHub as a new OAuth2 issuer rather than creating a new auth plugin. This approach:
+
 - Leverages existing, tested OAuth2 code
 - Provides admin UI for configuration
 - Supports field mapping
