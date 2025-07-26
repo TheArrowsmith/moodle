@@ -82,7 +82,7 @@ class page_requirements_manager {
     /**
      * @var array Inline scripts using RequireJS module loading.
      */
-    protected $amdjscode = array('');
+    protected $amdjscode = array();
 
     /**
      * @var array List of needed function calls
@@ -1122,18 +1122,28 @@ EOF;
     public function js_init_code($jscode, $ondomready = false, array $module = null) {
         $jscode = trim($jscode, " ;\n"). ';';
 
-        $uniqid = html_writer::random_id();
-        $startjs = " M.util.js_pending('" . $uniqid . "');";
-        $endjs = " M.util.js_complete('" . $uniqid . "');";
+        // Check if the code already contains js_complete - if so, don't wrap it
+        $alreadyWrapped = (strpos($jscode, 'M.util.js_complete') !== false);
+        
+        if (!$alreadyWrapped) {
+            $uniqid = html_writer::random_id();
+            $startjs = " M.util.js_pending('" . $uniqid . "');";
+            $endjs = " M.util.js_complete('" . $uniqid . "');";
 
-        if ($module) {
-            $this->js_module($module);
-            $modulename = $module['name'];
-            $jscode = "$startjs Y.use('$modulename', function(Y) { $jscode $endjs });";
-        }
-
-        if ($ondomready) {
-            $jscode = "$startjs Y.on('domready', function() { $jscode $endjs });";
+            if ($module) {
+                $this->js_module($module);
+                $modulename = $module['name'];
+                if ($ondomready) {
+                    $jscode = "$startjs Y.use('$modulename', function(Y) { Y.on('domready', function() { $jscode }); $endjs });";
+                } else {
+                    $jscode = "$startjs Y.use('$modulename', function(Y) { $jscode $endjs });";
+                }
+            } else if ($ondomready) {
+                $jscode = "$startjs Y.on('domready', function() { $jscode $endjs });";
+            }
+        } else if ($ondomready) {
+            // Code already has js_complete, just wrap in domready without adding tracking
+            $jscode = "Y.on('domready', function() { $jscode });";
         }
 
         $this->jsinitcode[] = $jscode;
@@ -1353,9 +1363,13 @@ EOF;
         // First include must be to a module with no dependencies, this prevents multiple requests.
         $prefix = 'M.util.js_pending("core/first");';
         $prefix .= "require(['core/first'], function() {\n";
-        $suffix = 'M.util.js_complete("core/first");';
+        $suffix = "\nM.util.js_complete('core/first');";
         $suffix .= "\n});";
-        $output .= html_writer::script($prefix . implode(";\n", $this->amdjscode) . $suffix);
+        // Filter out empty strings from amdjscode array to prevent syntax errors
+        $amdjscode_filtered = array_filter($this->amdjscode, 'strlen');
+        if (!empty($amdjscode_filtered)) {
+            $output .= html_writer::script($prefix . implode("\n", $amdjscode_filtered) . $suffix);
+        }
         return $output;
     }
 

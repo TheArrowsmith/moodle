@@ -52,6 +52,9 @@ $CFG->customfiletypes = array(
     )
 );
 
+// Force cache refresh for JavaScript changes
+$CFG->jsrev = time(); // Use current timestamp to force refresh
+
 require_once(__DIR__ . '/lib/setup.php');
 
 // There is no php closing tag in this file,

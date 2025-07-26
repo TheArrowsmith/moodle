@@ -277,7 +277,7 @@ function theme_boost_before_footer() {
                     }
                 }
             });
-        ', true);
+        ', false);
     }
     
     return '';

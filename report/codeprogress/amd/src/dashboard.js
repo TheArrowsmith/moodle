@@ -168,7 +168,7 @@ define(['jquery', 'core/ajax', 'core/notification'], function($, Ajax, Notificat
                     }
                 });
                 
-                var avg = scores.length ? (scores.reduce((a, b) => a + b) / scores.length).toFixed(1) : '-';
+                var avg = scores.length ? (scores.reduce(function(a, b) { return a + b; }) / scores.length).toFixed(1) : '-';
                 var $cell = $('<td class="text-center">');
                 if (avg !== '-') {
                     $cell.addClass(this.getGradeClass(parseFloat(avg)));
@@ -207,7 +207,7 @@ define(['jquery', 'core/ajax', 'core/notification'], function($, Ajax, Notificat
                     }
                 });
                 
-                var avg = scores.length ? scores.reduce((a, b) => a + b) / scores.length : 0;
+                var avg = scores.length ? scores.reduce(function(a, b) { return a + b; }) / scores.length : 0;
                 averages.push(avg.toFixed(1));
             }, this);
             
@@ -294,7 +294,7 @@ define(['jquery', 'core/ajax', 'core/notification'], function($, Ajax, Notificat
                         tooltip: {
                             callbacks: {
                                 label: function(context) {
-                                    var total = context.dataset.data.reduce((a, b) => a + b);
+                                    var total = context.dataset.data.reduce(function(a, b) { return a + b; });
                                     var percentage = ((context.parsed / total) * 100).toFixed(1);
                                     return context.label + ': ' + context.parsed + ' (' + percentage + '%)';
                                 }
@@ -324,7 +324,7 @@ define(['jquery', 'core/ajax', 'core/notification'], function($, Ajax, Notificat
             }, this);
             
             var overallAvg = allScores.length ? 
-                (allScores.reduce((a, b) => a + b) / allScores.length).toFixed(1) : 0;
+                (allScores.reduce(function(a, b) { return a + b; }) / allScores.length).toFixed(1) : 0;
             $('#overall-average').text(overallAvg + '%');
             
             // Completion rate
