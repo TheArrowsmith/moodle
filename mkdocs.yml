@@ -4,19 +4,19 @@ plugins:
   - mermaid2
 nav:
   - Home: index.md
-  - Asset management:
-      Legacy: legacy_asset_management.md
-      New: assets.md
+  - Dir structure: directory_structure.md
+  - Rendering: rendering.md
   - Database:
     - Core tables: core_db_tables.md
     - All tables: moodle_database_tables_overview.md
     - schema.sql: schema.md
-  - Dir structure: directory_structure.md
-  - Features:
+  - Asset management:
+      Legacy: legacy_asset_management.md
+      New: assets.md
+  - New features:
     - 1. GitHub OAuth: features/github-oauth/README.md
     - 2. API: features/api/README.md
     - 3. Code sandbox: features/code-sandbox/README.md
-    - Syntax highlighting: markdown-syntax-highlighting.md
-    - Automated grading: automated-unit-test-grading.md
-    - Coding progress test: coding-progress-test.md
-    - Instructor dashboard: instructor-progress-dashboard.md
+    - 4. Markdown documents: features/markdown-documents/README.md
+    - 5. Syntax highlighting: features/syntax-highlighting/README.md
+    - 6. Modernized React UI: features/modernized-frontend/README.md

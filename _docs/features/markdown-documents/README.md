@@ -3,12 +3,12 @@
 ## The Problem
 
 Traditional content delivery in Moodle was limited to basic HTML text areas and file uploads. Instructors who wanted to share formatted technical documentation, programming tutorials, or other structured content had to:
-- Use the HTML editor which was cumbersome for code examples
+- Use the HTML editor which was cumbersome for writing structured documents
 - Upload PDF files that weren't mobile-friendly or searchable
 - Create external web pages and link to them
-- Manually format code blocks without syntax highlighting
+- Manually format content using complex HTML
 
-This made it difficult to create professional-looking technical documentation directly within Moodle, especially for programming courses where code examples are essential.
+This made it difficult to create professional-looking technical documentation directly within Moodle, especially for courses that needed clean, well-formatted instructional content.
 
 ## The New Feature
 
@@ -16,22 +16,19 @@ The Markdown Document activity module allows instructors to create and share bea
 
 - **Markdown Editing**: Write content in simple Markdown syntax
 - **File Upload Support**: Upload existing .md, .markdown, or .txt files
-- **Syntax Highlighting**: Automatic syntax highlighting for code blocks with language detection
-- **Copy Code Functionality**: One-click copy buttons on all code blocks
 - **Flexible Display**: Choose between embedded display or download-only
 - **Mobile Responsive**: Content adapts to all screen sizes
 
 ### Key Benefits:
 
 - **Developer-Friendly**: Use familiar Markdown syntax instead of WYSIWYG editors
-- **Professional Code Display**: Syntax highlighting makes code examples readable and attractive
 - **Version Control Ready**: Markdown files can be tracked in Git
 - **Fast Content Creation**: Write documentation quickly without formatting hassles
 - **Consistent Styling**: All markdown documents have uniform, professional appearance
 
 ## Implementation Notes
 
-The feature is implemented as a standard Moodle activity module with modern enhancements:
+The feature is implemented as a standard Moodle activity module:
 
 ### Core Module (`mod_markdownfile`)
 
@@ -39,14 +36,6 @@ The feature is implemented as a standard Moodle activity module with modern enha
 - Supports both database content storage and file uploads
 - Uses Moodle's built-in Markdown parser (FORMAT_MARKDOWN)
 - Provides three display modes: Automatic, Embed, and Force Download
-
-### Syntax Highlighting Enhancement
-
-- Uses highlight.js library (v11.9.0) loaded from CDN
-- Applied via JavaScript progressive enhancement
-- Adds copy-to-clipboard buttons to all code blocks
-- Supports automatic language detection for unmarked code
-- Gracefully degrades if JavaScript is disabled
 
 ### Security Features
 
@@ -123,23 +112,7 @@ print(greet("Bob", "Hi"))       # Output: Hi, Bob!
 - **Embed**: Forces inline display
 - **Force download**: Shows download link only
 
-### 4. Verify Syntax Highlighting
-
-1. Save the activity and view it as a student
-2. Verify that:
-   - Code blocks have syntax highlighting with colors
-   - Python keywords (def, return, import) are highlighted
-   - Strings and comments have different colors
-   - Each code block has a "Copy" button in the top-right
-   - Clicking "Copy" changes to "✅ Copied!" briefly
-
-### 5. Test Copy Functionality
-
-1. Click the "Copy" button on any code block
-2. Paste into a text editor
-3. Verify the code is copied correctly without formatting
-
-### 6. Test File Upload
+### 4. Test File Upload
 
 1. Create a new Markdown file activity
 2. Select "Upload file" option
@@ -162,75 +135,21 @@ console.log(fibonacci(10)); // 55
 ```
 ```
 
-4. Save and verify the content displays with highlighting
+4. Save and verify the content displays correctly
 
-### 7. Mobile Testing
+### 5. Mobile Testing
 
 1. Access the activity on a mobile device
 2. Verify:
    - Content is readable without horizontal scrolling
-   - Code blocks can be scrolled horizontally if needed
-   - Copy buttons are accessible
    - Text size is appropriate
+   - Display modes work correctly on mobile
 
-### 8. Test Different Languages
-
-Create content with multiple programming languages:
-
-````markdown
-## SQL Query
-```sql
-SELECT u.firstname, u.lastname, c.fullname
-FROM mdl_user u
-JOIN mdl_user_enrolments ue ON u.id = ue.userid
-JOIN mdl_enrol e ON ue.enrolid = e.id
-JOIN mdl_course c ON e.courseid = c.id
-WHERE c.id = 2;
-```
-
-## PHP Function
-```php
-<?php
-function calculate_grade($scores) {
-    $total = array_sum($scores);
-    $average = $total / count($scores);
-    
-    if ($average >= 90) return 'A';
-    if ($average >= 80) return 'B';
-    if ($average >= 70) return 'C';
-    if ($average >= 60) return 'D';
-    return 'F';
-}
-?>
-```
-
-## HTML/CSS
-```html
-<!DOCTYPE html>
-<html>
-<head>
-    <style>
-        .highlight {
-            background-color: yellow;
-            font-weight: bold;
-        }
-    </style>
-</head>
-<body>
-    <p class="highlight">Important text</p>
-</body>
-</html>
-```
-````
-
-Each language should have appropriate syntax highlighting with language-specific keywords and constructs colored correctly.
-
-### 9. Quick Functionality Check
+### 6. Quick Functionality Check
 
 - ✅ Create new Markdown file activity
-- ✅ Enter markdown content with code blocks
-- ✅ View the activity - see syntax highlighting
-- ✅ Click "Copy" button - code copied to clipboard
+- ✅ Enter markdown content including formatted text
+- ✅ View the activity - see properly formatted content
 - ✅ Upload .md file - content displays correctly
 - ✅ View on mobile - responsive layout works
 - ✅ Try different display modes - all work as expected
